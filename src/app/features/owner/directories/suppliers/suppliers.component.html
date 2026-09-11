@@ -115,7 +115,7 @@
   [photoHint]="'suppliers.photo_hint' | translate"
   photoIcon="bi-image"
   [namePreview]="form.value.name ?? ''"
-  (close)="closeDrawer()"
+  (closed)="closeDrawer()"
   (photoSelected)="onPhotoSelected($event)"
 >
   @if (formError()) {

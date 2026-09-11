@@ -63,7 +63,7 @@
   }
 </div>
 
-<app-drawer [open]="drawerOpen()" [title]="'admin.updates.new' | translate" [description]="'admin.updates.new_hint' | translate" (close)="closeDrawer()">
+<app-drawer [open]="drawerOpen()" [title]="'admin.updates.new' | translate" [description]="'admin.updates.new_hint' | translate" (closed)="closeDrawer()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }
@@ -87,7 +87,7 @@
     </div>
 
     <div class="mb-3">
-      <label>{{ "admin.updates.media_label" | translate }}</label>
+      <div class="form-label">{{ "admin.updates.media_label" | translate }}</div>
       <label class="update-file-drop" for="update-files">
         <i class="bi bi-cloud-arrow-up"></i>
         <span>{{ "admin.updates.media_hint" | translate }}</span>

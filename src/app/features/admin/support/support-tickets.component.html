@@ -64,7 +64,7 @@
   }
 </div>
 
-<app-modal [open]="!!selected()" [title]="selected()?.subject ?? ''" (close)="close()">
+<app-modal [open]="!!selected()" [title]="selected()?.subject ?? ''" (closed)="close()">
   @if (selected(); as t) {
     <div class="ticket-detail">
       <div class="ticket-detail-meta">

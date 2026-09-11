@@ -1,4 +1,4 @@
-import { Component, signal } from "@angular/core";
+import { Component, HostListener, signal } from "@angular/core";
 import { RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
 import { AuthService } from "../../core/auth/auth.service";
@@ -39,6 +39,11 @@ export class CoachShellComponent {
 
   closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  @HostListener("document:keydown.escape")
+  onEsc(): void {
+    this.closeSidebar();
   }
 
   logout(): void {

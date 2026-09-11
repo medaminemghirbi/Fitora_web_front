@@ -309,7 +309,7 @@
 }
 </div>
 
-<app-modal [open]="contractModalOpen()" [title]="'clients.add_subscription' | translate" (close)="closeContractModal()">
+<app-modal [open]="contractModalOpen()" [title]="'clients.add_subscription' | translate" (closed)="closeContractModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }
@@ -359,7 +359,7 @@
   </form>
 </app-modal>
 
-<app-modal [open]="editModalOpen()" [title]="'clients.abo_edit' | translate" (close)="closeEditModal()">
+<app-modal [open]="editModalOpen()" [title]="'clients.abo_edit' | translate" (closed)="closeEditModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }
@@ -391,7 +391,7 @@
   }
 </app-modal>
 
-<app-modal [open]="bookingModalOpen()" [title]="'clients.add_booking' | translate" (close)="closeBookingModal()">
+<app-modal [open]="bookingModalOpen()" [title]="'clients.add_booking' | translate" (closed)="closeBookingModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }
@@ -430,7 +430,7 @@
   </form>
 </app-modal>
 
-<app-modal [open]="paymentModalOpen()" [title]="'clients.add_payment' | translate" (close)="closePaymentModal()">
+<app-modal [open]="paymentModalOpen()" [title]="'clients.add_payment' | translate" (closed)="closePaymentModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }
@@ -457,7 +457,7 @@
   </form>
 </app-modal>
 
-<app-modal [open]="loginModalOpen()" [title]="'clients.mobile_login' | translate" (close)="closeLoginModal()">
+<app-modal [open]="loginModalOpen()" [title]="'clients.mobile_login' | translate" (closed)="closeLoginModal()">
   @if (loginFormError()) {
     <div class="alert alert-danger">{{ loginFormError() }}</div>
   }

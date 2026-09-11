@@ -6,7 +6,7 @@ import { HasPermissionDirective } from "./access.directives";
 @Component({
   standalone: true,
   imports: [HasPermissionDirective],
-  template: `<div *hasPermission="perm()" class="protected">secret</div>`,
+  template: `<div *appHasPermission="perm()" class="protected">secret</div>`,
 })
 class HostComponent {
   readonly perm = signal("payments");

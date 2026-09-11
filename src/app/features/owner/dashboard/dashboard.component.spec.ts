@@ -6,6 +6,7 @@ import { TranslateModule } from "@ngx-translate/core";
 import { of } from "rxjs";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ConfigurationService } from "../../../core/configuration/configuration.service";
+import { Company } from "../../../core/models/company.model";
 import { AuditLogsService } from "../../../core/services/audit-logs.service";
 import { DashboardResponse, DashboardService } from "../../../core/services/dashboard.service";
 import { RevenueService } from "../../../core/services/revenue.service";
@@ -18,7 +19,7 @@ describe("DashboardComponent", () => {
   let auditLogsService: jasmine.SpyObj<AuditLogsService>;
 
   const response: DashboardResponse = {
-    company: { id: 1, name: "Fitora Fitness Sousse", currency: "TND" } as any,
+    company: { id: 1, name: "Fitora Fitness Sousse", currency: "TND" } as unknown as Company,
     stats: {
       total_clients: 12,
       active_contracts: 1,

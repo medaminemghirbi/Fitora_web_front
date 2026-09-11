@@ -84,7 +84,7 @@
   </div>
 </div>
 
-<app-modal [open]="modalOpen()" [title]="(editing() ? 'activities.edit' : 'activities.new') | translate" (close)="closeModal()">
+<app-modal [open]="modalOpen()" [title]="(editing() ? 'activities.edit' : 'activities.new') | translate" (closed)="closeModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }

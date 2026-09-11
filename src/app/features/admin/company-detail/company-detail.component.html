@@ -72,7 +72,7 @@
         }
 
         <div>
-          <label>{{ "admin.access_status" | translate }}</label>
+          <div class="form-label">{{ "admin.access_status" | translate }}</div>
           <div class="fx-segmented">
             @for (s of statuses; track s) {
               <button type="button" [class.is-active]="status() === s" (click)="status.set(s)">

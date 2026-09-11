@@ -65,6 +65,8 @@ export interface SearchableOption {
           </div>
           <ul #list class="ss-list">
             @for (opt of filtered(); track opt.value; let i = $index) {
+              <!-- Roving-highlight listbox: keyboard nav (Arrow/Enter) lives on the search input above, not per-option. -->
+              <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
               <li
                 role="option"
                 [attr.aria-selected]="opt.value === value()"

@@ -79,12 +79,12 @@
               <div><dt>{{ "schedule.ends_on" | translate }}</dt><dd>{{ (c.ends_on | date: "mediumDate") || ("hr.open_ended" | translate) }}</dd></div>
               <div><dt>{{ "hr.trial_end" | translate }}</dt><dd>{{ (c.trial_period_end | date: "mediumDate") || "—" }}</dd></div>
               <div><dt>{{ "hr.weekly_hours" | translate }}</dt><dd>{{ c.weekly_hours ? c.weekly_hours + " h" : "—" }}</dd></div>
-              <div><dt>{{ "hr.hourly_rate" | translate }}</dt><dd>{{ c.hourly_rate != null ? (c.hourly_rate | money: c.currency) : "—" }}</dd></div>
+              <div><dt>{{ "hr.hourly_rate" | translate }}</dt><dd>{{ c.hourly_rate !== null ? (c.hourly_rate | money: c.currency) : "—" }}</dd></div>
               <div><dt>{{ "hr.payment_method" | translate }}</dt><dd>{{ ("hr.pay_" + c.payment_method) | translate }}</dd></div>
               <div><dt>{{ "hr.bank" | translate }}</dt><dd>{{ c.bank_name || "—" }} <span class="fx-muted" dir="ltr">{{ c.bank_iban }}</span></dd></div>
               <div><dt>{{ "hr.cnss" | translate }}</dt><dd dir="ltr">{{ c.cnss_number || "—" }} {{ c.cnss_affiliated_on ? "(" + (c.cnss_affiliated_on | date: "mediumDate") + ")" : "" }}</dd></div>
               <div><dt>{{ "hr.leave_entitlement" | translate }}</dt><dd>{{ c.paid_leave_days_per_year }} {{ "hr.days_per_year" | translate }}</dd></div>
-              <div><dt>{{ "hr.notice_period" | translate }}</dt><dd>{{ c.notice_period_days != null ? c.notice_period_days + " " + ("hr.days" | translate) : "—" }}</dd></div>
+              <div><dt>{{ "hr.notice_period" | translate }}</dt><dd>{{ c.notice_period_days !== null ? c.notice_period_days + " " + ("hr.days" | translate) : "—" }}</dd></div>
             </dl>
 
             <div class="hr-salary">
@@ -232,7 +232,7 @@
 <!-- ===================== CONTRACT DRAWER ===================== -->
 <app-drawer [open]="contractOpen()" [wide]="true"
             [title]="(editingContract() ? 'hr.edit_contract' : 'hr.new_contract') | translate"
-            (close)="contractOpen.set(false)">
+            (closed)="contractOpen.set(false)">
   @if (contractError()) {
     <div class="alert alert-danger">{{ contractError() }}</div>
   }
@@ -402,7 +402,7 @@
 </app-drawer>
 
 <!-- ===================== LEAVE MODAL ===================== -->
-<app-modal [open]="leaveOpen()" [title]="(editingLeave() ? 'hr.edit_leave' : 'hr.new_leave') | translate" (close)="leaveOpen.set(false)">
+<app-modal [open]="leaveOpen()" [title]="(editingLeave() ? 'hr.edit_leave' : 'hr.new_leave') | translate" (closed)="leaveOpen.set(false)">
   @if (leaveError()) {
     <div class="alert alert-danger">{{ leaveError() }}</div>
   }

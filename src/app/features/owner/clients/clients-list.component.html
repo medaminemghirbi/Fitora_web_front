@@ -5,7 +5,7 @@
     </button>
   </app-page-header>
 
-  <app-filter-rail [total]="meta()?.total ?? null" [hasFilters]="hasFilters()" (reset)="clearFilters()">
+  <app-filter-rail [total]="meta()?.total ?? null" [hasFilters]="hasFilters()" (resetFilters)="clearFilters()">
     <div class="fx-rail-sec">
       <label for="cl-search">{{ "common.search" | translate }}</label>
       <div class="fx-input-icon">
@@ -131,7 +131,7 @@
   </div>
 </div>
 
-<app-modal [open]="createModalOpen()" [title]="'clients.new' | translate" (close)="closeCreateModal()">
+<app-modal [open]="createModalOpen()" [title]="'clients.new' | translate" (closed)="closeCreateModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }

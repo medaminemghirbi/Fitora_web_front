@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, Signal, ViewChild, computed, effect, signal } from "@angular/core";
+import { Component, OnInit, Signal, ViewChild, computed, effect, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { DatePipe } from "@angular/common";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
@@ -46,7 +46,7 @@ function toDateInputValue(date: Date): string {
   templateUrl: "./calendar.component.html",
   styleUrl: "./calendar.component.scss",
 })
-export class CalendarComponent implements OnInit, AfterViewInit {
+export class CalendarComponent implements OnInit {
   @ViewChild(FullCalendarComponent) private readonly calendarComponent?: FullCalendarComponent;
 
   readonly coaches = signal<Coach[]>([]);
@@ -95,6 +95,10 @@ export class CalendarComponent implements OnInit, AfterViewInit {
   readonly createFormat = signal<SessionFormat | null>(null);
   readonly createCapacityBounds = signal(CAPACITY_BOUNDS.collective);
 
+  // FullCalendar's own datesSet fires once the view is ready, which is when
+  // the events fetcher actually gets attached — calendarApi is only safe to
+  // use once the view child has rendered (i.e. after ngAfterViewInit would
+  // have run), which every caller here already respects via user interaction.
   private get calendarApi() {
     return this.calendarComponent?.getApi();
   }
@@ -236,12 +240,6 @@ export class CalendarComponent implements OnInit, AfterViewInit {
 
   next(): void {
     this.calendarApi?.next();
-  }
-
-  ngAfterViewInit(): void {
-    // FullCalendar's own datesSet fires once the view is ready, which is
-    // when the events fetcher actually gets attached — nothing to do here,
-    // this just documents that calendarApi is only safe to use from here on.
   }
 
   applyFilters(): void {

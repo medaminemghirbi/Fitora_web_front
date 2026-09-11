@@ -27,6 +27,8 @@ import { TranslateModule } from "@ngx-translate/core";
         <i class="bi bi-three-dots"></i>
       </button>
       @if (open()) {
+        <!-- Closes the menu when a projected item is clicked; Escape (see the host listener below) is the keyboard equivalent. -->
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
         <div #menu class="fx-menu fx-menu--fixed" role="menu" (click)="onMenuClick()">
           <ng-content></ng-content>
         </div>

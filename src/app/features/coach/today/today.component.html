@@ -27,7 +27,7 @@
     } @else {
       <div class="schedule-list">
         @for (session of sessions(); track session.id) {
-          <div class="schedule-row" [class.active]="selectedSession()?.id === session.id" (click)="selectSession(session)" style="cursor: pointer">
+          <div class="schedule-row" [class.active]="selectedSession()?.id === session.id" (click)="selectSession(session)" (keydown.enter)="selectSession(session)" (keydown.space)="$event.preventDefault(); selectSession(session)" tabindex="0" role="button" style="cursor: pointer">
             <div class="schedule-time">{{ session.starts_at | date: "HH:mm" }}</div>
             <div class="schedule-info">
               <div class="fw-semibold">{{ session.activity_emoji ? session.activity_emoji + " " : "" }}{{ session.activity_name }}</div>

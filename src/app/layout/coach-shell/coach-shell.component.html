@@ -1,5 +1,7 @@
 <div class="app-shell">
   @if (sidebarOpen()) {
+    <!-- Backdrop: mouse-only dismiss; Escape (see the host listener in the component) is the keyboard equivalent. -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <div class="sidebar-backdrop d-lg-none" (click)="closeSidebar()"></div>
   }
 

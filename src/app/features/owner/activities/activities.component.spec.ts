@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
 import { of } from "rxjs";
+import { Activity } from "../../../core/models/activity.model";
 import { ActivitiesService } from "../../../core/services/activities.service";
 import { ActivitiesComponent } from "./activities.component";
 
@@ -30,7 +31,7 @@ describe("ActivitiesComponent", () => {
   });
 
   it("creates an activity", () => {
-    activitiesService.create.and.returnValue(of({ activity: { id: 1 } as any }));
+    activitiesService.create.and.returnValue(of({ activity: { id: 1 } as unknown as Activity }));
 
     fixture.componentInstance.openCreate();
     fixture.componentInstance.form.patchValue({ name: "Yoga" });

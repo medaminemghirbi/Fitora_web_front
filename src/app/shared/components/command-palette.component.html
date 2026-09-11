@@ -1,5 +1,8 @@
 @if (palette.isOpen()) {
+  <!-- Backdrop: mouse-only dismiss; Escape/Arrow/Enter (see the component's keydown listener) is the keyboard path. -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
   <div class="cmdk-backdrop" (click)="palette.close()">
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <div class="cmdk" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
       <div class="cmdk-search">
         <i class="bi bi-search"></i>

@@ -89,7 +89,7 @@
   </div>
 </div>
 
-<app-modal [open]="recordModalOpen()" [title]="'payments.record' | translate" (close)="closeRecordModal()">
+<app-modal [open]="recordModalOpen()" [title]="'payments.record' | translate" (closed)="closeRecordModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }

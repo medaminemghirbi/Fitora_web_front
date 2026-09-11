@@ -1,5 +1,5 @@
 import { A11yModule } from "@angular/cdk/a11y";
-import { Component } from "@angular/core";
+import { Component, HostListener } from "@angular/core";
 import { TranslateModule } from "@ngx-translate/core";
 import { ConfirmService } from "../../core/services/confirm.service";
 
@@ -9,7 +9,10 @@ import { ConfirmService } from "../../core/services/confirm.service";
   imports: [A11yModule, TranslateModule],
   template: `
     @if (confirmService.request(); as req) {
+      <!-- Backdrop: mouse-only dismiss; Escape (see the host listener below) is the keyboard equivalent. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
       <div class="confirm-backdrop" (click)="confirmService.resolve(false)">
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
         <div class="confirm-dialog" cdkTrapFocus cdkTrapFocusAutoCapture role="alertdialog" aria-modal="true"
              [attr.aria-label]="req.title" (click)="$event.stopPropagation()">
           <h3>{{ req.title }}</h3>
@@ -66,4 +69,9 @@ import { ConfirmService } from "../../core/services/confirm.service";
 })
 export class ConfirmDialogComponent {
   constructor(public readonly confirmService: ConfirmService) {}
+
+  @HostListener("document:keydown.escape")
+  onEsc(): void {
+    if (this.confirmService.request()) this.confirmService.resolve(false);
+  }
 }

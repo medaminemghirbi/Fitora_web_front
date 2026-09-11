@@ -26,8 +26,11 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit -p tsconfig.app.json
 
-      - name: Test (headless Chrome)
-        run: npx ng test --watch=false --browsers=ChromeHeadless --code-coverage
+      - name: Lint
+        run: npm run lint
+
+      - name: Spec (headless Chrome)
+        run: npm run spec
 
       - name: Build (production)
-        run: npx ng build --configuration production
+        run: npm run build -- --configuration production

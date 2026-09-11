@@ -135,7 +135,7 @@
 </div>
 </div>
 
-<app-modal [open]="modalOpen()" [title]="(editing() ? 'company_library.edit_document' : 'company_library.new_document') | translate" (close)="closeModal()">
+<app-modal [open]="modalOpen()" [title]="(editing() ? 'company_library.edit_document' : 'company_library.new_document') | translate" (closed)="closeModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }

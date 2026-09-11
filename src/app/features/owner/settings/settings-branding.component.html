@@ -13,7 +13,7 @@
 
           <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
             <div class="mb-4">
-              <label>{{ "settings.branding_logo" | translate }}</label>
+              <label for="br-logo">{{ "settings.branding_logo" | translate }}</label>
               <div class="d-flex align-items-center gap-3">
                 <div class="branding-logo-preview">
                   @if (logoPreview() || logoUrl(); as src) {
@@ -23,7 +23,7 @@
                   }
                 </div>
                 <div>
-                  <input type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/svg+xml" (change)="onLogoSelected($event)" />
+                  <input id="br-logo" type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/svg+xml" (change)="onLogoSelected($event)" />
                   <div class="form-text">{{ "settings.branding_logo_hint" | translate }}</div>
                 </div>
               </div>

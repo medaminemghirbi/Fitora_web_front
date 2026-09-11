@@ -12,7 +12,9 @@ import { Component, EventEmitter, HostListener, Input, Output } from "@angular/c
   imports: [A11yModule],
   template: `
     @if (open) {
-      <div class="fx-drawer-backdrop" (click)="close.emit()"></div>
+      <!-- Backdrop: mouse-only dismiss; Escape (see the host listener below) is the keyboard equivalent. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+      <div class="fx-drawer-backdrop" (click)="closed.emit()"></div>
       <aside
         class="fx-drawer"
         [class.fx-drawer--wide]="wide"
@@ -27,7 +29,7 @@ import { Component, EventEmitter, HostListener, Input, Output } from "@angular/c
             <h2 class="fx-drawer-title">{{ title }}</h2>
             @if (description) { <p class="fx-drawer-desc">{{ description }}</p> }
           </div>
-          <button type="button" class="icon-btn" (click)="close.emit()" aria-label="Close">
+          <button type="button" class="icon-btn" (click)="closed.emit()" aria-label="Close">
             <i class="bi bi-x-lg"></i>
           </button>
         </header>
@@ -48,10 +50,10 @@ export class DrawerComponent {
   @Input() title = "";
   @Input() description = "";
   @Input() wide = false;
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
 
   @HostListener("document:keydown.escape")
   onEsc(): void {
-    if (this.open) this.close.emit();
+    if (this.open) this.closed.emit();
   }
 }

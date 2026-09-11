@@ -7,12 +7,15 @@ import { Component, EventEmitter, HostListener, Input, Output } from "@angular/c
   imports: [A11yModule],
   template: `
     @if (open) {
-      <div class="modal-backdrop-custom" (click)="close.emit()">
+      <!-- Backdrop: mouse-only dismiss; Escape (see the host listener below) is the keyboard equivalent. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+      <div class="modal-backdrop-custom" (click)="closed.emit()">
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
         <div class="modal-panel" cdkTrapFocus cdkTrapFocusAutoCapture role="dialog" aria-modal="true"
              [attr.aria-label]="title" (click)="$event.stopPropagation()">
           <div class="modal-panel-header">
             <h3>{{ title }}</h3>
-            <button type="button" class="icon-btn" (click)="close.emit()" aria-label="Close">
+            <button type="button" class="icon-btn" (click)="closed.emit()" aria-label="Close">
               <i class="bi bi-x-lg"></i>
             </button>
           </div>
@@ -69,10 +72,10 @@ import { Component, EventEmitter, HostListener, Input, Output } from "@angular/c
 export class ModalComponent {
   @Input() open = false;
   @Input() title = "";
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
 
   @HostListener("document:keydown.escape")
   onEsc(): void {
-    if (this.open) this.close.emit();
+    if (this.open) this.closed.emit();
   }
 }

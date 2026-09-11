@@ -75,7 +75,7 @@
   }
 </div>
 
-<app-modal [open]="modalOpen()" [title]="(editing() ? 'common.edit' : 'settings.abt_new') | translate" (close)="modalOpen.set(false)">
+<app-modal [open]="modalOpen()" [title]="(editing() ? 'common.edit' : 'settings.abt_new') | translate" (closed)="modalOpen.set(false)">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }

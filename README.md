@@ -115,16 +115,16 @@ src/environments/
 
 ## 🧪 Testing
 
-Run unit tests (Karma/Jasmine):
+Run unit tests (Karma/Jasmine), watch mode:
 
 ```bash
 ng test
 ```
 
-Run them headless, as CI does:
+Run them headless with coverage, exactly as CI does:
 
 ```bash
-ng test --watch=false --browsers=ChromeHeadless --code-coverage
+npm run spec
 ```
 
 End-to-end testing can be added using the preferred E2E framework.
@@ -262,7 +262,8 @@ should all be handled by Angular's router.
 | `ng serve`                             | Start development server  |
 | `ng build`                             | Build the application     |
 | `ng build --configuration production`  | Production build          |
-| `ng test`                              | Run unit tests            |
+| `ng test`                              | Run unit tests (watch)     |
+| `npm run spec`                         | Run unit tests headless, as CI does |
 | `ng lint`                              | Run linting               |
 | `ng generate`                          | Generate Angular code     |
 

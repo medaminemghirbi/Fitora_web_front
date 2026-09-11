@@ -59,7 +59,7 @@
 <app-modal
   [open]="modalOpen()"
   [title]="(editing() ? 'common.edit' : 'settings.role_new') | translate"
-  (close)="modalOpen.set(false)"
+  (closed)="modalOpen.set(false)"
 >
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>

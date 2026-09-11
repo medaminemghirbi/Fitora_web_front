@@ -56,7 +56,7 @@
   </div>
 </div>
 
-<app-modal [open]="planModalOpen()" [title]="(editingPlan() ? 'common.edit' : 'contract_types.new') | translate" (close)="closePlanModal()">
+<app-modal [open]="planModalOpen()" [title]="(editingPlan() ? 'common.edit' : 'contract_types.new') | translate" (closed)="closePlanModal()">
   @if (formError()) { <div class="alert alert-danger">{{ formError() }}</div> }
   <form [formGroup]="planForm" (ngSubmit)="submitPlan()" novalidate>
     <div class="mb-3">

@@ -5,6 +5,7 @@ import { Router, provideRouter } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { AuthService } from "../../core/auth/auth.service";
+import { User } from "../../core/models/user.model";
 import { LoginComponent } from "./login.component";
 
 describe("LoginComponent", () => {
@@ -42,7 +43,7 @@ describe("LoginComponent", () => {
   });
 
   it("logs in and navigates home on success", () => {
-    authService.login.and.returnValue(of({ token: "t", user: {} as any }));
+    authService.login.and.returnValue(of({ token: "t", user: {} as unknown as User }));
     authService.homeRouteForCurrentUser.and.returnValue("/owner/contracts");
     spyOn(router, "navigateByUrl");
 

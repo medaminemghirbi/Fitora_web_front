@@ -1,19 +1,19 @@
 import { Directive, Input, TemplateRef, ViewContainerRef, effect, inject } from "@angular/core";
 import { AuthService } from "../auth/auth.service";
 
-// *hasPermission="'clients'" — renders its content only when the current
+// *appHasPermission="'clients'" — renders its content only when the current
 // login holds that capability (owners come back from /bootstrap with the
 // full set). Reactive: appears/disappears when configuration lands.
 //
-//   <a *hasPermission="'payments'" routerLink="/owner/payments">…</a>
-@Directive({ selector: "[hasPermission]", standalone: true })
+//   <a *appHasPermission="'payments'" routerLink="/owner/payments">…</a>
+@Directive({ selector: "[appHasPermission]", standalone: true })
 export class HasPermissionDirective {
   private readonly tpl = inject(TemplateRef<unknown>);
   private readonly vcr = inject(ViewContainerRef);
   private readonly auth = inject(AuthService);
   private key = "";
 
-  @Input({ required: true }) set hasPermission(value: string) {
+  @Input({ required: true }) set appHasPermission(value: string) {
     this.key = value;
     this.update();
   }

@@ -89,7 +89,7 @@ describe("TeamComponent", () => {
   });
 
   it("creates a coach", () => {
-    coachesService.create.and.returnValue(of({ coach } as any));
+    coachesService.create.and.returnValue(of({ coach }));
 
     fixture.componentInstance.openCreate("coach");
     fixture.componentInstance.coachForm.patchValue({ first_name: "Sarah", last_name: "Martin" });

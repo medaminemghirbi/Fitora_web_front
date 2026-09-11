@@ -21,7 +21,7 @@
   <div class="row g-3">
     @for (folder of folders(); track folder.id) {
       <div class="col-12 col-md-6 col-xl-4">
-        <div class="app-card folder-card h-100" (click)="openFolder(folder)">
+        <div class="app-card folder-card h-100" (click)="openFolder(folder)" (keydown.enter)="openFolder(folder)" (keydown.space)="$event.preventDefault(); openFolder(folder)" tabindex="0" role="button">
           <div class="app-card-body">
             <div class="folder-card-actions">
               <button type="button" class="icon-btn" [title]="'common.edit' | translate" [attr.aria-label]="'common.edit' | translate" (click)="openEdit(folder, $event)">
@@ -51,7 +51,7 @@
 }
 </div>
 
-<app-modal [open]="modalOpen()" [title]="(editing() ? 'company_library.edit_folder' : 'company_library.new_folder') | translate" (close)="closeModal()">
+<app-modal [open]="modalOpen()" [title]="(editing() ? 'company_library.edit_folder' : 'company_library.new_folder') | translate" (closed)="closeModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }

@@ -53,7 +53,7 @@
 </div>
 </div>
 
-<app-modal [open]="detailOpen()" [title]="(selectedSession()?.activity_emoji ? selectedSession()!.activity_emoji + ' ' : '') + (selectedSession()?.activity_name || '')" (close)="closeDetail()">
+<app-modal [open]="detailOpen()" [title]="(selectedSession()?.activity_emoji ? selectedSession()!.activity_emoji + ' ' : '') + (selectedSession()?.activity_name || '')" (closed)="closeDetail()">
   @if (selectedSession(); as session) {
     <div class="session-detail-meta mb-3">
       <div><i class="bi bi-geo-alt"></i> {{ session.location_name }}</div>
@@ -71,8 +71,9 @@
 
     @if (canManageSessions()) {
       <div class="mb-3 position-relative">
-        <label>{{ "clients.add_booking" | translate }}</label>
+        <label for="cal-add-client-search">{{ "clients.add_booking" | translate }}</label>
         <input
+          id="cal-add-client-search"
           class="form-control"
           [ngModel]="addClientSearch()"
           (ngModelChange)="searchClientsToAdd($event)"
@@ -132,7 +133,7 @@
   }
 </app-modal>
 
-<app-modal [open]="createModalOpen()" [title]="'schedule.new_session' | translate" (close)="closeCreateModal()">
+<app-modal [open]="createModalOpen()" [title]="'schedule.new_session' | translate" (closed)="closeCreateModal()">
   @if (formError()) {
     <div class="alert alert-danger">{{ formError() }}</div>
   }

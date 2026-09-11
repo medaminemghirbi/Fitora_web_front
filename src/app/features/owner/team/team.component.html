@@ -121,7 +121,7 @@
 </div>
 
 <!-- CREATE -->
-<app-drawer [open]="createOpen()" [title]="'team.new' | translate" [description]="'team.new_hint' | translate" (close)="closeCreate()">
+<app-drawer [open]="createOpen()" [title]="'team.new' | translate" [description]="'team.new_hint' | translate" (closed)="closeCreate()">
   @if (createError()) {
     <div class="alert alert-danger">{{ createError() }}</div>
   }
@@ -251,7 +251,7 @@
 </app-drawer>
 
 <!-- EDIT COACH PROFILE -->
-<app-modal [open]="editCoachOpen()" [title]="'coaches.edit' | translate" (close)="editCoachOpen.set(false)">
+<app-modal [open]="editCoachOpen()" [title]="'coaches.edit' | translate" (closed)="editCoachOpen.set(false)">
   @if (editCoachError()) {
     <div class="alert alert-danger">{{ editCoachError() }}</div>
   }
@@ -292,7 +292,7 @@
 </app-modal>
 
 <!-- ROLE & WEB ACCESS -->
-<app-modal [open]="roleOpen()" [title]="'team.action_web_access' | translate" (close)="roleOpen.set(false)">
+<app-modal [open]="roleOpen()" [title]="'team.action_web_access' | translate" (closed)="roleOpen.set(false)">
   @if (roleError()) {
     <div class="alert alert-danger">{{ roleError() }}</div>
   }
@@ -325,7 +325,7 @@
 </app-modal>
 
 <!-- MOBILE LOGIN -->
-<app-modal [open]="loginOpen()" [title]="'coaches.mobile_login' | translate" (close)="loginOpen.set(false)">
+<app-modal [open]="loginOpen()" [title]="'coaches.mobile_login' | translate" (closed)="loginOpen.set(false)">
   @if (loginTarget(); as coach) {
     <p class="fx-muted mb-3">{{ coach.full_name }}</p>
     @if (loginError()) {

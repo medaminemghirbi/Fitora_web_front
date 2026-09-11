@@ -16,7 +16,7 @@ import { TranslateModule } from "@ngx-translate/core";
 export class FilterRailComponent {
   @Input() total: number | null = null;
   @Input() hasFilters = false;
-  @Output() reset = new EventEmitter<void>();
+  @Output() resetFilters = new EventEmitter<void>();
 
   readonly mobileOpen = signal(false);
 

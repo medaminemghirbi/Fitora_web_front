@@ -15,7 +15,10 @@ import { Component, EventEmitter, HostListener, Input, Output } from "@angular/c
   imports: [ A11yModule ],
   template: `
     @if (open) {
-      <div class="fx-fm-backdrop" (click)="close.emit()">
+      <!-- Backdrop: mouse-only dismiss; Escape (see the host listener below) is the keyboard equivalent. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+      <div class="fx-fm-backdrop" (click)="closed.emit()">
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
         <div
           class="fx-fm"
           cdkTrapFocus
@@ -52,7 +55,7 @@ import { Component, EventEmitter, HostListener, Input, Output } from "@angular/c
           <div class="fx-fm-main">
             <header class="fx-fm-head">
               <h2>{{ title }}</h2>
-              <button type="button" class="icon-btn" (click)="close.emit()" aria-label="Close">
+              <button type="button" class="icon-btn" (click)="closed.emit()" aria-label="Close">
                 <i class="bi bi-x-lg"></i>
               </button>
             </header>
@@ -191,11 +194,11 @@ export class FormModalComponent {
   @Input() accept = "image/jpeg,image/png,image/webp";
   /** The form's live name value, shown under the photo as it's typed. */
   @Input() namePreview = "";
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
   @Output() photoSelected = new EventEmitter<Event>();
 
   @HostListener("document:keydown.escape")
   onEsc(): void {
-    if (this.open) this.close.emit();
+    if (this.open) this.closed.emit();
   }
 }
