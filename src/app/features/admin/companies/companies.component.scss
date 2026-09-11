@@ -1,0 +1,56 @@
+.companies-table {
+  margin-bottom: 0;
+
+  th {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  td { vertical-align: middle; }
+}
+
+.companies-row {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover { background: var(--color-surface-sunken); }
+}
+
+.company-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.company-ico {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  color: var(--color-accent);
+  font-size: 1rem;
+}
+
+.company-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.company-total {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.fx-num { text-align: right; }

@@ -1,0 +1,21 @@
+import { ContractType } from "./contract-type.model";
+
+export type ContractStatus = "pending" | "active" | "expired" | "cancelled";
+export type PaymentStatus = "unpaid" | "paid";
+
+export interface Contract {
+  id: string;
+  current_period_id: string | null;
+  status: ContractStatus;
+  starts_at: string | null;
+  expires_at: string | null;
+  remaining_bookings: number | null;
+  auto_renew: boolean;
+  discount: string;
+  final_price: string;
+  payment_status: PaymentStatus;
+  // What's still owed — the full price when unpaid, 0 when paid (no part payments).
+  amount_due: string;
+  plan: ContractType;
+  client: { id: string; full_name: string; phone: string | null };
+}

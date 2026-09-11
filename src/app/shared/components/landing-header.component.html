@@ -1,0 +1,52 @@
+<header class="mkt-nav">
+  <div class="mkt-container mkt-nav-inner">
+    <a routerLink="/" class="mkt-brand" (click)="closeMobile()">
+      <span class="mkt-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span>
+      FITORA
+    </a>
+
+    <nav class="mkt-nav-links">
+      <a [routerLink]="['/']" fragment="features">{{ "landing.nav_features" | translate }}</a>
+      <a [routerLink]="['/']" fragment="flow">{{ "landing.nav_how" | translate }}</a>
+      <a [routerLink]="['/']" fragment="pricing">{{ "landing.nav_pricing" | translate }}</a>
+    </nav>
+
+    <div class="mkt-nav-actions">
+      <button type="button" class="mkt-nav-icon" (click)="theme.toggle()" [attr.aria-label]="'settings.theme' | translate">
+        <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
+      </button>
+
+      <div class="dropdown-wrap">
+        <button type="button" class="mkt-nav-icon" (click)="langMenuOpen.set(!langMenuOpen())"
+                [attr.aria-label]="'common.change_language' | translate" [attr.aria-expanded]="langMenuOpen()">
+          <i class="bi bi-translate"></i>
+        </button>
+        @if (langMenuOpen()) {
+          <div class="mkt-lang-menu">
+            @for (l of locales; track l.code) {
+              <button type="button" [class.is-active]="locale.locale() === l.code" (click)="setLocale(l.code)">{{ l.label }}</button>
+            }
+          </div>
+        }
+      </div>
+
+      <a routerLink="/auth/login" class="mkt-btn mkt-btn--ghost mkt-btn--sm mkt-nav-hide-sm">{{ "auth.login" | translate }}</a>
+      <a routerLink="/auth/register" class="mkt-btn mkt-btn--primary mkt-btn--sm mkt-nav-hide-sm">{{ "landing.cta_start" | translate }}</a>
+
+      <button type="button" class="mkt-nav-icon mkt-nav-burger" (click)="mobileOpen.set(!mobileOpen())"
+              [attr.aria-label]="'landing.nav_menu' | translate" [attr.aria-expanded]="mobileOpen()">
+        <i class="bi" [class.bi-list]="!mobileOpen()" [class.bi-x-lg]="mobileOpen()"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="mkt-mobile-menu" [class.is-open]="mobileOpen()">
+    <a [routerLink]="['/']" fragment="features" (click)="closeMobile()">{{ "landing.nav_features" | translate }}</a>
+    <a [routerLink]="['/']" fragment="flow" (click)="closeMobile()">{{ "landing.nav_how" | translate }}</a>
+    <a [routerLink]="['/']" fragment="pricing" (click)="closeMobile()">{{ "landing.nav_pricing" | translate }}</a>
+    <div class="mkt-mobile-menu-cta">
+      <a routerLink="/auth/login" class="mkt-btn mkt-btn--ghost" (click)="closeMobile()">{{ "auth.login" | translate }}</a>
+      <a routerLink="/auth/register" class="mkt-btn mkt-btn--primary" (click)="closeMobile()">{{ "landing.cta_start" | translate }}</a>
+    </div>
+  </div>
+</header>

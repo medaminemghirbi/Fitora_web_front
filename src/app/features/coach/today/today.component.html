@@ -1,0 +1,105 @@
+<div class="content-header">
+  <div>
+    <h1>{{ "coach.today" | translate }}</h1>
+  </div>
+</div>
+
+<div class="app-card mb-3">
+  <div class="app-card-header">
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="shiftDay(-1)" [attr.aria-label]="'schedule.prev_period' | translate">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <strong>{{ selectedDate() | date: "fullDate" }}</strong>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="shiftDay(1)" [attr.aria-label]="'schedule.next_period' | translate">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-primary ms-2" (click)="goToday()">{{ "schedule.today" | translate }}</button>
+    </div>
+  </div>
+  <div class="app-card-body">
+    @if (loading()) {
+      <div class="d-flex justify-content-center py-5">
+        <app-spinner [size]="32" />
+      </div>
+    } @else if (sessions().length === 0) {
+      <app-empty-state [title]="'schedule.empty_title' | translate" [body]="'coach.no_sessions_body' | translate" icon="bi-calendar3" />
+    } @else {
+      <div class="schedule-list">
+        @for (session of sessions(); track session.id) {
+          <div class="schedule-row" [class.active]="selectedSession()?.id === session.id" (click)="selectSession(session)" style="cursor: pointer">
+            <div class="schedule-time">{{ session.starts_at | date: "HH:mm" }}</div>
+            <div class="schedule-info">
+              <div class="fw-semibold">{{ session.activity_emoji ? session.activity_emoji + " " : "" }}{{ session.activity_name }}</div>
+              <div class="text-muted-token small">
+                {{ session.location_name }} · <span dir="ltr">{{ session.confirmed_count }}/{{ session.capacity }}</span> {{ "schedule.capacity" | translate }}
+              </div>
+            </div>
+            <app-status-badge [status]="session.status">{{ ("bookings.status_" + session.status) | translate }}</app-status-badge>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+@if (selectedSession(); as session) {
+  <div class="app-card">
+    <div class="app-card-header">
+      <h2>{{ session.activity_emoji ? session.activity_emoji + " " : "" }}{{ session.activity_name }} — {{ session.starts_at | date: "HH:mm" }}</h2>
+    </div>
+    <div class="app-card-body">
+      @if (bookingsLoading()) {
+        <div class="d-flex justify-content-center py-5">
+          <app-spinner [size]="32" />
+        </div>
+      } @else if (bookings().length === 0) {
+        <app-empty-state [title]="'coach.no_bookings_title' | translate" body="" icon="bi-people" />
+      } @else {
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>{{ "clients.title" | translate }}</th>
+                <th>{{ "auth.phone" | translate }}</th>
+                <th>{{ "common.status" | translate }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (booking of bookings(); track booking.booking_id) {
+                <tr>
+                  <td>{{ booking.client.full_name }}</td>
+                  <td>{{ booking.client.phone || "—" }}</td>
+                  <td>
+                    @if (booking.attendance) {
+                      <app-status-badge [status]="booking.attendance.status">{{ ("coach.attendance_" + booking.attendance.status) | translate }}</app-status-badge>
+                    } @else {
+                      <span class="text-muted-token small">{{ "coach.not_marked" | translate }}</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="d-flex gap-1 flex-wrap justify-content-end">
+                      @for (status of statuses; track status) {
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          [class.btn-primary]="booking.attendance?.status === status"
+                          [class.btn-outline-secondary]="booking.attendance?.status !== status"
+                          [disabled]="markingBookingId() === booking.booking_id"
+                          (click)="mark(booking, status)"
+                        >
+                          {{ ("coach.attendance_" + status) | translate }}
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+}

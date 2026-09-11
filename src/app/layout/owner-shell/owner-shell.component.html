@@ -1,0 +1,48 @@
+<div class="owner-shell">
+  @if (auth.isImpersonating()) {
+    <div class="impersonation-banner">
+      <i class="bi bi-incognito"></i>
+      <span>{{ "admin.impersonating_banner" | translate: { company: auth.impersonatedCompanyName() } }}</span>
+      <button type="button" class="impersonation-exit-btn" (click)="auth.exitImpersonation()">
+        <i class="bi bi-box-arrow-left"></i> {{ "admin.exit_impersonation" | translate }}
+      </button>
+    </div>
+  } @else if (trialDaysRemaining() !== null) {
+    <a routerLink="/owner/subscription" class="trial-shell-banner">
+      <i class="bi bi-stars"></i>
+      <span>{{ "subscription.trial_banner_body" | translate: { days: trialDaysRemaining() } }}</span>
+      <span class="trial-shell-banner-link">{{ "subscription.trial_banner_cta" | translate }}</span>
+    </a>
+  } @else if (emailUnverified() && !emailBannerDismissed()) {
+    <div class="verify-email-banner">
+      <i class="bi bi-envelope-exclamation"></i>
+      @if (verificationResent()) {
+        <span>{{ "auth.verify_email_banner_resent" | translate }}</span>
+      } @else {
+        <span>{{ "auth.verify_email_banner_body" | translate }}</span>
+        <button type="button" class="verify-email-banner-link" [disabled]="resendingVerification()" (click)="resendVerificationEmail()">
+          {{ "auth.verify_email_banner_cta" | translate }}
+        </button>
+      }
+      <button type="button" class="verify-email-banner-dismiss" (click)="emailBannerDismissed.set(true)" [attr.aria-label]="'common.cancel' | translate">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  }
+
+  <app-navbar
+    [dashboardItem]="dashboardNavItem()"
+    [groups]="navGroups()"
+    [secondaryItems]="showOwnerOnlySections() ? secondaryNavItems() : []"
+    [brandName]="'Fitora'"
+    [brandLogoUrl]="branding.logoUrl()"
+    [brandHome]="nav.homePath()"
+    [brandSuffix]="versionSuffix()"
+    [showNotifications]="true"
+    [showSupport]="showOwnerOnlySections()"
+  />
+
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

@@ -1,0 +1,45 @@
+<div class="app-card">
+  <div class="app-card-body">
+    @if (loading()) {
+      <div class="d-flex justify-content-center py-4">
+        <app-spinner [size]="28" />
+      </div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <h3 class="h6 mb-1">{{ "settings.working_days" | translate }}</h3>
+        <p class="text-muted-token small">{{ "settings.working_days_hint" | translate }}</p>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          @for (d of weekdays; track d.value) {
+            <button
+              type="button"
+              class="btn btn-sm"
+              [class.btn-primary]="isWorkingDay(d.value)"
+              [class.btn-outline-secondary]="!isWorkingDay(d.value)"
+              [attr.aria-pressed]="isWorkingDay(d.value)"
+              (click)="toggleDay(d.value)"
+            >
+              {{ d.labelKey | translate }}
+            </button>
+          }
+        </div>
+
+        <h3 class="h6 mb-1">{{ "settings.calendar" | translate }}</h3>
+        <p class="text-muted-token small">{{ "settings.calendar_hint" | translate }}</p>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label for="cal-hours-start">{{ "settings.business_hours_start" | translate }} *</label>
+            <input id="cal-hours-start" type="time" class="form-control" formControlName="business_hours_start" />
+          </div>
+          <div class="col-6 mb-3">
+            <label for="cal-hours-end">{{ "settings.business_hours_end" | translate }} *</label>
+            <input id="cal-hours-end" type="time" class="form-control" formControlName="business_hours_end" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ (saving() ? "common.saving" : "common.save") | translate }}
+        </button>
+      </form>
+    }
+  </div>
+</div>

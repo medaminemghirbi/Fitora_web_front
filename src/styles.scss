@@ -1,0 +1,69 @@
+@import "styles/bootstrap-vars";
+@import "bootstrap/scss/bootstrap";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+@import "styles/tokens";
+@import "styles/fitora";
+@import "styles/adminlte";
+@import "styles/marketing";
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+// Route progress bar (ngx-progressbar) — brand-coloured, above everything.
+ng-progress {
+  --ng-progress-color: var(--color-primary);
+  --ng-progress-thickness: 3;
+}
+
+.text-primary { color: var(--color-primary) !important; }
+.text-muted-token { color: var(--color-text-secondary) !important; }
+.cursor-pointer { cursor: pointer; }
+
+// Global visible focus ring for keyboard users
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.btn:focus-visible, .form-control:focus-visible, .form-select:focus-visible { outline: none; }
+
+// Reused wherever a text input drives a live client search (payments, client
+// booking, calendar "add client to session").
+.search-results-dropdown {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  margin-top: 0.25rem;
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.search-result-item {
+  display: block;
+  width: 100%;
+  text-align: start;
+  padding: 0.55rem 0.85rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  cursor: pointer;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--color-surface-hover); }
+}

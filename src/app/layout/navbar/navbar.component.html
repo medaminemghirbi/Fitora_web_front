@@ -1,0 +1,140 @@
+<header class="app-navbar app-navbar-menu">
+  <div class="app-navbar-inner">
+    <a [routerLink]="brandHome" class="app-navbar-brand">
+      <span class="app-navbar-mark">
+        @if (brandLogoUrl) { <img [src]="brandLogoUrl" alt="" /> } @else { <i class="bi bi-lightning-charge-fill"></i> }
+      </span>
+      <span class="app-navbar-brand-text">{{ brandName }}@if (brandSuffix) { <small>{{ brandSuffix }}</small> }</span>
+    </a>
+
+    <button type="button" class="app-navbar-burger d-lg-none" (click)="mobileOpen.set(!mobileOpen())"
+            [attr.aria-expanded]="mobileOpen()" [attr.aria-label]="'common.toggle_menu' | translate">
+      <i class="bi" [class.bi-list]="!mobileOpen()" [class.bi-x-lg]="mobileOpen()"></i>
+    </button>
+    @if (activePageLabel(); as labelKey) {
+      <span class="app-navbar-mobile-title d-lg-none">{{ labelKey | translate }}</span>
+    }
+
+    <!-- desktop nav -->
+    <nav class="app-navbar-nav d-none d-lg-flex" [attr.aria-label]="'nav.primary' | translate">
+      @if (dashboardItem) {
+        <a [routerLink]="dashboardItem.path" routerLinkActive="is-active" class="app-navbar-item">
+          {{ dashboardItem.labelKey | translate }}
+        </a>
+      }
+      @for (group of groups; track group.id) {
+        <div class="app-navbar-group">
+          <button type="button" class="app-navbar-item" [class.is-active]="activeGroupId() === group.id || openGroup() === group.id"
+                  (click)="toggleGroup(group.id)" [attr.aria-expanded]="openGroup() === group.id">
+            {{ group.labelKey | translate }}
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          @if (openGroup() === group.id) {
+            <div class="app-navbar-dropdown">
+              @for (item of group.items; track item.path) {
+                <a [routerLink]="item.path" routerLinkActive="is-active" class="app-navbar-dd-item">
+                  <i class="bi" [class]="item.icon"></i>
+                  <span>{{ item.labelKey | translate }}</span>
+                  @if (item.comingSoon) { <span class="app-navbar-soon">{{ "nav.coming_soon" | translate }}</span> }
+                </a>
+              }
+            </div>
+          }
+        </div>
+      }
+      @for (item of flatItems; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="is-active" class="app-navbar-item">
+          {{ item.labelKey | translate }}
+        </a>
+      }
+    </nav>
+
+    <span class="app-navbar-spacer"></span>
+
+    @if (showActions) {
+      <button type="button" class="app-navbar-search" (click)="palette.open()">
+        <i class="bi bi-search"></i>
+        <span class="d-none d-md-inline">{{ "palette.trigger" | translate }}</span>
+        <kbd class="d-none d-md-inline">⌘K</kbd>
+      </button>
+
+      @if (showSupport) {
+        <a routerLink="/owner/subscription" [queryParams]="{ tab: 'contact' }" class="app-navbar-support d-none d-md-inline-flex" routerLinkActive="is-active">
+          <i class="bi bi-headset"></i>
+          <span>{{ "nav.support" | translate }}</span>
+        </a>
+      }
+
+      @if (showNotifications) {
+        <app-notification-bell />
+      }
+
+      <button type="button" class="icon-btn" (click)="theme.toggle()"
+              [attr.aria-label]="'common.toggle_theme' | translate">
+        <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
+      </button>
+
+      <div class="dropdown-wrap">
+        <button type="button" class="user-menu-trigger" (click)="userMenuOpen.set(!userMenuOpen()); openGroup.set(null)"
+                [attr.aria-label]="auth.currentUser()?.full_name || ''" [attr.aria-expanded]="userMenuOpen()">
+          <app-avatar [name]="auth.currentUser()?.full_name || ''" [size]="32" />
+        </button>
+        @if (userMenuOpen()) {
+          <div class="dropdown-menu-custom dropdown-menu-end">
+            <div class="dropdown-user-info">
+              <strong>{{ auth.currentUser()?.full_name }}</strong>
+              <span>{{ auth.currentUser()?.email }}</span>
+            </div>
+            @for (item of secondaryItems; track item.path) {
+              <a [routerLink]="item.path" class="dropdown-item-custom" (click)="userMenuOpen.set(false)">
+                <i class="bi" [class]="item.icon"></i> {{ item.labelKey | translate }}
+              </a>
+            }
+            <button type="button" class="dropdown-item-custom" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i> {{ "auth.logout" | translate }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- mobile nav panel -->
+  @if (mobileOpen()) {
+    <div class="app-navbar-mobile d-lg-none">
+      @if (dashboardItem) {
+        <a [routerLink]="dashboardItem.path" routerLinkActive="is-active" class="app-navbar-m-item">
+          {{ dashboardItem.labelKey | translate }}
+        </a>
+      }
+      @for (group of groups; track group.id) {
+        <div class="app-navbar-m-group">{{ group.labelKey | translate }}</div>
+        @for (item of group.items; track item.path) {
+          <a [routerLink]="item.path" routerLinkActive="is-active" class="app-navbar-m-item">
+            <i class="bi" [class]="item.icon"></i>
+            {{ item.labelKey | translate }}
+            @if (item.comingSoon) { <span class="app-navbar-soon">{{ "nav.coming_soon" | translate }}</span> }
+          </a>
+        }
+      }
+      @for (item of flatItems; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="is-active" class="app-navbar-m-item">
+          <i class="bi" [class]="item.icon"></i> {{ item.labelKey | translate }}
+        </a>
+      }
+      @if (showSupport) {
+        <a routerLink="/owner/subscription" [queryParams]="{ tab: 'contact' }" routerLinkActive="is-active" class="app-navbar-m-item">
+          <i class="bi bi-headset"></i> {{ "nav.support" | translate }}
+        </a>
+      }
+      @if (secondaryItems.length) {
+        <div class="app-navbar-m-group">{{ "nav.settings" | translate }}</div>
+        @for (item of secondaryItems; track item.path) {
+          <a [routerLink]="item.path" routerLinkActive="is-active" class="app-navbar-m-item">
+            <i class="bi" [class]="item.icon"></i> {{ item.labelKey | translate }}
+          </a>
+        }
+      }
+    </div>
+  }
+</header>

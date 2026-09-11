@@ -1,0 +1,65 @@
+.gs {
+  display: flex;
+  justify-content: center;
+  padding: 2.5rem 1rem 4rem;
+}
+
+.gs-card {
+  width: 100%;
+  max-width: 720px;
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 24px 60px -32px rgba(21, 11, 38, 0.35);
+}
+
+.gs-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e8005f;
+}
+
+.gs-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #150b26;
+}
+
+.gs-lead {
+  margin: 0 0 1.75rem;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.gs-checklist {
+  display: block;
+  margin-bottom: 1.75rem;
+}
+
+.gs-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gs-skip {
+  color: #64748b;
+  text-decoration: none;
+}
+
+.gs-skip:hover {
+  color: #150b26;
+}
+
+@media (max-width: 560px) {
+  .gs-card {
+    padding: 1.5rem 1.25rem;
+  }
+}

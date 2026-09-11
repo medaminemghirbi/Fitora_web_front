@@ -1,0 +1,107 @@
+<div class="app-card">
+  <div class="app-card-header">
+    <div>
+      <p class="fx-muted mb-0" style="font-size: 0.8125rem">{{ "settings.abt_hint" | translate }}</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      @if (types().length > 0) {
+        <div class="fx-input-icon">
+          <i class="bi bi-search"></i>
+          <input type="search" class="form-control form-control-sm" [ngModel]="search()" (ngModelChange)="search.set($event)"
+                 [placeholder]="'common.search' | translate" />
+        </div>
+      }
+      <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> {{ "settings.abt_new" | translate }}
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="app-card-body"><app-skeleton variant="table" [rows]="5" [cols]="4" /></div>
+  } @else if (types().length === 0) {
+    <div class="app-card-body">
+      <app-empty-state [title]="'settings.abt_empty' | translate" body="" icon="bi-calendar-x" />
+    </div>
+  } @else if (filtered().length === 0) {
+    <div class="app-card-body"><app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" /></div>
+  } @else {
+    <div class="fx-table-scroll">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{{ "hr.leave_type" | translate }}</th>
+            <th>{{ "settings.abbreviation" | translate }}</th>
+            <th>{{ "settings.abt_counts_cp" | translate }}</th>
+            <th>{{ "common.status" | translate }}</th>
+            <th class="text-end">{{ "common.actions" | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of pagedTypes(); track t.id) {
+            <tr>
+              <td class="fx-strong" [innerHTML]="t.name | highlight: search()"></td>
+              <td><span class="badge text-bg-secondary" [innerHTML]="t.abbreviation | highlight: search()"></span></td>
+              <td>
+                @if (t.paid) {
+                  <span class="fx-plan-tag"><span class="fx-dot fx-dot--success"></span> {{ "common.yes" | translate }}</span>
+                } @else {
+                  <span class="fx-muted">{{ "common.no" | translate }}</span>
+                }
+              </td>
+              <td>
+                <app-status-badge [status]="t.active ? 'active' : 'inactive'">
+                  {{ (t.active ? "common.active" : "common.inactive") | translate }}
+                </app-status-badge>
+              </td>
+              <td class="text-end">
+                <app-action-menu>
+                  <button type="button" class="fx-menu-item" (click)="openEdit(t)">
+                    <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
+                  </button>
+                  <div class="fx-menu-divider"></div>
+                  <button type="button" class="fx-menu-item is-danger" (click)="remove(t)">
+                    <i class="bi bi-trash"></i> {{ "common.delete" | translate }}
+                  </button>
+                </app-action-menu>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination [meta]="meta()" (pageChange)="page.set($event)" />
+  }
+</div>
+
+<app-modal [open]="modalOpen()" [title]="(editing() ? 'common.edit' : 'settings.abt_new') | translate" (close)="modalOpen.set(false)">
+  @if (formError()) {
+    <div class="alert alert-danger">{{ formError() }}</div>
+  }
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="row">
+      <div class="col-8 mb-3">
+        <label for="abt-name">{{ "hr.leave_type" | translate }} *</label>
+        <input id="abt-name" class="form-control" formControlName="name" />
+      </div>
+      <div class="col-4 mb-3">
+        <label for="abt-abbr">{{ "settings.abbreviation" | translate }} *</label>
+        <input id="abt-abbr" class="form-control" formControlName="abbreviation" dir="ltr" style="text-transform: uppercase" />
+      </div>
+    </div>
+    <div class="mb-3 form-check">
+      <input id="abt-paid" type="checkbox" class="form-check-input" formControlName="paid" />
+      <label for="abt-paid" class="form-check-label">{{ "settings.abt_paid_label" | translate }}</label>
+      <div class="form-text">{{ "settings.abt_paid_hint" | translate }}</div>
+    </div>
+    <div class="mb-3 form-check">
+      <input id="abt-active" type="checkbox" class="form-check-input" formControlName="active" />
+      <label for="abt-active" class="form-check-label">{{ "common.active" | translate }}</label>
+    </div>
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="button" class="btn btn-outline-secondary" (click)="modalOpen.set(false)">{{ "common.cancel" | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ (saving() ? "common.saving" : "common.save") | translate }}</button>
+    </div>
+  </form>
+</app-modal>

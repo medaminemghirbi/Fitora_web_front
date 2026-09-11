@@ -1,0 +1,20 @@
+<div class="gs">
+  <div class="gs-card">
+    <p class="gs-eyebrow">{{ "getting_started.eyebrow" | translate }}</p>
+    <h1 class="gs-title">
+      {{ "getting_started.title" | translate: { name: auth.currentUser()?.first_name || "" } }}
+    </h1>
+    <p class="gs-lead">{{ "getting_started.lead" | translate }}</p>
+
+    <app-setup-checklist [setup]="setup()" [dismissable]="false" class="gs-checklist" />
+
+    <div class="gs-actions">
+      <button type="button" class="btn btn-primary" (click)="goToDashboard()">
+        {{ "getting_started.go_dashboard" | translate }}
+      </button>
+      <button type="button" class="btn btn-link gs-skip" [disabled]="dismissing()" (click)="skip()">
+        {{ "getting_started.skip_full" | translate }}
+      </button>
+    </div>
+  </div>
+</div>

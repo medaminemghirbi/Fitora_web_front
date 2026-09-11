@@ -1,0 +1,52 @@
+<div class="auth-shell">
+  <app-landing-header />
+
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-brand">FITORA</div>
+      <p class="auth-tagline">{{ "app.tagline" | translate }}</p>
+
+      <h1>{{ "auth.welcome_back" | translate }}</h1>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        @if (error()) {
+          <div class="alert alert-danger" role="alert">{{ error() }}</div>
+        }
+
+        <div class="mb-3">
+          <label for="email">{{ "auth.email" | translate }} *</label>
+          <input id="email" type="email" class="form-control" formControlName="email" autocomplete="email" />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <div class="invalid-feedback d-block">{{ "common.required" | translate }}</div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-baseline">
+            <label for="password">{{ "auth.password" | translate }} *</label>
+            <a routerLink="/auth/forgot-password" class="auth-forgot-link">{{ "auth.forgot_password" | translate }}</a>
+          </div>
+          <input id="password" type="password" class="form-control" formControlName="password" autocomplete="current-password" />
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <div class="invalid-feedback d-block">{{ "common.required" | translate }}</div>
+          }
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+          @if (loading()) {
+            <app-spinner [size]="16" />
+          } @else {
+            {{ "auth.sign_in" | translate }}
+          }
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        {{ "auth.no_account" | translate }}
+        <a routerLink="/auth/register">{{ "auth.sign_up" | translate }}</a>
+      </p>
+    </div>
+  </div>
+
+  <app-landing-footer />
+</div>

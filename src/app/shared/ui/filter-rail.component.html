@@ -1,0 +1,29 @@
+<button type="button" class="fx-rail-toggle d-lg-none" (click)="mobileOpen.set(true)">
+  <i class="bi bi-sliders"></i>
+  {{ "common.filters" | translate }}
+  @if (hasFilters) { <span class="fx-rail-toggle-dot"></span> }
+</button>
+
+@if (mobileOpen()) {
+  <div class="fx-rail-backdrop d-lg-none" (click)="mobileOpen.set(false)"></div>
+}
+
+<aside class="fx-rail" [class.is-open]="mobileOpen()">
+  <div class="fx-rail-head">
+    <h2>{{ "common.filters" | translate }}</h2>
+    @if (hasFilters) {
+      <button type="button" class="fx-rail-reset" (click)="reset.emit()">{{ "common.reset" | translate }}</button>
+    }
+    <button type="button" class="fx-rail-close d-lg-none" (click)="mobileOpen.set(false)" [attr.aria-label]="'common.close' | translate">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  @if (total !== null) {
+    <p class="fx-rail-count">{{ total }} {{ "common.results" | translate }}</p>
+  }
+
+  <div class="fx-rail-body">
+    <ng-content></ng-content>
+  </div>
+</aside>

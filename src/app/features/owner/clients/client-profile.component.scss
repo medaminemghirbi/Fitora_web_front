@@ -1,0 +1,111 @@
+.contract-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.contract-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+
+  &--success { background: var(--color-success); }
+  &--warning { background: var(--color-warning); }
+  &--danger { background: var(--color-danger); }
+}
+
+// ---- Abonnements tab — card list ----
+.abo-list { display: flex; flex-direction: column; gap: 0.9rem; }
+
+.abo {
+  display: grid;
+  grid-template-columns: 4px 1fr;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  &.is-off { opacity: 0.72; }
+  &.is-off .abo-name { color: var(--color-text-secondary); }
+}
+.abo-rail { border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
+.abo-body { display: flex; flex-direction: column; gap: 0.6rem; min-width: 0; padding: 1rem 1.1rem 0.85rem; }
+
+.abo-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+.abo-name { font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
+.abo-dates { color: var(--color-text-secondary); font-size: 0.8125rem; margin-top: 0.1rem; }
+
+.abo-status {
+  font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  &.st-ok { color: var(--color-success); }
+  &.st-due { color: var(--color-warning); }
+  &.st-off { color: var(--color-muted); }
+}
+
+.abo-track {
+  height: 6px; border-radius: 999px;
+  background: var(--color-surface-sunken); overflow: hidden;
+
+  > span { display: block; height: 100%; border-radius: 999px; background: var(--color-primary); }
+  &.warn > span { background: var(--color-warning); }
+  &.off > span { background: var(--color-muted); }
+}
+.abo-track-note { font-size: 0.78rem; color: var(--color-muted); margin-top: 0.25rem; }
+
+.abo-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 0.6rem; border-top: 1px dashed var(--color-border);
+}
+.abo-price {
+  font-weight: 600; font-variant-numeric: tabular-nums;
+
+  .paid { color: var(--color-success); font-weight: 500; font-size: 0.8125rem; }
+  .due { color: var(--color-warning); font-weight: 600; font-size: 0.8125rem; }
+}
+.abo-actions { display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
+
+.btn-link-quiet,
+.btn-link-danger {
+  background: none; border: 0;
+  font-weight: 600; font-size: 0.8125rem;
+  padding: 0.35rem 0.5rem; cursor: pointer;
+}
+.btn-link-quiet { color: var(--color-text-secondary); &:hover { color: var(--color-primary); } }
+.btn-link-danger { color: var(--color-danger); &:hover { text-decoration: underline; } }
+
+.abo-total-line {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  background: var(--color-surface-sunken); border-radius: var(--radius-md);
+  font-size: 0.9rem;
+
+  strong { font-family: var(--font-display); font-size: 1.05rem; }
+}
+.abo-collect {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+
+.mobile-login-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: var(--radius-md);
+
+  &--active {
+    background: var(--color-success-soft);
+    color: var(--color-success);
+  }
+
+  &--pending {
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+  }
+}

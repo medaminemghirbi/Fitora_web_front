@@ -1,0 +1,69 @@
+<div class="app-shell">
+  @if (sidebarOpen()) {
+    <div class="sidebar-backdrop d-lg-none" (click)="closeSidebar()"></div>
+  }
+
+  <aside class="app-sidebar" [class.is-open]="sidebarOpen()">
+    <div class="sidebar-header">
+      <a routerLink="/coach/today" class="sidebar-brand" (click)="closeSidebar()">
+        <span class="sidebar-brand-mark">
+          @if (branding.logoUrl(); as logoUrl) {
+            <img [src]="logoUrl" alt="" />
+          } @else {
+            <i class="bi bi-lightning-charge-fill"></i>
+          }
+        </span>
+        <span class="sidebar-brand-text">Fitora <small>Coach</small></span>
+      </a>
+    </div>
+
+    <nav class="sidebar-scroll">
+      <div class="sidebar-section">
+        @for (item of navItems; track item.path) {
+          <a [routerLink]="item.path" routerLinkActive="active" class="sidebar-link" (click)="closeSidebar()">
+            <i class="bi" [class]="item.icon"></i>
+            <span class="nav-link-label">{{ item.labelKey | translate }}</span>
+          </a>
+        }
+      </div>
+    </nav>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <div class="d-flex align-items-center gap-2 min-w-0">
+        <button type="button" class="icon-btn d-lg-none" (click)="toggleSidebar()" [attr.aria-label]="'common.toggle_menu' | translate">
+          <i class="bi bi-list"></i>
+        </button>
+        <span class="app-topbar-title">{{ "coach.today" | translate }}</span>
+      </div>
+
+      <div class="app-topbar-actions">
+        <button type="button" class="icon-btn" (click)="theme.toggle()" [attr.aria-label]="'common.toggle_theme' | translate">
+          <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
+        </button>
+
+        <div class="dropdown-wrap">
+          <button type="button" class="user-menu-trigger" (click)="userMenuOpen.set(!userMenuOpen())" [attr.aria-label]="auth.currentUser()?.full_name || ''">
+            <app-avatar [name]="auth.currentUser()?.full_name || ''" [size]="32" />
+          </button>
+          @if (userMenuOpen()) {
+            <div class="dropdown-menu-custom dropdown-menu-end">
+              <div class="dropdown-user-info">
+                <strong>{{ auth.currentUser()?.full_name }}</strong>
+                <span>{{ auth.currentUser()?.email }}</span>
+              </div>
+              <button type="button" class="dropdown-item-custom" (click)="logout()">
+                <i class="bi bi-box-arrow-right"></i> {{ "auth.logout" | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <main class="app-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,177 @@
+<div class="fx-page">
+  <app-page-header [title]="'nav.suppliers' | translate" [description]="'suppliers.subtitle' | translate">
+    <button type="button" class="btn btn-primary" (click)="openCreate()">
+      <i class="bi bi-plus-lg"></i> {{ "suppliers.new" | translate }}
+    </button>
+  </app-page-header>
+
+  @if (!loading() && !error() && suppliers().length > 0) {
+    <div class="fx-toolbar">
+      <div class="fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input type="search" class="form-control form-control-sm" [ngModel]="search()" (ngModelChange)="search.set($event)"
+               [placeholder]="'suppliers.search_placeholder' | translate" />
+      </div>
+      <div class="fx-segmented">
+        <button type="button" [class.is-active]="statusFilter() === 'active'" (click)="statusFilter.set('active')">
+          {{ "common.active" | translate }}
+        </button>
+        <button type="button" [class.is-active]="statusFilter() === 'all'" (click)="statusFilter.set('all')">
+          {{ "common.all" | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <app-skeleton variant="table" [rows]="6" [cols]="6" />
+  } @else if (error()) {
+    <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
+  } @else if (suppliers().length === 0) {
+    <div class="app-card">
+      <div class="app-card-body">
+        <app-empty-state [title]="'suppliers.empty_title' | translate" [body]="'suppliers.empty_body' | translate" icon="bi-truck">
+          <button type="button" class="btn btn-primary" (click)="openCreate()">
+            <i class="bi bi-plus-lg"></i> {{ "suppliers.new" | translate }}
+          </button>
+        </app-empty-state>
+      </div>
+    </div>
+  } @else if (sorted().length === 0) {
+    <div class="app-card"><div class="app-card-body"><app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" /></div></div>
+  } @else {
+    <div class="app-card">
+      <div class="fx-table-scroll">
+        <table class="table align-middle directory-table">
+          <thead>
+            <tr>
+              <th class="is-sortable" (click)="toggleSort('name')">{{ "suppliers.col_name" | translate }} <i class="bi" [class]="sortIcon('name')"></i></th>
+              <th class="is-sortable" (click)="toggleSort('category')">{{ "suppliers.col_category" | translate }} <i class="bi" [class]="sortIcon('category')"></i></th>
+              <th class="is-sortable" (click)="toggleSort('contact_name')">{{ "suppliers.col_contact" | translate }} <i class="bi" [class]="sortIcon('contact_name')"></i></th>
+              <th class="is-sortable" (click)="toggleSort('phone')">{{ "suppliers.col_phone" | translate }} <i class="bi" [class]="sortIcon('phone')"></i></th>
+              <th class="is-sortable" (click)="toggleSort('email')">{{ "suppliers.col_email" | translate }} <i class="bi" [class]="sortIcon('email')"></i></th>
+              <th class="is-sortable" (click)="toggleSort('active')">{{ "suppliers.col_status" | translate }} <i class="bi" [class]="sortIcon('active')"></i></th>
+              <th class="directory-th-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of sorted(); track s.id) {
+              <tr [class.is-inactive]="!s.active">
+                <td>
+                  <div class="sup-name-cell">
+                    @if (s.photo_url) {
+                      <img [src]="s.photo_url | mediaUrl" [alt]="s.name" class="sup-avatar sup-avatar-photo" />
+                    } @else {
+                      <span class="sup-avatar" [class]="'sup-avatar--' + categoryTone(s.category)">{{ initials(s.name) }}</span>
+                    }
+                    <strong [innerHTML]="s.name | highlight: search()"></strong>
+                  </div>
+                </td>
+                <td>
+                  @if (s.category) {
+                    <span class="cat-pill" [class]="'cat-pill--' + categoryTone(s.category)">{{ s.category }}</span>
+                  } @else { — }
+                </td>
+                <td [innerHTML]="(s.contact_name || '—') | highlight: search()"></td>
+                <td dir="ltr">
+                  @if (s.phone) { <span class="sup-contact"><i class="bi bi-telephone"></i>{{ s.phone }}</span> } @else { — }
+                </td>
+                <td dir="ltr">
+                  @if (s.email) {
+                    <span class="sup-contact"><i class="bi bi-envelope"></i><span [innerHTML]="s.email | highlight: search()"></span></span>
+                  } @else { — }
+                </td>
+                <td>
+                  <span class="status-dot" [class.is-on]="s.active" [class.is-off]="!s.active">
+                    {{ (s.active ? "common.active" : "common.inactive") | translate }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <app-action-menu>
+                    <button type="button" class="fx-menu-item" (click)="openEdit(s)">
+                      <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
+                    </button>
+                    <div class="fx-menu-divider"></div>
+                    <button type="button" class="fx-menu-item" [class.is-danger]="s.active" (click)="toggleActive(s)">
+                      <i class="bi" [class.bi-slash-circle]="s.active" [class.bi-arrow-counterclockwise]="!s.active"></i>
+                      {{ (s.active ? "common.deactivate" : "common.activate") | translate }}
+                    </button>
+                  </app-action-menu>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<app-form-modal
+  [open]="drawerOpen()"
+  [title]="(editing() ? 'suppliers.edit' : 'suppliers.new') | translate"
+  [photoPreview]="photoPreview()"
+  [photoError]="photoError()"
+  [photoHint]="'suppliers.photo_hint' | translate"
+  photoIcon="bi-image"
+  [namePreview]="form.value.name ?? ''"
+  (close)="closeDrawer()"
+  (photoSelected)="onPhotoSelected($event)"
+>
+  @if (formError()) {
+    <div class="alert alert-danger">{{ formError() }}</div>
+  }
+  <form [formGroup]="form" id="supplier-form" (ngSubmit)="submit()" novalidate>
+    <div class="mb-3">
+      <label for="sup-name">{{ "suppliers.col_name" | translate }} *</label>
+      <input id="sup-name" class="form-control" [class.is-invalid]="fieldError('name')" formControlName="name" />
+      @if (fieldError('name')) {
+        <div class="invalid-feedback d-block">{{ fieldError('name') }}</div>
+      }
+    </div>
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="sup-category">{{ "suppliers.col_category" | translate }}</label>
+        <input id="sup-category" class="form-control" formControlName="category" />
+      </div>
+      <div class="col-6 mb-3">
+        <label for="sup-contact">{{ "suppliers.col_contact" | translate }}</label>
+        <input id="sup-contact" class="form-control" formControlName="contact_name" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="sup-phone">{{ "suppliers.col_phone" | translate }}</label>
+        <input id="sup-phone" class="form-control" formControlName="phone" dir="ltr" />
+      </div>
+      <div class="col-6 mb-3">
+        <label for="sup-email">{{ "suppliers.col_email" | translate }}</label>
+        <input id="sup-email" type="email" class="form-control" [class.is-invalid]="fieldError('email')" formControlName="email" dir="ltr" />
+        @if (fieldError('email')) {
+          <div class="invalid-feedback d-block">{{ fieldError('email') }}</div>
+        }
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="sup-address">{{ "suppliers.address" | translate }}</label>
+      <input id="sup-address" class="form-control" formControlName="address" />
+    </div>
+    <div class="mb-3">
+      <label for="sup-notes">{{ "common.notes" | translate }}</label>
+      <textarea id="sup-notes" class="form-control" rows="3" formControlName="notes"></textarea>
+    </div>
+    @if (editing()) {
+      <div class="mb-3 form-check">
+        <input id="sup-active" type="checkbox" class="form-check-input" formControlName="active" />
+        <label for="sup-active" class="form-check-label">{{ "common.active" | translate }}</label>
+      </div>
+    }
+  </form>
+
+  <div modal-footer>
+    <button type="button" class="btn btn-outline-secondary" (click)="closeDrawer()">{{ "common.cancel" | translate }}</button>
+    <button type="submit" form="supplier-form" class="btn btn-primary" [disabled]="saving()">
+      {{ (saving() ? "common.saving" : (editing() ? "common.save" : "common.create")) | translate }}
+    </button>
+  </div>
+</app-form-modal>

@@ -1,0 +1,34 @@
+# Build context is the repo root (docker build -f backend/Dockerfile .).
+# Only backend/ and frontend/ source are needed.
+
+.git
+.github
+mobile/
+graphify-out/
+**/graphify-out/
+*.md
+fitora_prospects*
+
+# backend
+backend/.git
+backend/.env*
+!backend/.env.example
+backend/tmp/*
+backend/log/*
+backend/storage/*
+!backend/storage/.keep
+backend/config/master.key
+backend/spec/
+backend/.rspec
+
+# frontend
+frontend/.git
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.vscode/
+
+# editors / os
+.DS_Store
+.ruby-lsp/
+.claude/

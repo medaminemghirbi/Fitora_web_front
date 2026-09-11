@@ -1,0 +1,43 @@
+.trial-expired-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  padding: 1.5rem;
+}
+
+.trial-expired-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.trial-expired-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  color: var(--color-text);
+}
+
+.trial-expired-body {
+  color: var(--color-text-secondary);
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+.trial-expired-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.5rem;
+}

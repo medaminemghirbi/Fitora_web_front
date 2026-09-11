@@ -1,0 +1,5 @@
+:host { display: block; }
+
+// Layout + visuals live in src/styles/_marketing.scss (.mkt-nav*) so the
+// marketing chrome is defined once and shared with the auth pages.
+.dropdown-wrap { position: relative; }

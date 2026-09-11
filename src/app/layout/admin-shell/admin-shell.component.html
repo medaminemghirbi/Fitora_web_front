@@ -1,0 +1,66 @@
+<div class="admin-shell">
+  <header class="admin-bar">
+    <a routerLink="/admin/companies" class="admin-bar-brand">
+      <span class="admin-bar-mark"><i class="bi bi-lightning-charge-fill"></i></span>
+      Fitora
+      <span class="admin-bar-chip">Admin</span>
+      @if (version.current(); as v) {
+        <span class="admin-bar-version">v{{ v }}</span>
+      }
+    </a>
+
+    <nav class="admin-bar-nav">
+      @for (item of navItems; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="is-active" class="admin-bar-tab">
+          {{ item.labelKey | translate }}
+        </a>
+      }
+    </nav>
+
+    <span class="admin-bar-spacer"></span>
+
+    <app-notification-bell [detailRoute]="null" />
+
+    <button type="button" class="admin-bar-ic" (click)="theme.toggle()" [attr.aria-label]="'common.toggle_theme' | translate">
+      <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
+    </button>
+
+    <div class="dropdown-wrap">
+      <button type="button" class="admin-bar-ic" (click)="langMenuOpen.set(!langMenuOpen())" [attr.aria-label]="'common.change_language' | translate">
+        <i class="bi bi-translate"></i>
+      </button>
+      @if (langMenuOpen()) {
+        <div class="dropdown-menu-custom dropdown-menu-end">
+          @for (l of locales; track l.code) {
+            <button type="button" class="dropdown-item-custom" [class.active]="locale.locale() === l.code" (click)="setLocale(l.code)">
+              {{ l.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="dropdown-wrap">
+      <button type="button" class="user-menu-trigger" (click)="userMenuOpen.set(!userMenuOpen())" [attr.aria-label]="auth.currentUser()?.full_name || ''">
+        <app-avatar [name]="auth.currentUser()?.full_name || ''" [size]="30" />
+      </button>
+      @if (userMenuOpen()) {
+        <div class="dropdown-menu-custom dropdown-menu-end">
+          <div class="dropdown-user-info">
+            <strong>{{ auth.currentUser()?.full_name }}</strong>
+            <span>{{ auth.currentUser()?.email }}</span>
+          </div>
+          <button type="button" class="dropdown-item-custom" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i> {{ "auth.logout" | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  </header>
+
+  <div class="admin-strip">{{ "admin.strip" | translate }}</div>
+
+  <main class="admin-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

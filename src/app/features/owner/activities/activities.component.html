@@ -1,0 +1,165 @@
+<div class="fx-stack">
+  @if (!loading() && !error() && activities().length > 0) {
+    <div class="fx-toolbar">
+      <div class="fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          [placeholder]="'activities.search_placeholder' | translate"
+        />
+      </div>
+      <button type="button" class="btn btn-primary ms-auto" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> {{ "activities.new" | translate }}
+      </button>
+    </div>
+  }
+
+  <div class="app-card">
+    @if (loading()) {
+      <div class="app-card-body"><app-skeleton variant="table" [rows]="6" [cols]="6" /></div>
+    } @else if (error()) {
+      <div class="app-card-body"><app-error-state (retry)="load()" /></div>
+    } @else if (activities().length === 0) {
+      <div class="app-card-body">
+        <app-empty-state [title]="'activities.empty_title' | translate" [body]="'activities.empty_body' | translate" icon="bi-lightning-charge">
+          <button type="button" class="btn btn-primary" (click)="openCreate()">
+            <i class="bi bi-plus-lg"></i> {{ "activities.new" | translate }}
+          </button>
+        </app-empty-state>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="app-card-body"><app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" /></div>
+    } @else {
+      <div class="fx-table-scroll">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{{ "activities.name" | translate }}</th>
+              <th>{{ "activities.format" | translate }}</th>
+              <th>{{ "activities.duration" | translate }}</th>
+              <th>{{ "activities.capacity" | translate }}</th>
+              <th>{{ "common.status" | translate }}</th>
+              <th class="text-end">{{ "common.actions" | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (activity of pagedActivities(); track activity.id) {
+              <tr>
+                <td class="fx-strong">
+                  @if (activity.emoji) { <span class="me-1">{{ activity.emoji }}</span> }
+                  <span [innerHTML]="activity.name | highlight: search()"></span>
+                </td>
+                <td>{{ ("activities.format_" + activity.session_format) | translate }}</td>
+                <td>{{ activity.duration }} min</td>
+                <td>{{ activity.capacity }}</td>
+                <td>
+                  <app-status-badge [status]="activity.active ? 'active' : 'inactive'">
+                    {{ (activity.active ? "common.active" : "common.inactive") | translate }}
+                  </app-status-badge>
+                </td>
+                <td class="text-end">
+                  <app-action-menu>
+                    <button type="button" class="fx-menu-item" (click)="openEdit(activity)">
+                      <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
+                    </button>
+                    @if (activity.active) {
+                      <div class="fx-menu-divider"></div>
+                      <button type="button" class="fx-menu-item is-danger" (click)="deactivate(activity)">
+                        <i class="bi bi-slash-circle"></i> {{ "common.deactivate" | translate }}
+                      </button>
+                    }
+                  </app-action-menu>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination [meta]="meta()" (pageChange)="page.set($event)" />
+    }
+  </div>
+</div>
+
+<app-modal [open]="modalOpen()" [title]="(editing() ? 'activities.edit' : 'activities.new') | translate" (close)="closeModal()">
+  @if (formError()) {
+    <div class="alert alert-danger">{{ formError() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="row">
+      <div class="col-9 mb-3">
+        <label for="act-name">{{ "activities.name" | translate }} *</label>
+        <input id="act-name" class="form-control" formControlName="name" />
+      </div>
+      <div class="col-3 mb-3">
+        <label for="act-emoji">{{ "activities.emoji" | translate }}</label>
+        <input id="act-emoji" class="form-control text-center" formControlName="emoji" placeholder="🏋️" maxlength="4" />
+      </div>
+    </div>
+    <div class="emoji-picker mb-3">
+      @for (e of emojiChoices; track e) {
+        <button
+          type="button"
+          class="emoji-picker-btn"
+          [class.active]="form.controls.emoji.value === e"
+          [attr.aria-label]="e"
+          (click)="selectEmoji(e)"
+        >
+          {{ e }}
+        </button>
+      }
+    </div>
+    <div class="mb-3">
+      <label for="act-format">{{ "activities.format" | translate }} *</label>
+      <select id="act-format" class="form-select" formControlName="session_format">
+        @for (f of sessionFormats; track f.value) {
+          <option [ngValue]="f.value">{{ f.labelKey | translate }}</option>
+        }
+      </select>
+      <div class="form-text">
+        {{ ("activities.format_" + form.controls.session_format.value + "_hint") | translate }}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="act-duration">{{ "activities.duration" | translate }} *</label>
+        <input id="act-duration" type="number" min="1" class="form-control" formControlName="duration" />
+      </div>
+      <div class="col-6 mb-3">
+        <label for="act-capacity">{{ "activities.capacity" | translate }} *</label>
+        <input
+          id="act-capacity"
+          type="number"
+          class="form-control"
+          formControlName="capacity"
+          [min]="capacityBounds().min"
+          [attr.max]="capacityBounds().max"
+        />
+        @if (form.controls.capacity.enabled && form.controls.capacity.touched && form.controls.capacity.invalid) {
+          <div class="form-text text-danger">
+            @if (capacityBounds().max === null) {
+              {{ "activities.capacity_min" | translate: { min: capacityBounds().min } }}
+            } @else {
+              {{ "activities.capacity_range" | translate: { min: capacityBounds().min, max: capacityBounds().max } }}
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="act-description">{{ "activities.description" | translate }}</label>
+      <textarea id="act-description" class="form-control" rows="2" formControlName="description"></textarea>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">{{ "common.cancel" | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ (saving() ? "common.saving" : "common.save") | translate }}
+      </button>
+    </div>
+  </form>
+</app-modal>

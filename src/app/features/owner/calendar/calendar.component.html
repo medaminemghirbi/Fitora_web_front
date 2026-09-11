@@ -1,0 +1,209 @@
+<div class="fx-page">
+<header class="fx-page-header">
+  <div class="fx-page-header-titles">
+    <h1 class="fx-page-header-title">{{ "nav.calendar" | translate }}</h1>
+    <p class="fx-page-header-desc">{{ "schedule.subtitle" | translate }}</p>
+  </div>
+  @if (canManageSessions()) {
+    <div class="fx-page-header-actions">
+      <button type="button" class="btn btn-primary" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> {{ "schedule.new_session" | translate }}
+      </button>
+    </div>
+  }
+</header>
+
+<div class="app-card mb-4">
+  <div class="app-card-body">
+    <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="prev()" [attr.aria-label]="'schedule.prev_period' | translate"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="today()">{{ "schedule.today" | translate }}</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="next()" [attr.aria-label]="'schedule.next_period' | translate"><i class="bi bi-chevron-right"></i></button>
+      </div>
+
+      <div class="btn-group btn-group-sm">
+        <button type="button" class="btn btn-outline-primary" (click)="setView('timeGridDay')">{{ "schedule.day" | translate }}</button>
+        <button type="button" class="btn btn-outline-primary" (click)="setView('timeGridWeek')">{{ "schedule.week" | translate }}</button>
+        <button type="button" class="btn btn-outline-primary" (click)="setView('dayGridMonth')">{{ "schedule.month" | translate }}</button>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <select class="form-select form-select-sm" [(ngModel)]="coachFilter" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">{{ "bookings.coach" | translate }}</option>
+          @for (c of coaches(); track c.id) {
+            <option [ngValue]="c.id">{{ c.full_name }}</option>
+          }
+        </select>
+        <select class="form-select form-select-sm" [(ngModel)]="activityFilter" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">{{ "activities.title" | translate }}</option>
+          @for (a of activities(); track a.id) {
+            <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-card calendar-card">
+  <div class="app-card-body">
+    <full-calendar [options]="calendarOptions()"></full-calendar>
+  </div>
+</div>
+</div>
+
+<app-modal [open]="detailOpen()" [title]="(selectedSession()?.activity_emoji ? selectedSession()!.activity_emoji + ' ' : '') + (selectedSession()?.activity_name || '')" (close)="closeDetail()">
+  @if (selectedSession(); as session) {
+    <div class="session-detail-meta mb-3">
+      <div><i class="bi bi-geo-alt"></i> {{ session.location_name }}</div>
+      <div><i class="bi bi-person-badge"></i> {{ session.coach_name || "—" }}</div>
+      <div><i class="bi bi-clock"></i> {{ session.starts_at | date: "medium" }} – {{ session.ends_at | date: "HH:mm" }}</div>
+      <div><i class="bi bi-people"></i> <span dir="ltr">{{ session.confirmed_count }}/{{ session.capacity }}</span></div>
+      <app-status-badge [status]="session.status">{{ ("bookings.status_" + session.status) | translate }}</app-status-badge>
+    </div>
+
+    @if (isSessionEnded(session)) {
+      <div class="session-ended-note">
+        <i class="bi bi-info-circle"></i> {{ "calendar.session_ended" | translate }}
+      </div>
+    }
+
+    @if (canManageSessions()) {
+      <div class="mb-3 position-relative">
+        <label>{{ "clients.add_booking" | translate }}</label>
+        <input
+          class="form-control"
+          [ngModel]="addClientSearch()"
+          (ngModelChange)="searchClientsToAdd($event)"
+          [placeholder]="'clients.search_placeholder' | translate"
+          [disabled]="addingClient()"
+          autocomplete="off"
+        />
+        @if (addClientResults().length > 0) {
+          <div class="search-results-dropdown">
+            @for (c of addClientResults(); track c.id) {
+              <button type="button" class="search-result-item" (click)="addClientToSession(c)">
+                {{ c.full_name }} <span class="text-muted-token small">{{ c.phone }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (detailLoading()) {
+      <div class="d-flex justify-content-center py-4">
+        <app-spinner [size]="28" />
+      </div>
+    } @else if (detailBookings().length === 0) {
+      <p class="text-muted-token small">{{ "coach.no_bookings_title" | translate }}</p>
+    } @else {
+      <ul class="list-unstyled mb-0">
+        @for (booking of detailBookings(); track booking.booking_id) {
+          <li class="d-flex justify-content-between align-items-center py-2 border-bottom flex-wrap gap-2">
+            <span>{{ booking.client.full_name }}</span>
+            <div class="d-flex gap-1 flex-wrap">
+              @for (status of attendanceStatuses; track status) {
+                <button
+                  type="button"
+                  class="btn btn-sm"
+                  [class.btn-primary]="booking.attendance?.status === status"
+                  [class.btn-outline-secondary]="booking.attendance?.status !== status"
+                  [disabled]="markingBookingId() === booking.booking_id"
+                  (click)="markAttendance(booking, status)"
+                >
+                  {{ ("coach.attendance_" + status) | translate }}
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (canManageSessions() && session.status === "scheduled") {
+      <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-outline-danger btn-sm" (click)="cancelSession()">
+          <i class="bi bi-x-lg"></i> {{ "calendar.cancel_session" | translate }}
+        </button>
+      </div>
+    }
+  }
+</app-modal>
+
+<app-modal [open]="createModalOpen()" [title]="'schedule.new_session' | translate" (close)="closeCreateModal()">
+  @if (formError()) {
+    <div class="alert alert-danger">{{ formError() }}</div>
+  }
+
+  <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate>
+    <div class="mb-3">
+      <label for="cs-activity">{{ "activities.title" | translate }} *</label>
+      <select id="cs-activity" class="form-select" formControlName="activity_id">
+        <option [ngValue]="null" disabled>—</option>
+        @for (a of activities(); track a.id) {
+          <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }} ({{ a.duration }} min)</option>
+        }
+      </select>
+    </div>
+    @if (createFormat() === "individual") {
+      <div class="mb-3">
+        <label for="cs-client">{{ "schedule.member" | translate }} *</label>
+        <app-searchable-select
+          id="cs-client"
+          formControlName="client_id"
+          [options]="clientOptions()"
+          [placeholder]="'schedule.member_placeholder' | translate"
+        />
+        <div class="form-text">{{ "schedule.member_hint" | translate }}</div>
+      </div>
+    }
+    <div class="mb-3">
+      <label for="cs-coach">{{ "bookings.coach" | translate }} ({{ "common.optional" | translate }})</label>
+      <select id="cs-coach" class="form-select" formControlName="coach_id">
+        <option [ngValue]="null">—</option>
+        @for (c of coaches(); track c.id) {
+          <option [ngValue]="c.id">{{ c.full_name }}</option>
+        }
+      </select>
+    </div>
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="cs-date">{{ "bookings.date" | translate }} *</label>
+        <input id="cs-date" type="date" class="form-control" formControlName="date" />
+      </div>
+      <div class="col-6 mb-3">
+        <label for="cs-time">{{ "bookings.time" | translate }} *</label>
+        <input id="cs-time" type="time" class="form-control" formControlName="start_time" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="cs-capacity">{{ "schedule.capacity" | translate }} ({{ "common.optional" | translate }})</label>
+        <input
+          id="cs-capacity"
+          type="number"
+          class="form-control"
+          formControlName="capacity"
+          [min]="createCapacityBounds().min"
+          [attr.max]="createCapacityBounds().max"
+        />
+        @if (createFormat() && createFormat() !== "individual") {
+          <div class="form-text">{{ ("activities.format_" + createFormat() + "_hint") | translate }}</div>
+        }
+      </div>
+      <div class="col-6 mb-3">
+        <label for="cs-price">{{ "activities.price" | translate }} ({{ "common.optional" | translate }})</label>
+        <input id="cs-price" type="number" min="0" step="0.01" class="form-control" formControlName="price" />
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeCreateModal()">{{ "common.cancel" | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ (saving() ? "common.saving" : "common.save") | translate }}
+      </button>
+    </div>
+  </form>
+</app-modal>

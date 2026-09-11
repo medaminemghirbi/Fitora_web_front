@@ -1,0 +1,72 @@
+<div class="fx-page">
+<app-page-header [title]="'nav.company_library' | translate" [description]="'company_library.subtitle' | translate">
+  <button type="button" class="btn btn-primary" (click)="openCreate()">
+    <i class="bi bi-folder-plus"></i> {{ "company_library.new_folder" | translate }}
+  </button>
+</app-page-header>
+
+@if (loading()) {
+  <app-skeleton variant="cards" [count]="6" />
+} @else if (error()) {
+  <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
+} @else if (folders().length === 0) {
+  <div class="app-card">
+    <div class="app-card-body">
+      <app-empty-state [title]="'company_library.empty_title' | translate" [body]="'company_library.empty_body' | translate" icon="bi-building">
+        <button type="button" class="btn btn-primary" (click)="openCreate()">+ {{ "company_library.new_folder" | translate }}</button>
+      </app-empty-state>
+    </div>
+  </div>
+} @else {
+  <div class="row g-3">
+    @for (folder of folders(); track folder.id) {
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="app-card folder-card h-100" (click)="openFolder(folder)">
+          <div class="app-card-body">
+            <div class="folder-card-actions">
+              <button type="button" class="icon-btn" [title]="'common.edit' | translate" [attr.aria-label]="'common.edit' | translate" (click)="openEdit(folder, $event)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="icon-btn icon-btn-danger" [title]="'common.delete' | translate" [attr.aria-label]="'common.delete' | translate" (click)="remove(folder, $event)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+
+            <div class="folder-icon-tile"><i class="bi bi-folder-fill"></i></div>
+
+            <div class="folder-name">{{ folder.name }}</div>
+
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="folder-count-pill">
+                <i class="bi bi-file-earmark"></i>
+                {{ folder.document_count }} {{ (folder.document_count === 1 ? "company_library.document_singular" : "company_library.document_plural") | translate }}
+              </span>
+              <span class="folder-open-hint">{{ "company_library.open" | translate }} <i class="bi bi-arrow-right"></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}
+</div>
+
+<app-modal [open]="modalOpen()" [title]="(editing() ? 'company_library.edit_folder' : 'company_library.new_folder') | translate" (close)="closeModal()">
+  @if (formError()) {
+    <div class="alert alert-danger">{{ formError() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="mb-3">
+      <label for="folder-name">{{ "company_library.folder_name" | translate }} *</label>
+      <input id="folder-name" class="form-control" formControlName="name" />
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">{{ "common.cancel" | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ (saving() ? "common.saving" : "common.save") | translate }}
+      </button>
+    </div>
+  </form>
+</app-modal>

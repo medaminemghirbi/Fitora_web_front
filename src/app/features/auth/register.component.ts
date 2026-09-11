@@ -1,0 +1,54 @@
+import { Component, signal } from "@angular/core";
+import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
+import { Router, RouterLink } from "@angular/router";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { AuthService } from "../../core/auth/auth.service";
+import { extractErrorMessage } from "../../core/services/error.util";
+import { SpinnerComponent } from "../../shared/components/spinner.component";
+import { LandingHeaderComponent } from "../../shared/components/landing-header.component";
+import { LandingFooterComponent } from "../../shared/components/landing-footer.component";
+
+@Component({
+  selector: "app-register",
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterLink, TranslateModule, SpinnerComponent, LandingHeaderComponent, LandingFooterComponent],
+  templateUrl: "./register.component.html",
+  styleUrl: "./auth.component.scss",
+})
+export class RegisterComponent {
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+
+  readonly form = this.fb.nonNullable.group({
+    first_name: ["", Validators.required],
+    last_name: ["", Validators.required],
+    email: ["", [Validators.required, Validators.email]],
+    phone: [""],
+    password: ["", [Validators.required, Validators.minLength(8)]],
+  });
+
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly auth: AuthService,
+    private readonly router: Router,
+    private readonly translate: TranslateService
+  ) {}
+
+  submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.auth.register(this.form.getRawValue()).subscribe({
+      next: () => this.router.navigateByUrl(this.auth.homeRouteForCurrentUser()),
+      error: (err) => {
+        this.error.set(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+        this.loading.set(false);
+      },
+    });
+  }
+}

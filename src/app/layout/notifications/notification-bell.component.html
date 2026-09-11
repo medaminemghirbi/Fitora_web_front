@@ -1,0 +1,51 @@
+<div class="dropdown-wrap notif-bell">
+  <button type="button" class="icon-btn notif-bell-btn" (click)="toggle()"
+          [attr.aria-label]="'notifications.bell_label' | translate" [attr.aria-expanded]="open()">
+    <i class="bi bi-bell"></i>
+    @if (unreadCount() > 0) {
+      <span class="notif-bell-badge">{{ badge() }}</span>
+    }
+  </button>
+
+  @if (open()) {
+    <div class="dropdown-menu-custom dropdown-menu-end notif-panel">
+      <div class="notif-panel-head">
+        <strong>{{ "notifications.panel_title" | translate }}</strong>
+        @if (unreadCount() > 0) {
+          <button type="button" class="notif-panel-clear" (click)="markAllRead()">
+            {{ "notifications.mark_all_read" | translate }}
+          </button>
+        }
+      </div>
+
+      <div class="notif-panel-list" #list (scroll)="onScroll(list)">
+        @for (n of items(); track n.id) {
+          <button type="button" class="notif-row" [class.is-unread]="!n.read" (click)="select(n)">
+            <app-notification-art [kind]="n.kind" [mini]="true" />
+            <span class="notif-row-body">
+              <span class="notif-row-title">{{ text(n).title }}</span>
+              <span class="notif-row-text">{{ text(n).body }}</span>
+              <span class="notif-row-time">{{ n.created_at | timeAgo }}</span>
+            </span>
+            @if (!n.read) { <span class="notif-row-dot"></span> }
+          </button>
+        } @empty {
+          <div class="notif-empty">
+            <i class="bi bi-bell-slash"></i>
+            <span>{{ "notifications.empty" | translate }}</span>
+          </div>
+        }
+
+        @if (loading()) {
+          <div class="notif-more">{{ "common.loading" | translate }}</div>
+        }
+      </div>
+
+      @if (items().length > 0 && detailRoute) {
+        <button type="button" class="notif-panel-foot" (click)="seeAll()">
+          {{ "notifications.see_all" | translate }}
+        </button>
+      }
+    </div>
+  }
+</div>

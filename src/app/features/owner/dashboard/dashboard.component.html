@@ -1,0 +1,214 @@
+<div class="fx-page">
+  <app-page-header
+    [title]="(greetingKey() | translate) + ', ' + (auth.currentUser()?.first_name || '') + ' 👋'"
+    [description]="'dashboard.subtitle' | translate"
+  >
+    @if (auth.currentUser()?.role === "owner") {
+      <a routerLink="/owner/clients" class="btn btn-outline-secondary d-none d-sm-inline-flex">
+        <i class="bi bi-people"></i> {{ "nav.clients" | translate }}
+      </a>
+      <a routerLink="/owner/contracts" class="btn btn-primary">
+        <i class="bi bi-file-earmark-text"></i> {{ "nav.contracts" | translate }}
+      </a>
+    }
+  </app-page-header>
+
+  @if (showSetupCard) {
+    <div class="app-card dashboard-setup-card">
+      <div class="app-card-header">
+        <h2>{{ "getting_started.card_title" | translate }}</h2>
+        <a routerLink="/owner/getting-started" class="btn btn-sm btn-outline-secondary">
+          {{ "getting_started.open_guide" | translate }}
+        </a>
+      </div>
+      <div class="app-card-body">
+        <app-setup-checklist [setup]="setup" [compact]="true" (dismiss)="dismissSetup()" />
+      </div>
+    </div>
+  }
+
+  @if (data(); as d) {
+    <div class="fx-stack fx-dashboard">
+      <div class="fx-kpi-grid">
+        <app-kpi-card [label]="'dashboard.total_clients' | translate" [value]="d.stats.total_clients" icon="bi-people" tone="primary" />
+        <app-kpi-card [label]="'dashboard.active_contracts' | translate" [value]="d.stats.active_contracts" icon="bi-file-earmark-text" tone="info" />
+        <app-kpi-card [label]="'dashboard.todays_bookings' | translate" [value]="d.stats.todays_bookings" icon="bi-journal-check" tone="warning" />
+        <app-kpi-card [label]="'dashboard.todays_attendance' | translate" [value]="d.stats.todays_attendance" icon="bi-check2-circle" tone="success" />
+        <app-kpi-card [label]="'dashboard.outstanding_payments' | translate" [value]="d.stats.outstanding_payments | money: d.company.currency" icon="bi-exclamation-circle" tone="danger" />
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-header">
+          <h2>{{ "dashboard.revenue_overview" | translate }}</h2>
+          @if (revenue(); as r) {
+            <div class="dashboard-revenue-legend">
+              <span>{{ "dashboard.today" | translate }} <strong>{{ r.today | money: d.company.currency }}</strong></span>
+              <span>{{ "dashboard.this_week" | translate }} <strong>{{ r.this_week | money: d.company.currency }}</strong></span>
+              <span>{{ "dashboard.this_month" | translate }} <strong>{{ r.this_month | money: d.company.currency }}</strong></span>
+            </div>
+          }
+        </div>
+        <div class="app-card-body">
+          <div class="dashboard-chart">
+            <canvas baseChart [data]="chartData()" [options]="chartOptions" type="line"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-header"><h2>{{ "dashboard.todays_schedule" | translate }}</h2></div>
+        @if (d.stats.todays_schedule.length === 0) {
+          <div class="app-card-body">
+            <app-empty-state [title]="'dashboard.no_sessions_today' | translate" body="" icon="bi-calendar3" />
+          </div>
+        } @else {
+          <div class="fx-table-scroll">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>{{ "bookings.time" | translate }}</th>
+                  <th>{{ "activities.title" | translate }}</th>
+                  <th>{{ "bookings.coach" | translate }}</th>
+                  <th>{{ "bookings.location" | translate }}</th>
+                  <th>{{ "schedule.capacity" | translate }}</th>
+                  <th>{{ "common.status" | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of d.stats.todays_schedule; track item.id) {
+                  <tr>
+                    <td class="fx-strong">{{ item.starts_at | date: "HH:mm" }}</td>
+                    <td>{{ item.activity_emoji ? item.activity_emoji + " " : "" }}{{ item.activity_name }}</td>
+                    <td>{{ item.coach_name || "—" }}</td>
+                    <td>{{ item.location_name }}</td>
+                    <td><span dir="ltr">{{ item.confirmed_count }} / {{ item.capacity }}</span></td>
+                    <td><app-status-badge [status]="item.status">{{ ("bookings.status_" + item.status) | translate }}</app-status-badge></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+      <div class="dashboard-cols">
+        <div class="app-card">
+          <div class="app-card-header"><h3>{{ "dashboard.contracts_expiring" | translate }}</h3></div>
+          <div class="app-card-body">
+            @if (d.stats.contracts_expiring.length === 0) {
+              <app-empty-state [title]="'dashboard.nothing_expiring' | translate" body="" icon="bi-file-earmark-check" />
+            } @else {
+              <ul class="fx-list">
+                @for (item of d.stats.contracts_expiring; track item.id) {
+                  <li>
+                    <span class="fx-list-main">{{ item.client_name }} <span class="fx-muted">· {{ item.plan_name }}</span></span>
+                    <span class="fx-muted">{{ item.expires_at | date: "mediumDate" }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-card-header"><h3>{{ "dashboard.recent_payments" | translate }}</h3></div>
+          <div class="app-card-body">
+            @if (d.stats.recent_payments.length === 0) {
+              <app-empty-state [title]="'payments.empty_title' | translate" body="" icon="bi-cash-coin" />
+            } @else {
+              <ul class="fx-list">
+                @for (item of d.stats.recent_payments; track item.id) {
+                  <li>
+                    <span class="fx-list-main">{{ item.client_name }}</span>
+                    <strong>{{ item.amount | money: item.currency }}</strong>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+
+        <div class="app-card">
+          <div class="app-card-header"><h3>{{ "dashboard.recent_clients" | translate }}</h3></div>
+          <div class="app-card-body">
+            @if (d.stats.recent_clients.length === 0) {
+              <app-empty-state [title]="'clients.empty_title' | translate" body="" icon="bi-people" />
+            } @else {
+              <ul class="fx-list">
+                @for (item of d.stats.recent_clients; track item.id) {
+                  <li>
+                    <span class="fx-list-main">{{ item.full_name }}</span>
+                    <span class="fx-muted">{{ item.joined_at | date: "mediumDate" }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+      </div>
+
+      @if (auth.currentUser()?.role === "owner") {
+        <div class="app-card">
+          <div class="app-card-header"><h2>{{ "dashboard.export_title" | translate }}</h2></div>
+          <div class="app-card-body">
+            <div class="d-flex gap-2 align-items-end flex-wrap">
+              <div>
+                <label for="export-period-type">{{ "dashboard.export_period_type" | translate }}</label>
+                <select id="export-period-type" class="form-select form-select-sm" [ngModel]="exportPeriodType()" (ngModelChange)="exportPeriodType.set($event)">
+                  <option value="month">{{ "dashboard.export_monthly" | translate }}</option>
+                  <option value="year">{{ "dashboard.export_yearly" | translate }}</option>
+                </select>
+              </div>
+              @if (exportPeriodType() === "month") {
+                <div>
+                  <label for="export-month">{{ "dashboard.export_month" | translate }}</label>
+                  <input id="export-month" type="month" class="form-control form-control-sm" [ngModel]="exportMonth()" (ngModelChange)="exportMonth.set($event)" />
+                </div>
+              } @else {
+                <div>
+                  <label for="export-year">{{ "dashboard.export_year" | translate }}</label>
+                  <input id="export-year" type="number" class="form-control form-control-sm" style="width: 110px" [ngModel]="exportYear()" (ngModelChange)="exportYear.set($event)" />
+                </div>
+              }
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="exporting()" (click)="exportReport()">
+                @if (exporting()) { <app-spinner [size]="14" /> } @else { <i class="bi bi-download"></i> {{ "dashboard.export_button" | translate }} }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <div class="app-card">
+        <div class="app-card-header"><h2>{{ "dashboard.recent_activity" | translate }}</h2></div>
+        <div class="app-card-body">
+          @if (auditLogsLoading()) {
+            <app-skeleton variant="line" width="100%" />
+            <app-skeleton variant="line" width="80%" />
+            <app-skeleton variant="line" width="60%" />
+          } @else if (auditLogs().length === 0) {
+            <app-empty-state [title]="'dashboard.no_recent_activity' | translate" body="" icon="bi-clock-history" />
+          } @else {
+            <ul class="fx-list">
+              @for (log of auditLogs(); track log.id) {
+                <li>
+                  <span class="fx-list-main">
+                    <span class="fx-strong">{{ ("audit." + log.action) | translate }}</span>
+                    <span class="fx-muted">· {{ log.user?.full_name || "—" }}</span>
+                  </span>
+                  <span class="fx-muted">{{ log.created_at | date: "short" }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </div>
+  } @else if (loading()) {
+    <div class="fx-stack">
+      <app-skeleton variant="kpi" [count]="4" />
+      <app-skeleton variant="table" [rows]="5" [cols]="5" />
+    </div>
+  } @else if (error()) {
+    <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
+  }
+</div>

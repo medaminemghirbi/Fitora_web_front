@@ -1,0 +1,99 @@
+<div class="fx-page">
+  <app-page-header [title]="'admin.support.title' | translate" [description]="'admin.support.subtitle' | translate">
+    <div class="fx-segmented">
+      <button type="button" [class.is-active]="filter() === 'open'" (click)="setFilter('open')">
+        {{ "admin.support.filter_open" | translate }}
+      </button>
+      <button type="button" [class.is-active]="filter() === 'all'" (click)="setFilter('all')">
+        {{ "admin.support.filter_all" | translate }}
+      </button>
+    </div>
+  </app-page-header>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center py-5"><app-spinner [size]="32" /></div>
+  } @else if (error()) {
+    <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
+  } @else if (!tickets().length) {
+    <div class="app-card">
+      <div class="app-card-body">
+        <app-empty-state [title]="'admin.support.empty_title' | translate" [body]="'admin.support.empty_body' | translate" icon="bi-headset" />
+      </div>
+    </div>
+  } @else {
+    <div class="app-card">
+      <div class="fx-table-scroll">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>{{ "admin.support.company_col" | translate }}</th>
+              <th>{{ "admin.support.subject_col" | translate }}</th>
+              <th>{{ "admin.support.attachments_col" | translate }}</th>
+              <th>{{ "admin.support.status_col" | translate }}</th>
+              <th>{{ "admin.support.date_col" | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of tickets(); track t.id) {
+              <tr class="support-row" (click)="open(t)">
+                <td>
+                  <div class="fx-strong">{{ t.company.name }}</div>
+                  <div class="fx-muted" style="font-size: 0.8125rem">{{ t.created_by.full_name }}</div>
+                </td>
+                <td>
+                  <div class="fx-strong">{{ t.subject }}</div>
+                  <div class="fx-muted support-excerpt">{{ t.message }}</div>
+                </td>
+                <td class="fx-muted">
+                  @if (t.attachments.length) {
+                    <i class="bi bi-paperclip"></i> {{ t.attachments.length }}
+                  } @else { — }
+                </td>
+                <td>
+                  <span class="ticket-status" [class.is-resolved]="t.status === 'resolved'">
+                    {{ ("modules_page.contact.status_" + t.status) | translate }}
+                  </span>
+                </td>
+                <td class="fx-muted">{{ t.created_at | date: "dd/MM/yyyy HH:mm" }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<app-modal [open]="!!selected()" [title]="selected()?.subject ?? ''" (close)="close()">
+  @if (selected(); as t) {
+    <div class="ticket-detail">
+      <div class="ticket-detail-meta">
+        <span><i class="bi bi-building"></i> {{ t.company.name }}</span>
+        <span><i class="bi bi-person"></i> {{ t.created_by.full_name }} · {{ t.created_by.email }}</span>
+        <span><i class="bi bi-clock"></i> {{ t.created_at | date: "dd/MM/yyyy HH:mm" }}</span>
+      </div>
+      <p class="ticket-detail-message">{{ t.message }}</p>
+
+      @if (t.attachments.length) {
+        <div class="ticket-attachments">
+          @for (att of t.attachments; track att.id) {
+            <a [href]="att.url" target="_blank" rel="noopener" class="ticket-attachment">
+              <i class="bi" [class.bi-file-earmark-image]="att.content_type.startsWith('image/')"
+                 [class.bi-file-earmark-play]="att.content_type.startsWith('video/')"
+                 [class.bi-file-earmark-pdf]="att.content_type === 'application/pdf'"></i>
+              {{ att.filename }}
+            </a>
+          }
+        </div>
+      }
+
+      @if (t.status === "open") {
+        <div class="ticket-detail-actions">
+          <button type="button" class="btn btn-primary" [disabled]="resolving()" (click)="resolve(t)">
+            <i class="bi bi-check-lg"></i> {{ "admin.support.mark_resolved" | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+</app-modal>

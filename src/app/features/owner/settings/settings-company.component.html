@@ -1,0 +1,73 @@
+<div class="app-card">
+  <div class="app-card-header">
+    <h2>{{ "settings.company_profile" | translate }}</h2>
+  </div>
+  <div class="app-card-body">
+    @if (loading()) {
+      <div class="d-flex justify-content-center py-4">
+        <app-spinner [size]="28" />
+      </div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="mb-3">
+          <label for="org-name">{{ "locations.name" | translate }} *</label>
+          <input id="org-name" class="form-control" formControlName="name" />
+        </div>
+        <div class="mb-3">
+          <label for="org-description">{{ "activities.description" | translate }}</label>
+          <textarea id="org-description" class="form-control" rows="2" formControlName="description"></textarea>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="org-phone">{{ "auth.phone" | translate }}</label>
+            <input id="org-phone" class="form-control" formControlName="phone" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="org-email">{{ "auth.email" | translate }}</label>
+            <input id="org-email" type="email" class="form-control" formControlName="email" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="org-city">{{ "locations.city" | translate }}</label>
+            <input id="org-city" class="form-control" formControlName="city" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="org-country">{{ "onboarding.country" | translate }}</label>
+            <app-searchable-select id="org-country" formControlName="country"
+                                   [options]="countryOptions" [placeholder]="'onboarding.select_country' | translate" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="org-address">{{ "onboarding.gym_address" | translate }}</label>
+          <input id="org-address" class="form-control" formControlName="address" [placeholder]="'onboarding.gym_address_hint' | translate" />
+        </div>
+        <div class="mb-3">
+          <label for="org-timezone">{{ "onboarding.timezone" | translate }} *</label>
+          <select id="org-timezone" class="form-select" formControlName="timezone">
+            @for (group of timezoneGroups(); track group.region) {
+              <optgroup [label]="group.region">
+                @for (z of group.zones; track z.value) {
+                  <option [value]="z.value">{{ z.label }}</option>
+                }
+              </optgroup>
+            }
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ (saving() ? "common.saving" : "common.save") | translate }}
+        </button>
+      </form>
+
+      <hr class="my-4" />
+      <dl class="row mb-0">
+        <dt class="col-sm-4 text-muted-token fw-normal">{{ "settings.currency" | translate }}</dt>
+        <dd class="col-sm-8">{{ ("currency." + currency()) | translate }} — {{ currencySymbol() }} ({{ currency() }})</dd>
+        <dt class="col-sm-4 text-muted-token fw-normal">{{ "settings.company_language" | translate }}</dt>
+        <dd class="col-sm-8">{{ ("language." + locale()) | translate }}</dd>
+      </dl>
+      <p class="form-text mt-1">{{ "settings.currency_language_managed" | translate }}</p>
+    }
+  </div>
+</div>

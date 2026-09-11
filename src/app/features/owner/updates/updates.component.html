@@ -1,0 +1,52 @@
+<div class="fx-page">
+  <app-page-header [title]="'updates.title' | translate" [description]="'updates.subtitle' | translate" />
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center py-5"><app-spinner [size]="32" /></div>
+  } @else if (error()) {
+    <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
+  } @else if (updates().length === 0) {
+    <div class="app-card">
+      <div class="app-card-body">
+        <app-empty-state [title]="'updates.empty_title' | translate" [body]="'updates.empty_body' | translate" icon="bi-megaphone" />
+      </div>
+    </div>
+  } @else {
+    <div class="updates-timeline">
+      @for (u of updates(); track u.id; let i = $index) {
+        <div class="update-entry" [style.animation-delay.ms]="i * 40">
+          <div class="update-entry-rail">
+            <span class="update-entry-dot" [class.is-latest]="i === 0"></span>
+            @if (!$last) { <span class="update-entry-line"></span> }
+          </div>
+          <div class="update-entry-card">
+            <div class="update-entry-head">
+              <span class="update-entry-version">v{{ u.version }}</span>
+              @if (i === 0) { <span class="update-entry-badge">{{ "updates.latest" | translate }}</span> }
+              <span class="update-entry-date">{{ u.published_at | date: "dd/MM/yyyy" }}</span>
+            </div>
+            <h3>{{ u.title }}</h3>
+            @if (u.description) { <p class="update-entry-desc">{{ u.description }}</p> }
+
+            @if (u.media.length) {
+              <div class="update-entry-media">
+                @for (m of u.media; track m.id) {
+                  @if (m.content_type.startsWith('image/')) {
+                    <a [href]="m.url | mediaUrl" target="_blank" rel="noopener" class="update-media-tile">
+                      <img [src]="m.url | mediaUrl" [alt]="m.filename" />
+                    </a>
+                  } @else {
+                    <a [href]="m.url | mediaUrl" target="_blank" rel="noopener" class="update-media-tile is-video">
+                      <video [src]="m.url | mediaUrl" muted preload="metadata"></video>
+                      <span class="update-media-play"><i class="bi bi-play-fill"></i></span>
+                    </a>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

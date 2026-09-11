@@ -1,0 +1,50 @@
+@if (palette.isOpen()) {
+  <div class="cmdk-backdrop" (click)="palette.close()">
+    <div class="cmdk" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="cmdk-search">
+        <i class="bi bi-search"></i>
+        <input
+          id="cmdk-input"
+          type="text"
+          [value]="query()"
+          (input)="onQuery($any($event.target).value)"
+          [placeholder]="'palette.placeholder' | translate"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+        <kbd>Esc</kbd>
+      </div>
+
+      <div class="cmdk-results">
+        @if (rows().length === 0) {
+          <div class="cmdk-empty">{{ (query() ? "palette.empty" : "palette.placeholder") | translate }}</div>
+        }
+        @for (row of rows(); track $index) {
+          @if ($any(row).label) {
+            <div class="cmdk-group">{{ $any(row).label | translate }}</div>
+          } @else {
+            <button
+              type="button"
+              class="cmdk-item"
+              [class.is-active]="$any(row).index === active()"
+              (mouseenter)="active.set($any(row).index)"
+              (click)="$any(row).cmd.run()"
+            >
+              <i class="bi" [class]="$any(row).cmd.icon"></i>
+              <span class="cmdk-label">{{ $any(row).cmd.label || ($any(row).cmd.labelKey | translate) }}</span>
+              @if ($any(row).cmd.sub) {
+                <span class="cmdk-sub">{{ $any(row).cmd.sub }}</span>
+              }
+            </button>
+          }
+        }
+      </div>
+
+      <div class="cmdk-foot">
+        <span><kbd>↑</kbd><kbd>↓</kbd> {{ "palette.hint_nav" | translate }}</span>
+        <span><kbd>↵</kbd> {{ "palette.hint_open" | translate }}</span>
+      </div>
+    </div>
+  </div>
+}
