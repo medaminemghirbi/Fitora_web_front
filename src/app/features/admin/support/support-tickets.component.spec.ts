@@ -75,6 +75,8 @@ describe("AdminSupportTicketsComponent", () => {
   });
 
   it("resolve() updates in place (not removed) when filter is 'all'", () => {
+    const other: AdminSupportTicket = { ...ticket, id: "t2" };
+    service.list.and.returnValue(of({ support_tickets: [ticket, other], meta: { page: 1, per_page: 20, total: 2, total_pages: 1 } }));
     component.setFilter("all");
     const resolved = { ...ticket, status: "resolved" } as AdminSupportTicket;
     service.resolve.and.returnValue(of({ support_ticket: resolved }));
@@ -82,6 +84,7 @@ describe("AdminSupportTicketsComponent", () => {
     component.resolve(ticket);
 
     expect(component.tickets()[0]).toEqual(resolved);
+    expect(component.tickets()[1]).toEqual(other);
   });
 
   it("resolve() shows an error toast on failure", () => {

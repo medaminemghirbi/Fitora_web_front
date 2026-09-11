@@ -56,6 +56,18 @@ describe("SearchableSelectComponent", () => {
     expect(el(".ss-value")!.textContent).toContain("Tunisia");
   });
 
+  it("writeValue() treats a null/undefined value as empty", () => {
+    component.writeValue(null as unknown as string);
+    expect(component.value()).toBe("");
+  });
+
+  it("toggle() closes the panel when it is already open", () => {
+    component.toggle();
+    expect(component.open()).toBe(true);
+    component.toggle();
+    expect(component.open()).toBe(false);
+  });
+
   it("typing filters the option list by label or value", () => {
     component.toggle();
     component.query.set("tun");
@@ -92,6 +104,23 @@ describe("SearchableSelectComponent", () => {
     expect(event.preventDefault).toHaveBeenCalled();
   });
 
+  it("onTriggerKey also opens on Enter and Space", () => {
+    component.onTriggerKey(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(component.open()).toBe(true);
+    component.toggle(); // close
+    component.onTriggerKey(new KeyboardEvent("keydown", { key: " " }));
+    expect(component.open()).toBe(true);
+  });
+
+  it("onTriggerKey does nothing for an unrelated key or while already open", () => {
+    component.onTriggerKey(new KeyboardEvent("keydown", { key: "a" }));
+    expect(component.open()).toBe(false);
+
+    component.toggle();
+    component.onTriggerKey(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    expect(component.open()).toBe(true);
+  });
+
   it("onSearchKey navigates the highlight with Arrow keys", () => {
     component.toggle();
     expect(component.highlight()).toBe(0);
@@ -114,6 +143,13 @@ describe("SearchableSelectComponent", () => {
     component.highlight.set(1);
     component.onSearchKey(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(component.value()).toBe("tn");
+  });
+
+  it("onSearchKey ArrowDown does nothing when the filtered list is empty", () => {
+    component.toggle();
+    component.query.set("zzz");
+    component.onSearchKey(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    expect(component.highlight()).toBe(0);
   });
 
   it("onSearchKey Escape closes the panel", () => {

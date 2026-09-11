@@ -38,6 +38,14 @@ describe("SettingsCompanyComponent", () => {
     expect(component.loading()).toBe(false);
   });
 
+  it("falls back to the browser timezone and an empty city when the company has neither", () => {
+    companyService.get.and.returnValue(of({ company: { ...company, timezone: "", city: null } }));
+    fixture = TestBed.createComponent(SettingsCompanyComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.value.timezone).toBeTruthy();
+    expect(fixture.componentInstance.form.value.city).toBe("");
+  });
+
   it("stops loading if the company doesn't exist yet", () => {
     companyService.get.and.returnValue(of({ company: null as unknown as Company }));
     fixture = TestBed.createComponent(SettingsCompanyComponent);

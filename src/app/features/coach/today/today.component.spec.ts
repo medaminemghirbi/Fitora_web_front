@@ -77,8 +77,9 @@ describe("CoachTodayComponent", () => {
     expect(toast.toasts()[0].kind).toBe("error");
   });
 
-  it("mark() updates the matching booking in place", () => {
-    component.bookings.set([booking]);
+  it("mark() updates only the matching booking, leaving others untouched", () => {
+    const other = { ...booking, booking_id: "b2" };
+    component.bookings.set([booking, other]);
     const updated = { ...booking, status: "present" };
     attendanceService.mark.and.returnValue(of({ attendance: updated }));
 
@@ -86,6 +87,7 @@ describe("CoachTodayComponent", () => {
 
     expect(component.markingBookingId()).toBeNull();
     expect(component.bookings()[0]).toEqual(updated);
+    expect(component.bookings()[1]).toBe(other);
   });
 
   it("mark() shows an error toast on failure", () => {

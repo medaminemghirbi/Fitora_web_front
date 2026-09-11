@@ -53,6 +53,15 @@ describe("LibraryDocumentsService", () => {
     req.flush({ document: {} });
   });
 
+  it("update omits null/undefined fields from the form data", () => {
+    service.update("d1", { title: "Lease 2026", notes: null, expires_on: undefined }).subscribe();
+    const req = httpMock.expectOne(`${API_BASE_URL}/library_documents/d1`);
+    const body = req.request.body as FormData;
+    expect(body.has("library_document[notes]")).toBe(false);
+    expect(body.has("library_document[expires_on]")).toBe(false);
+    req.flush({ document: {} });
+  });
+
   it("destroy DELETEs the document", () => {
     service.destroy("d1").subscribe();
     const req = httpMock.expectOne(`${API_BASE_URL}/library_documents/d1`);

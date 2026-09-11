@@ -42,6 +42,16 @@ describe("SettingsBrandingComponent", () => {
     expect(component.loading()).toBe(false);
   });
 
+  it("falls back to defaults when the company has no slug/color/logo yet", () => {
+    companyService.get.and.returnValue(of({ company: { slug: null, primary_color: null, logo_url: null } as unknown as Company }));
+    fixture = TestBed.createComponent(SettingsBrandingComponent);
+    fixture.detectChanges();
+    const fresh = fixture.componentInstance;
+    expect(fresh.form.value.slug).toBe("");
+    expect(fresh.form.value.primary_color).toBe("#4a2a8f");
+    expect(fresh.logoUrl()).toBeNull();
+  });
+
   it("stops loading even when the fetch fails", () => {
     companyService.get.and.returnValue(throwError(() => new Error("nope")));
     fixture = TestBed.createComponent(SettingsBrandingComponent);
@@ -78,6 +88,14 @@ describe("SettingsBrandingComponent", () => {
     expect(component.logoUrl()).toBe(`${API_ORIGIN}/logos/new.png`);
     expect(brandingService.load).toHaveBeenCalled();
     expect(toast.toasts()[0].kind).toBe("success");
+  });
+
+  it("submit sends null for a blank slug/color, and null when the saved logo is cleared", () => {
+    component.form.patchValue({ slug: "", primary_color: "" });
+    companyService.updateBranding.and.returnValue(of({ company: { ...company, logo_url: null } }));
+    component.submit();
+    expect(companyService.updateBranding).toHaveBeenCalledWith({ slug: null, primary_color: null, logo: null });
+    expect(component.logoUrl()).toBeNull();
   });
 
   it("submit shows the backend error on failure", () => {

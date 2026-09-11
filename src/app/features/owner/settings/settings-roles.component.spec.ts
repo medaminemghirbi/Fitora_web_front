@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { Role } from "../../../core/models/role.model";
 import { ConfirmService } from "../../../core/services/confirm.service";
@@ -54,6 +54,16 @@ describe("SettingsRolesComponent", () => {
 
   it("permLabel falls back to the catalog label when no i18n key matches", () => {
     expect(component.permLabel("clients")).toBe("Membres");
+  });
+
+  it("permLabel falls back to the raw key when neither i18n nor the catalog has it", () => {
+    expect(component.permLabel("mystery")).toBe("mystery");
+  });
+
+  it("permLabel prefers a resolved i18n translation when one exists", () => {
+    const translate = TestBed.inject(TranslateService);
+    spyOn(translate, "instant").and.callFake((key: string) => (key === "settings.perm_clients" ? "Members (i18n)" : key));
+    expect(component.permLabel("clients")).toBe("Members (i18n)");
   });
 
   it("openCreate resets the draft", () => {

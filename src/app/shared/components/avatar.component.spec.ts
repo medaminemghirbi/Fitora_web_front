@@ -16,6 +16,13 @@ describe("AvatarComponent", () => {
     expect(component.initials()).toBe("?");
   });
 
+  it("shows a question mark when name is bound to undefined/null", () => {
+    component.name = undefined as unknown as string;
+    expect(component.initials()).toBe("?");
+    component.name = null as unknown as string;
+    expect(component.initials()).toBe("?");
+  });
+
   it("shows a question mark for a blank/whitespace-only name", () => {
     component.name = "   ";
     expect(component.initials()).toBe("?");

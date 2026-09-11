@@ -106,6 +106,13 @@ describe("ClientsListComponent", () => {
     expect(service.list).toHaveBeenCalledWith({ search: "amy", status: undefined, page: 1 });
   }));
 
+  it("onSearchChange cancels a pending debounce timer on rapid typing", fakeAsync(() => {
+    component.onSearchChange("a");
+    component.onSearchChange("am");
+    tick(1000);
+    expect(service.list).toHaveBeenCalledWith(jasmine.objectContaining({ search: "am" }));
+  }));
+
   it("applyStatusFilter reloads from page 1", () => {
     component.applyStatusFilter("inactive");
     expect(component.statusFilter()).toBe("inactive");

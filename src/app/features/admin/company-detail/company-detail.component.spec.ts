@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ActivatedRoute, convertToParamMap } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
-import { of, throwError } from "rxjs";
+import { Subject, of, throwError } from "rxjs";
 import { AdminCompany } from "../../../core/models/admin-company.model";
 import { AuthService } from "../../../core/auth/auth.service";
 import { AdminCompaniesService } from "../../../core/services/admin-companies.service";
@@ -187,5 +187,62 @@ describe("AdminCompanyDetailComponent", () => {
     component.impersonate();
     expect(component.impersonating()).toBe(false);
     expect(toast.toasts()[0].kind).toBe("error");
+  });
+
+  it("hydrates fallbacks (active/'') for a company with no subscription yet", () => {
+    service.get.and.returnValue(of({ company: { ...company, subscription: null }, currency_options: [], locale_options: [] }));
+    component.load();
+    expect(component.status()).toBe("active");
+    expect(component.expiresAt()).toBe("");
+    expect(component.billingPeriod()).toBe("");
+  });
+
+  it("subDirty compares against the fallback values for a company with no subscription", () => {
+    service.get.and.returnValue(of({ company: { ...company, subscription: null }, currency_options: [], locale_options: [] }));
+    component.load();
+    expect(component.subDirty()).toBe(false);
+    component.status.set("cancelled");
+    expect(component.subDirty()).toBe(true);
+  });
+
+  it("defaults currency/locale options to [] when the backend omits them", () => {
+    service.get.and.returnValue(
+      of({ company, currency_options: undefined, locale_options: undefined } as unknown as { company: AdminCompany; currency_options: never[]; locale_options: never[] })
+    );
+    component.load();
+    expect(component.currencyOptions()).toEqual([]);
+    expect(component.localeOptions()).toEqual([]);
+  });
+
+  it("saveSubscription sends null instead of an empty string for expires_at/billing_period", () => {
+    service.get.and.returnValue(of({ company: { ...company, subscription: null }, currency_options: [], locale_options: [] }));
+    component.load();
+    service.updateSubscription.and.returnValue(of({ company }));
+    component.saveSubscription();
+    expect(service.updateSubscription).toHaveBeenCalledWith("c1", { status: "active", expires_at: null, billing_period: null });
+  });
+
+  describe("before the company has loaded", () => {
+    let fresh: ComponentFixture<AdminCompanyDetailComponent>;
+
+    beforeEach(() => {
+      // A fresh component whose very first `get()` never resolves — company()
+      // stays null throughout, unlike reusing the outer fixture (already
+      // hydrated by the shared beforeEach's synchronous `of(...)`).
+      service.get.and.returnValue(new Subject());
+      fresh = TestBed.createComponent(AdminCompanyDetailComponent);
+      fresh.detectChanges();
+    });
+
+    it("subDirty/settingsDirty/debtDirty are false with no company loaded", () => {
+      expect(fresh.componentInstance.subDirty()).toBe(false);
+      expect(fresh.componentInstance.settingsDirty()).toBe(false);
+      expect(fresh.componentInstance.debtDirty()).toBe(false);
+    });
+
+    it("impersonate() does nothing with no company loaded", () => {
+      fresh.componentInstance.impersonate();
+      expect(service.impersonate).not.toHaveBeenCalled();
+    });
   });
 });

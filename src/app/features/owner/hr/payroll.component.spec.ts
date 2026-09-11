@@ -2,7 +2,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ActivatedRoute, Router, convertToParamMap } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
-import { of, ReplaySubject, throwError } from "rxjs";
+import { Subject, of, ReplaySubject, throwError } from "rxjs";
 import { PayrollEmployee, PayrollSheet } from "../../../core/models/work-contract.model";
 import { HrService } from "../../../core/services/hr.service";
 import { ToastService } from "../../../core/services/toast.service";
@@ -114,6 +114,24 @@ describe("PayrollComponent", () => {
     expect(component.dayLabel("off", null)).toBe("·");
     expect(component.dayLabel("na", null)).toBe("");
     expect(component.dayLabel("leave_paid", "CP")).toBe("CP");
+    expect(component.dayLabel("leave_unpaid", null)).toBe("");
+  });
+
+  it("employees defaults to [] before any sheet has loaded, so selectedIndex is -1", () => {
+    hr.payroll.and.returnValue(new Subject());
+    const fresh = TestBed.createComponent(PayrollComponent);
+    fresh.detectChanges();
+    expect(fresh.componentInstance.employees()).toEqual([]);
+    expect(fresh.componentInstance.selectedIndex()).toBe(-1);
+  });
+
+  it("step does nothing when there is no selected employee (selectedIndex -1)", () => {
+    hr.payroll.and.returnValue(new Subject());
+    const fresh = TestBed.createComponent(PayrollComponent);
+    fresh.detectChanges();
+    (router.navigate as jasmine.Spy).calls.reset();
+    fresh.componentInstance.step(1);
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it("downloadPdf exports the whole team when called with no employee", async () => {
@@ -129,10 +147,26 @@ describe("PayrollComponent", () => {
     expect(hr.payrollPdf).toHaveBeenCalledWith(component.month(), "sm1");
   });
 
-  it("downloadPdf shows the blob's error code, or a generic message otherwise", async () => {
+  it("downloadPdf shows a generic message when the blob carries no error code", async () => {
     hr.payrollPdf.and.returnValue(throwError(() => new HttpErrorResponse({ status: 422 })));
     await component.downloadPdf();
     expect(component.exporting()).toBeNull();
     expect(toast.toasts()[0].kind).toBe("error");
+    expect(toast.toasts()[0].message).toBe("common.error_generic");
+  });
+
+  it("downloadPdf surfaces the blob's own error code when present", async () => {
+    // Blob#text() is real browser I/O, not zone-patched — fakeAsync's tick()
+    // can't flush it, so stub it with a plain (zone-patched) resolved
+    // Promise instead of relying on the genuine async read.
+    spyOn(Blob.prototype, "text").and.resolveTo(JSON.stringify({ error: "month_locked" }));
+    const errorBlob = new Blob([], { type: "application/json" });
+    hr.payrollPdf.and.returnValue(throwError(() => new HttpErrorResponse({ status: 422, error: errorBlob })));
+    await component.downloadPdf();
+    // downloadPdf() doesn't itself await the subscribe error handler's own
+    // async work (reading the blob) — give its microtask chain a macrotask
+    // tick to finish before asserting.
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(toast.toasts()[0].message).toBe("month_locked");
   });
 });

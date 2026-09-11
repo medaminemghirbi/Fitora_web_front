@@ -101,6 +101,14 @@ describe("NavbarComponent", () => {
     expect(component.activeGroupId()).toBe("sales");
   });
 
+  it("activePageLabel works with no dashboardItem set", () => {
+    const fresh = TestBed.createComponent(NavbarComponent);
+    fresh.componentInstance.groups = groups;
+    fresh.detectChanges();
+    (fresh.componentInstance as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/owner/payments");
+    expect(fresh.componentInstance.activePageLabel()).toBe("nav.payments");
+  });
+
   it("activePageLabel finds the longest matching path across every nav source", () => {
     component.flatItems = [{ path: "/owner", icon: "bi-house", labelKey: "nav.root" }];
     (component as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/owner/payments");

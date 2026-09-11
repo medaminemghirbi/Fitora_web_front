@@ -58,6 +58,14 @@ describe("CommandPaletteComponent", () => {
     expect(palette.isOpen()).toBe(false);
   });
 
+  it("navCmds omit the dashboard entry when the viewer can't see it", () => {
+    authStub.hasPermission.and.returnValue(false);
+    palette.open();
+    fixture.detectChanges();
+    const gotoItems = component.sections().find((s) => s.key === "goto")?.items ?? [];
+    expect(gotoItems.some((i) => i.id === "nav:/owner/dashboard")).toBe(false);
+  });
+
   it("opening resets the query/active index and shows nav commands", () => {
     palette.open();
     fixture.detectChanges();

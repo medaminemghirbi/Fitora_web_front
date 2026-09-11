@@ -96,6 +96,15 @@ describe("AuthService", () => {
       expect(configStub.load).toHaveBeenCalled();
     });
 
+    it("login stores a session for a user with no company_id (e.g. a platform admin)", () => {
+      const auth = buildService();
+      const admin: User = { ...owner, id: "admin1", role: "admin", company_id: null as unknown as string };
+      auth.login("admin@x.test", "secret").subscribe();
+      const req = httpMock.expectOne(`${API_BASE_URL}/auth/login`);
+      req.flush({ token: "admin-tok", user: admin });
+      expect(auth.currentUser()).toEqual(admin);
+    });
+
     it("register POSTs the payload and stores the session", () => {
       const auth = buildService();
       auth.register({ first_name: "S", last_name: "O", email: "s@x.test", password: "secret" }).subscribe();
@@ -177,6 +186,11 @@ describe("AuthService", () => {
       expect(auth.currentUser()).toEqual(owner);
       expect(auth.getToken()).toBe("owner-tok");
       expect(router.navigate).toHaveBeenCalledWith(["/owner/dashboard"]);
+    });
+
+    it("impersonatedCompanyName is null when not impersonating", () => {
+      const auth = buildService();
+      expect(auth.impersonatedCompanyName()).toBeNull();
     });
 
     it("exitImpersonation is a no-op when not impersonating", () => {

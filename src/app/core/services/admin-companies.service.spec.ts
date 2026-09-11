@@ -25,6 +25,13 @@ describe("AdminCompaniesService", () => {
     req.flush({ companies: [], meta: {} });
   });
 
+  it("list defaults to page 1 when omitted", () => {
+    service.list().subscribe();
+    const req = httpMock.expectOne((r) => r.url === `${API_BASE_URL}/admin/companies`);
+    expect(req.request.params.get("page")).toBe("1");
+    req.flush({ companies: [], meta: {} });
+  });
+
   it("list includes q when given", () => {
     service.list(1, "acme").subscribe();
     const req = httpMock.expectOne((r) => r.url === `${API_BASE_URL}/admin/companies`);

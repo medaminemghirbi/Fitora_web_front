@@ -151,6 +151,41 @@ describe("ClientProfileComponent", () => {
     expect(rows[0].sessionCount).toBe(8);
   });
 
+  it("aboRows falls back to epoch dates and 100% for a contract with no start/end", () => {
+    component.contracts.set([{ ...contract, starts_at: null, expires_at: null }]);
+    const rows = component.aboRows();
+    expect(rows[0].percent).toBe(100);
+  });
+
+  it("load() falls back to an empty note and a null progress when the client has neither", () => {
+    clientsService.get.and.returnValue(
+      of({ client: { ...client, notes: null, current_contract: null }, contracts: [contract], bookings: [booking], payments: [payment] })
+    );
+    component.load();
+    expect(component.notesForm.value.notes).toBe("");
+    expect(component.contractProgress()).toBeNull();
+  });
+
+  it("computeContractProgress (via load) tones a soon-to-expire contract as warning, and an about-to-lapse one as danger", () => {
+    const warningContract = { ...contract, starts_at: new Date(Date.now() - 25 * 86_400_000).toISOString(), expires_at: new Date(Date.now() + 5 * 86_400_000).toISOString() };
+    clientsService.get.and.returnValue(of({ client: { ...client, current_contract: warningContract }, contracts: [contract], bookings: [booking], payments: [payment] }));
+    component.load();
+    expect(component.contractProgress()?.tone).toBe("warning");
+
+    const dangerContract = { ...contract, starts_at: new Date(Date.now() - 29 * 86_400_000).toISOString(), expires_at: new Date(Date.now() + 1 * 86_400_000).toISOString() };
+    clientsService.get.and.returnValue(of({ client: { ...client, current_contract: dangerContract }, contracts: [contract], bookings: [booking], payments: [payment] }));
+    component.load();
+    expect(component.contractProgress()?.tone).toBe("danger");
+  });
+
+  it("computeContractProgress falls back to epoch dates for a contract with no start/end", () => {
+    clientsService.get.and.returnValue(
+      of({ client: { ...client, current_contract: { ...contract, starts_at: null, expires_at: null } }, contracts: [contract], bookings: [booking], payments: [payment] })
+    );
+    component.load();
+    expect(component.contractProgress()?.percent).toBe(100);
+  });
+
   it("selectedPlan / contractFormTotal reflect the chosen plan and discount", () => {
     expect(component.selectedPlan()).toBeNull();
     component.contractForm.patchValue({ contract_type_id: "ct1", discount: 20 });
@@ -195,6 +230,18 @@ describe("ClientProfileComponent", () => {
       expect(component.formError()).toBeTruthy();
     });
 
+    it("submitContract collects payment immediately when collect_payment is checked", () => {
+      component.contractForm.patchValue({ contract_type_id: "ct1", collect_payment: true });
+      contractsService.create.and.returnValue(of({ contract, payment: null }));
+      component.submitContract();
+      expect(contractsService.create).toHaveBeenCalledWith(jasmine.objectContaining({ collect_payment: true, payment_method: "cash" }));
+    });
+
+    it("contractFormTotal uses the plan's full price when no discount is entered", () => {
+      component.contractForm.patchValue({ contract_type_id: "ct1" });
+      expect(component.contractFormTotal()).toBe(100);
+    });
+
     it("openEditModal disables the discount control for a paid contract", () => {
       component.openEditModal(contract);
       expect(component.editModalOpen()).toBe(true);
@@ -204,6 +251,20 @@ describe("ClientProfileComponent", () => {
     it("openEditModal keeps discount enabled for an unpaid contract", () => {
       component.openEditModal({ ...contract, payment_status: "unpaid" });
       expect(component.editForm.controls.discount.disabled).toBe(false);
+    });
+
+    it("openEditModal falls back to blank dates for a contract with none", () => {
+      component.openEditModal({ ...contract, starts_at: null, expires_at: null });
+      expect(component.editForm.value.starts_on).toBe("");
+      expect(component.editForm.value.expires_on).toBe("");
+    });
+
+    it("submitEdit omits the discount for a paid (disabled-discount) contract", () => {
+      component.openEditModal(contract); // paid -> discount disabled
+      contractsService.update.and.returnValue(of({ contract }));
+      component.submitEdit();
+      const payload = contractsService.update.calls.mostRecent().args[1] as { discount?: number };
+      expect(payload.discount).toBeUndefined();
     });
 
     it("closeEditModal clears the editing contract", () => {
@@ -436,6 +497,15 @@ describe("ClientProfileComponent", () => {
       paymentsService.record.and.returnValue(throwError(() => new Error("nope")));
       component.submitPayment();
       expect(component.formError()).toBeTruthy();
+    });
+
+    it("submitPayment records a contract payment with the entered notes", () => {
+      component.paymentForm.setValue({ payable_key: "contract:p1", notes: "cash tip" });
+      paymentsService.record.and.returnValue(of({ payment }));
+      component.submitPayment();
+      expect(paymentsService.record).toHaveBeenCalledWith({
+        client_id: "cl1", payment_method: "cash", notes: "cash tip", contract_period_id: "p1", booking_id: undefined,
+      });
     });
   });
 

@@ -36,6 +36,12 @@ describe("NotificationArtComponent", () => {
     expect(component.emoji).toBe("🚀");
   });
 
+  it("falls back to the bell emoji for an unrecognized kind", () => {
+    component.kind = "something_unexpected" as never;
+    fixture.detectChanges();
+    expect(component.emoji).toBe("🔔");
+  });
+
   it("applies the mini modifier class when mini is true", () => {
     component.kind = "system_update";
     component.mini = true;

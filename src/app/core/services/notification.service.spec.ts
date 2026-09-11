@@ -38,6 +38,11 @@ describe("NotificationService", () => {
     expect(service.unreadCount()).toBe(5);
   });
 
+  it("seedUnreadCount defaults to 0 for a null/undefined count", () => {
+    service.seedUnreadCount(null as unknown as number);
+    expect(service.unreadCount()).toBe(0);
+  });
+
   it("connect() does nothing without a token", () => {
     service.connect();
     // no throw / no subscription created — nothing to assert over HTTP, but
@@ -98,11 +103,11 @@ describe("NotificationService", () => {
     expect(() => httpMock.expectNone((r) => r.url === `${API_BASE_URL}/notifications`)).not.toThrow();
   });
 
-  it("markRead PATCHes and marks the local item as read, decrementing the count", () => {
+  it("markRead PATCHes and marks the local item as read, decrementing the count, leaving others untouched", () => {
     service.loadFirstPage();
     httpMock.expectOne((r) => r.url === `${API_BASE_URL}/notifications`).flush({
-      notifications: [{ id: "n1", read: false }],
-      unread_count: 1,
+      notifications: [{ id: "n1", read: false }, { id: "n2", read: false }],
+      unread_count: 2,
       meta: { page: 1, total_pages: 1 },
     });
 
@@ -112,7 +117,8 @@ describe("NotificationService", () => {
     req.flush({ notification: {} });
 
     expect(service.items()[0].read).toBe(true);
-    expect(service.unreadCount()).toBe(0);
+    expect(service.items()[1].read).toBe(false);
+    expect(service.unreadCount()).toBe(1);
   });
 
   it("markRead is a no-op for an already-read item", () => {

@@ -136,6 +136,13 @@ describe("TeamComponent", () => {
     expect(component.backofficeRoles().map((r) => r.key)).toEqual(["receptionist"]);
   });
 
+  it("openCreate defaults role_id to '' when there is no backoffice role", () => {
+    const config = TestBed.inject(ConfigurationService);
+    spyOn(config, "roles").and.returnValue([ownerRole, coachRole]);
+    component.openCreate("backoffice");
+    expect(component.backofficeForm.value.role_id).toBe("");
+  });
+
   describe("create coach", () => {
     it("openCreate forces coach for a non-owner even if asked for backoffice", () => {
       build("staff");
@@ -235,6 +242,15 @@ describe("TeamComponent", () => {
       expect(component.editCoachForm.value.first_name).toBe("Sarah");
     });
 
+    it("openEditCoach falls back to empty strings for a coach with no optional fields set", () => {
+      const bare: Coach = { ...coach, email: null, phone: null, birthdate: null, bio: null };
+      component.openEditCoach(bare);
+      expect(component.editCoachForm.value.email).toBe("");
+      expect(component.editCoachForm.value.phone).toBe("");
+      expect(component.editCoachForm.value.birthdate).toBe("");
+      expect(component.editCoachForm.value.bio).toBe("");
+    });
+
     it("submitEditCoach does nothing without an editing coach", () => {
       component.submitEditCoach();
       expect(coachesService.update).not.toHaveBeenCalled();
@@ -263,6 +279,11 @@ describe("TeamComponent", () => {
       expect(component.roleForm.value.role_id).toBe("r1");
     });
 
+    it("openRole defaults role_id to '' when no role matches the staff member's role_key", () => {
+      component.openRole({ ...receptionist, role_key: "unknown" });
+      expect(component.roleForm.value.role_id).toBe("");
+    });
+
     it("submitRole does nothing without an editing staff member", () => {
       component.submitRole();
       expect(staffService.update).not.toHaveBeenCalled();
@@ -289,6 +310,16 @@ describe("TeamComponent", () => {
       component.openLogin(coach);
       expect(component.loginTarget()).toBe(coach);
       expect(component.loginForm.value.email).toBe("sarah@x.test");
+    });
+
+    it("openLogin falls back to the coach's plain email when login_email is unset", () => {
+      component.openLogin({ ...coach, login_email: null });
+      expect(component.loginForm.value.email).toBe("sarah@x.test");
+    });
+
+    it("openLogin falls back to '' when neither login_email nor email is set", () => {
+      component.openLogin({ ...coach, login_email: null, email: null });
+      expect(component.loginForm.value.email).toBe("");
     });
 
     it("submitLogin does nothing with an invalid form", () => {

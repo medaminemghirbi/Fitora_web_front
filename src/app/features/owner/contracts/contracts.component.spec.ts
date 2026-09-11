@@ -88,6 +88,13 @@ describe("ContractsComponent", () => {
     expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, contract_type_id: undefined, q: "amy", page: 1 });
   }));
 
+  it("onSearchChange cancels a pending debounce timer on rapid typing", fakeAsync(() => {
+    component.onSearchChange("a");
+    component.onSearchChange("am");
+    tick(1000);
+    expect(contractsService.list).toHaveBeenCalledWith(jasmine.objectContaining({ q: "am" }));
+  }));
+
   it("applyContractFilter sets the status filter and reloads from page 1", () => {
     component.page.set(2);
     component.applyContractFilter("expired");

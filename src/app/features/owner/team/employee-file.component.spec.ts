@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ActivatedRoute, convertToParamMap } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
-import { of, throwError } from "rxjs";
+import { Subject, of, throwError } from "rxjs";
 import { Coach } from "../../../core/models/coach.model";
 import { StaffMember } from "../../../core/models/staff-member.model";
 import { AbsenceType, LeaveRequest, WorkContract, WorkContractType } from "../../../core/models/work-contract.model";
@@ -116,9 +116,66 @@ describe("EmployeeFileComponent", () => {
     expect(component.person()).toEqual({ name: "Coach C", email: "coach@x.test", roleKey: "coach", active: true });
   });
 
+  it("person() is null before either a staff member or a coach has loaded", () => {
+    TestBed.resetTestingModule();
+    const pendingHr = jasmine.createSpyObj<HrService>("HrService", [
+      "employeeFile", "contracts", "leave", "contractTypes", "absenceTypes",
+      "contractsByCoach", "createContract", "updateContract", "deleteContract",
+      "createLeave", "updateLeave", "deleteLeave",
+    ]);
+    const pendingCoaches = jasmine.createSpyObj<CoachesService>("CoachesService", ["get"]);
+    pendingHr.employeeFile.and.returnValue(new Subject());
+    pendingHr.contracts.and.returnValue(of({ work_contracts: [] }));
+    pendingHr.leave.and.returnValue(of({ leave_requests: [] }));
+    pendingHr.contractTypes.and.returnValue(of({ work_contract_types: [] }));
+    pendingHr.absenceTypes.and.returnValue(of({ absence_types: [] }));
+    TestBed.configureTestingModule({
+      imports: [EmployeeFileComponent, TranslateModule.forRoot()],
+      providers: [
+        { provide: HrService, useValue: pendingHr },
+        { provide: CoachesService, useValue: pendingCoaches },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: "sm1" }), data: { entity: "staff" } } } },
+      ],
+    });
+    const fresh = TestBed.createComponent(EmployeeFileComponent);
+    fresh.detectChanges();
+    expect(fresh.componentInstance.person()).toBeNull();
+  });
+
   it("currentContract prefers the active one, falling back to the first", () => {
     component.contracts.set([{ ...workContract, id: "old", status: "ended" }, { ...workContract, id: "new", status: "active" }]);
     expect(component.currentContract()?.id).toBe("new");
+  });
+
+  it("currentContract is null with no contracts", () => {
+    component.contracts.set([]);
+    expect(component.currentContract()).toBeNull();
+  });
+
+  it("entityId falls back to '' when the route has no id param", () => {
+    TestBed.resetTestingModule();
+    hr = jasmine.createSpyObj<HrService>("HrService", [
+      "employeeFile", "contracts", "leave", "contractTypes", "absenceTypes",
+      "contractsByCoach", "createContract", "updateContract", "deleteContract",
+      "createLeave", "updateLeave", "deleteLeave",
+    ]);
+    coachesService = jasmine.createSpyObj<CoachesService>("CoachesService", ["get"]);
+    hr.employeeFile.and.returnValue(of({ staff_member: staffMember, current_work_contract: workContract, paid_leave_balance: { year: 2026, entitlement: 30, taken: 5, balance: 25 } }));
+    hr.contracts.and.returnValue(of({ work_contracts: [] }));
+    hr.leave.and.returnValue(of({ leave_requests: [] }));
+    hr.contractTypes.and.returnValue(of({ work_contract_types: [] }));
+    hr.absenceTypes.and.returnValue(of({ absence_types: [] }));
+    TestBed.configureTestingModule({
+      imports: [EmployeeFileComponent, TranslateModule.forRoot()],
+      providers: [
+        { provide: HrService, useValue: hr },
+        { provide: CoachesService, useValue: coachesService },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}), data: { entity: "staff" } } } },
+      ],
+    });
+    fixture = TestBed.createComponent(EmployeeFileComponent);
+    fixture.detectChanges();
+    expect(hr.employeeFile).toHaveBeenCalledWith("");
   });
 
   it("leaveStatusTone maps status to badge tone", () => {
@@ -141,6 +198,14 @@ describe("EmployeeFileComponent", () => {
       component.load();
       expect(component.contractTypes().length).toBe(1);
     });
+
+    it("keeps an inactive contract type still referenced by a coach's contract", () => {
+      build("coach");
+      hr.contractTypes.and.returnValue(of({ work_contract_types: [{ ...workContractType, active: false }] }));
+      hr.contractsByCoach.and.returnValue(of({ work_contracts: [workContract] }));
+      component.load();
+      expect(component.contractTypes().length).toBe(1);
+    });
   });
 
   describe("contract allowances", () => {
@@ -149,6 +214,11 @@ describe("EmployeeFileComponent", () => {
       expect(component.allowances.length).toBe(1);
       component.removeAllowance(0);
       expect(component.allowances.length).toBe(0);
+    });
+
+    it("addAllowance defaults to an empty label and zero amount", () => {
+      component.addAllowance();
+      expect(component.allowances.at(0).value).toEqual({ label: "", amount: 0 });
     });
   });
 
@@ -165,6 +235,24 @@ describe("EmployeeFileComponent", () => {
       expect(component.editingContract()).toBe(workContract);
       expect(component.contractForm.value.reference).toBe("REF1");
       expect(component.allowances.length).toBe(1);
+    });
+
+    it("openContract(contract) falls back to empty strings for a contract missing optional fields", () => {
+      const bare: WorkContract = { ...workContract, reference: null, job_title: null, starts_on: null as unknown as string };
+      component.openContract(bare);
+      expect(component.contractForm.value.reference).toBe("");
+      expect(component.contractForm.value.job_title).toBe("");
+      expect(component.contractForm.value.starts_on).toBe("");
+    });
+
+    it("openContract() with no contract defaults currency to the current contract's, or TND with none", () => {
+      component.contracts.set([{ ...workContract, currency: "EUR" }]);
+      component.openContract();
+      expect(component.contractForm.value.currency).toBe("EUR");
+
+      component.contracts.set([]);
+      component.openContract();
+      expect(component.contractForm.value.currency).toBe("TND");
     });
 
     it("submitContract does nothing with an invalid form", () => {
@@ -241,6 +329,12 @@ describe("EmployeeFileComponent", () => {
       component.openLeave();
       expect(component.leaveOpen()).toBe(true);
       expect(component.leaveForm.value.absence_type_id).toBe("at1");
+    });
+
+    it("openLeave() defaults to '' when there are no absence types", () => {
+      component.absenceTypes.set([]);
+      component.openLeave();
+      expect(component.leaveForm.value.absence_type_id).toBe("");
     });
 
     it("openLeave(leave) hydrates the form", () => {

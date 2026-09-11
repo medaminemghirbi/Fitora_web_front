@@ -61,14 +61,30 @@ describe("NotificationBellComponent", () => {
     fixture.detectChanges();
   });
 
-  it("badge caps the unread count display at 9+", () => {
+  it("badge shows the exact count at or below 9", () => {
     expect(component.badge()).toBe("3");
+  });
+
+  it("badge caps the unread count display at 9+", () => {
+    // badge() reads a plain stub function (not a real Signal), so it's only
+    // ever (re)computed on its first read — the count must be set before
+    // that, i.e. on a fresh component, not the shared one already rendered.
+    notifications.unreadCount.and.returnValue(42);
+    const fresh = TestBed.createComponent(NotificationBellComponent);
+    fresh.detectChanges();
+    expect(fresh.componentInstance.badge()).toBe("9+");
   });
 
   it("toggle() opens the panel and loads the first page when empty", () => {
     component.toggle();
     expect(component.open()).toBe(true);
     expect(notifications.loadFirstPage).not.toHaveBeenCalled(); // items() already has one
+  });
+
+  it("toggle() loads the first page when opening with an empty list", () => {
+    notifications.items.and.returnValue([]);
+    component.toggle();
+    expect(notifications.loadFirstPage).toHaveBeenCalled();
   });
 
   it("toggle() closes when already open", () => {

@@ -24,6 +24,13 @@ describe("SessionsService", () => {
     req.flush({ sessions: [], meta: {} });
   });
 
+  it("list defaults to no filters when called with none", () => {
+    service.list().subscribe();
+    const req = httpMock.expectOne((r) => r.url === `${API_BASE_URL}/sessions`);
+    expect(req.request.params.keys().length).toBe(0);
+    req.flush({ sessions: [], meta: {} });
+  });
+
   it("range GETs with from/to and optional filters", () => {
     service.range({ from: "2026-01-01", to: "2026-01-07", coach_id: "c1" }).subscribe();
     const req = httpMock.expectOne((r) => r.url === `${API_BASE_URL}/sessions`);

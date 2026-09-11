@@ -52,4 +52,14 @@ describe("TimeAgoPipe", () => {
       old.toLocaleDateString("fr", { day: "2-digit", month: "short" })
     );
   });
+
+  it("falls back to 'fr' when the translate service has no currentLang", () => {
+    const noLangTranslate = jasmine.createSpyObj<TranslateService>("TranslateService", ["instant"], { currentLang: "" });
+    noLangTranslate.instant.and.callFake((key: string) => key);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [{ provide: TranslateService, useValue: noLangTranslate }] });
+    const noLangPipe = TestBed.runInInjectionContext(() => new TimeAgoPipe());
+    const old = new Date(Date.now() - 30 * 86_400_000);
+    expect(noLangPipe.transform(old.toISOString())).toBe(old.toLocaleDateString("fr", { day: "2-digit", month: "short" }));
+  });
 });

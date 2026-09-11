@@ -73,6 +73,16 @@ describe("AdminCompaniesComponent", () => {
     expect(service.list).toHaveBeenCalledWith(1, "acme");
   }));
 
+  it("onSearchChange restarts the debounce timer on rapid typing", fakeAsync(() => {
+    component.onSearchChange("ac");
+    tick(500);
+    component.onSearchChange("acme"); // clears the still-pending first timer
+    tick(500);
+    expect(service.list).not.toHaveBeenCalledWith(1, "acme");
+    tick(500);
+    expect(service.list).toHaveBeenCalledWith(1, "acme");
+  }));
+
   it("onPageChange loads the requested page", () => {
     component.onPageChange(2);
     expect(component.page()).toBe(2);

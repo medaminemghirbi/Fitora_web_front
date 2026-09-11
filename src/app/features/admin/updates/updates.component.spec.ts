@@ -82,6 +82,17 @@ describe("AdminUpdatesComponent", () => {
     expect(component.fileError()).toBeNull();
   });
 
+  it("onFilesSelected treats a null FileList as empty", () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    Object.defineProperty(input, "files", { value: null });
+
+    component.onFilesSelected({ target: input } as unknown as Event);
+
+    expect(component.files().length).toBe(0);
+    expect(component.fileError()).toBeNull();
+  });
+
   it("onFilesSelected rejects a disallowed file type", () => {
     const input = document.createElement("input");
     const picked = file("doc.pdf", "application/pdf");

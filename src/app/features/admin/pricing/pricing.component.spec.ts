@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { TranslateModule } from "@ngx-translate/core";
-import { of, throwError } from "rxjs";
+import { Subject, of, throwError } from "rxjs";
 import { AdminSubscriptionPricingService, SubscriptionPricing } from "../../../core/services/admin-subscription-pricing.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { AdminPricingComponent } from "./pricing.component";
@@ -55,6 +55,14 @@ describe("AdminPricingComponent", () => {
 
   it("dirty is false right after loading", () => {
     expect(component.dirty).toBe(false);
+  });
+
+  it("dirty is false before pricing has ever loaded", () => {
+    const pending = new Subject<SubscriptionPricing>();
+    service.get.and.returnValue(pending);
+    const fresh = TestBed.createComponent(AdminPricingComponent);
+    fresh.detectChanges();
+    expect(fresh.componentInstance.dirty).toBe(false);
   });
 
   it("dirty is true once the monthly price or discount changes", () => {

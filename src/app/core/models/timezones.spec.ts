@@ -19,6 +19,11 @@ describe("timezones", () => {
     expect(browserTimezone()).toBeTruthy();
   });
 
+  it("browserTimezone falls back to Africa/Tunis when the resolved zone is blank", () => {
+    spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").and.returnValue({ timeZone: "" } as Intl.ResolvedDateTimeFormatOptions);
+    expect(browserTimezone()).toBe("Africa/Tunis");
+  });
+
   describe("countryForTimezone", () => {
     it("resolves a known zone to its country", () => {
       expect(countryForTimezone("Africa/Tunis")).toBe("TN");
@@ -54,6 +59,11 @@ describe("timezones", () => {
     expect(result.country).toBeTruthy();
   });
 
+  it("guessLocation defaults the country to TN when the browser zone maps to none", () => {
+    spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").and.returnValue({ timeZone: "Not/AZone" } as Intl.ResolvedDateTimeFormatOptions);
+    expect(guessLocation()).toEqual({ timezone: "Not/AZone", country: "TN" });
+  });
+
   describe("ensureTimezone", () => {
     it("returns the groups unchanged when the zone is already listed", () => {
       expect(ensureTimezone("Africa/Tunis")).toBe(TIMEZONE_GROUPS);
@@ -68,6 +78,11 @@ describe("timezones", () => {
       expect(result[0].region).toBe("—");
       expect(result[0].zones[0].value).toBe("Pacific/Fiji");
       expect(result.length).toBe(TIMEZONE_GROUPS.length + 1);
+    });
+
+    it("labels the off-list zone by city name alone when its GMT offset can't be computed", () => {
+      const result = ensureTimezone("Not/AZone");
+      expect(result[0].zones[0].label).toBe("AZone");
     });
   });
 });

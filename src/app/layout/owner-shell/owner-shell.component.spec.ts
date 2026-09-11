@@ -25,7 +25,7 @@ describe("OwnerShellComponent", () => {
   let configStub: jasmine.SpyObj<ConfigurationService>;
   let recoveryStub: jasmine.SpyObj<AccountRecoveryService>;
 
-  function build(currentUser: unknown, ready = true): void {
+  function build(currentUser: unknown, ready = true, version: string | null = null): void {
     authStub = {
       currentUser: jasmine.createSpy().and.returnValue(currentUser),
       isImpersonating: jasmine.createSpy().and.returnValue(false),
@@ -49,7 +49,7 @@ describe("OwnerShellComponent", () => {
         { provide: ConfigurationService, useValue: configStub },
         { provide: AccountRecoveryService, useValue: recoveryStub },
         { provide: BrandingService, useValue: jasmine.createSpyObj<BrandingService>("BrandingService", ["logoUrl", "load"]) },
-        { provide: AppVersionService, useValue: { current: () => null, load: jasmine.createSpy() } },
+        { provide: AppVersionService, useValue: { current: () => version, load: jasmine.createSpy() } },
       ],
     });
   }
@@ -120,5 +120,30 @@ describe("OwnerShellComponent", () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     expect(component.trialDaysRemaining()).toBe(5);
+  });
+
+  it("trialDaysRemaining is null while on trial with no day count yet", () => {
+    build(owner, true);
+    configStub.subscription.and.returnValue({ status: "trial", locked: false, on_trial: true, trial_days_remaining: null });
+    fixture = TestBed.createComponent(OwnerShellComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    expect(component.trialDaysRemaining()).toBeNull();
+  });
+
+  it("versionSuffix is null with no app version loaded yet", () => {
+    build(owner, true);
+    fixture = TestBed.createComponent(OwnerShellComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    expect(component.versionSuffix()).toBeNull();
+  });
+
+  it("versionSuffix formats the loaded app version", () => {
+    build(owner, true, "1.2.3");
+    fixture = TestBed.createComponent(OwnerShellComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    expect(component.versionSuffix()).toBe("v1.2.3");
   });
 });

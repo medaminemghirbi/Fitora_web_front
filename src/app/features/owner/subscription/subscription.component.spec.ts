@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ActivatedRoute, convertToParamMap } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
-import { of, throwError } from "rxjs";
+import { Subject, of, throwError } from "rxjs";
 import { SupportTicket } from "../../../core/models/support-ticket.model";
 import { SubscriptionInfo, SubscriptionService } from "../../../core/services/subscription.service";
 import { SupportTicketsService } from "../../../core/services/support-tickets.service";
@@ -79,6 +79,26 @@ describe("SubscriptionComponent", () => {
     expect(component.billingPeriod()).toBe("monthly");
   });
 
+  it("sub/onTrial/billingPeriod fall back before any info has loaded", () => {
+    TestBed.resetTestingModule();
+    const pendingService = jasmine.createSpyObj<SubscriptionService>("SubscriptionService", ["get", "requestUpgrade", "cancelUpgradeRequest"]);
+    pendingService.get.and.returnValue(new Subject());
+    const pendingTickets = jasmine.createSpyObj<SupportTicketsService>("SupportTicketsService", ["list", "create"]);
+    TestBed.configureTestingModule({
+      imports: [SubscriptionComponent, TranslateModule.forRoot()],
+      providers: [
+        { provide: SubscriptionService, useValue: pendingService },
+        { provide: SupportTicketsService, useValue: pendingTickets },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({}) } } },
+      ],
+    });
+    const fresh = TestBed.createComponent(SubscriptionComponent);
+    fresh.detectChanges();
+    expect(fresh.componentInstance.sub()).toBeNull();
+    expect(fresh.componentInstance.onTrial()).toBe(true);
+    expect(fresh.componentInstance.billingPeriod()).toBeNull();
+  });
+
   it("iconFor/featureName/featureDesc delegate to moduleIcon/i18n keys", () => {
     expect(component.iconFor("clients")).toBeTruthy();
     expect(component.featureName("clients")).toBe("modules.clients.name");
@@ -128,6 +148,14 @@ describe("SubscriptionComponent", () => {
     Object.defineProperty(input, "files", { value: [file] });
     component.onFilesSelected({ target: input } as unknown as Event);
     expect(component.ticketFiles().length).toBe(1);
+  });
+
+  it("onFilesSelected treats a null FileList as empty", () => {
+    const input = document.createElement("input");
+    Object.defineProperty(input, "files", { value: null });
+    component.onFilesSelected({ target: input } as unknown as Event);
+    expect(component.ticketFiles().length).toBe(0);
+    expect(component.ticketFileError()).toBeNull();
   });
 
   it("onFilesSelected rejects too many files", () => {

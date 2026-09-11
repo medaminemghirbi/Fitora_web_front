@@ -191,4 +191,26 @@ describe("ConfigurationService", () => {
     const config = buildService();
     expect(config.roleName("coach")).toBe("Coach");
   });
+
+  it("computed signals fall back to their defaults when the payload omits those fields", () => {
+    const config = buildService();
+    const sparse = { user: bootstrap.user, company: bootstrap.company, permissions: [], modules: undefined } as unknown as Bootstrap;
+    config.load().subscribe();
+    httpMock.expectOne(`${API_BASE_URL}/bootstrap`).flush(sparse);
+
+    expect(config.role()).toBeNull();
+    expect(config.modules()).toEqual([]);
+    expect(config.roles()).toEqual([]);
+    expect(config.permissionCatalog()).toEqual({});
+    expect(config.subscription()).toBeNull();
+    expect(config.setup()).toBeNull();
+  });
+
+  it("seeds the unread badge at 0 when the payload's notifications field is missing", () => {
+    const config = buildService();
+    const sparse = { ...bootstrap, notifications: undefined } as unknown as Bootstrap;
+    config.load().subscribe();
+    httpMock.expectOne(`${API_BASE_URL}/bootstrap`).flush(sparse);
+    expect(notificationsStub.seedUnreadCount).toHaveBeenCalledWith(0);
+  });
 });

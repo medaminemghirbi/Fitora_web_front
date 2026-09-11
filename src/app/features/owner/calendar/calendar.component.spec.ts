@@ -14,6 +14,7 @@ import { ClientsService } from "../../../core/services/clients.service";
 import { CoachesService } from "../../../core/services/coaches.service";
 import { ConfirmService } from "../../../core/services/confirm.service";
 import { LocationsService } from "../../../core/services/locations.service";
+import { LocaleService } from "../../../core/services/locale.service";
 import { SessionsService } from "../../../core/services/sessions.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { CalendarComponent } from "./calendar.component";
@@ -137,6 +138,14 @@ describe("CalendarComponent", () => {
     expect(component.clientOptions()).toEqual([{ value: "cl1", label: "Amy Client" }]);
   });
 
+  it("calendarOptions direction is rtl for an RTL locale", () => {
+    const locale = TestBed.inject(LocaleService);
+    locale.setLocale("ar");
+    fixture = TestBed.createComponent(CalendarComponent);
+    fixture.detectChanges();
+    expect((fixture.componentInstance as CalendarComponent).calendarOptions().direction).toBe("rtl");
+  });
+
   it("isSessionEnded is true only for a past, still-scheduled session", () => {
     expect(component.isSessionEnded({ ...session, status: "scheduled", ends_at: "2000-01-01T00:00:00Z" })).toBe(true);
     expect(component.isSessionEnded({ ...session, status: "scheduled", ends_at: "2999-01-01T00:00:00Z" })).toBe(false);
@@ -213,6 +222,15 @@ describe("CalendarComponent", () => {
       expect(toast.toasts()[0].kind).toBe("success");
     });
 
+    it("submitCreate sends undefined capacity/price when left blank", () => {
+      component.createForm.patchValue({ activity_id: "a1", date: "2026-01-05", start_time: "10:00", capacity: null, price: null });
+      sessionsService.create.and.returnValue(of({ session }));
+      component.submitCreate();
+      const payload = sessionsService.create.calls.mostRecent().args[0] as { capacity?: number; price?: number };
+      expect(payload.capacity).toBeUndefined();
+      expect(payload.price).toBeUndefined();
+    });
+
     it("submitCreate shows the backend error on failure", () => {
       component.createForm.patchValue({ activity_id: "a1", date: "2026-01-05", start_time: "10:00" });
       sessionsService.create.and.returnValue(throwError(() => new Error("nope")));
@@ -243,12 +261,14 @@ describe("CalendarComponent", () => {
       expect(component.detailOpen()).toBe(false);
     });
 
-    it("markAttendance updates the matching booking", () => {
-      component.detailBookings.set([attBooking]);
+    it("markAttendance updates the matching booking and leaves others untouched", () => {
+      const other: AttendanceBooking = { ...attBooking, booking_id: "b2", client_name: "Bo" } as never;
+      component.detailBookings.set([attBooking, other]);
       const updated = { ...attBooking, status: "present" };
       attendanceService.mark.and.returnValue(of({ attendance: updated }));
       component.markAttendance(attBooking, "present");
       expect(component.detailBookings()[0]).toEqual(updated);
+      expect(component.detailBookings()[1]).toEqual(other);
       expect(component.markingBookingId()).toBeNull();
     });
 
@@ -351,6 +371,19 @@ describe("CalendarComponent", () => {
       const ended = { ...session, ends_at: "2000-01-01T00:00:00Z" };
       const fcEvent = internal().toFullCalendarEvent({ id: "s1", title: "x", start: "a", end: "b", session: ended });
       expect(fcEvent.classNames).toContain("fc-session-ended");
+    });
+
+    it("toFullCalendarEvent omits fc-session-ended for a session that hasn't ended", () => {
+      const notEnded = { ...session, ends_at: "2999-01-01T00:00:00Z" };
+      const fcEvent = internal().toFullCalendarEvent({ id: "s1", title: "x", start: "a", end: "b", session: notEnded });
+      expect(fcEvent.classNames).not.toContain("fc-session-ended");
+    });
+
+    it("toFullCalendarEvent's title omits the emoji prefix when absent and shows the coach when set", () => {
+      const noEmoji = { ...session, activity_emoji: null, coach_name: "Alex" } as unknown as Session;
+      const fcEvent = internal().toFullCalendarEvent({ id: "s1", title: "x", start: "a", end: "b", session: noEmoji }) as unknown as { title: string };
+      expect(fcEvent.title).toContain("Alex");
+      expect(fcEvent.title).not.toContain("🧘");
     });
 
     it("onEventClick opens the detail for the clicked session", () => {

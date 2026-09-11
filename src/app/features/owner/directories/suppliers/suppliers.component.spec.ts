@@ -68,12 +68,45 @@ describe("SuppliersComponent", () => {
     expect(component.sorted().map((s) => s.id)).toEqual(["s2", "s1"]);
   });
 
+  it("sorted() compares booleans directly when sorting by 'active'", () => {
+    component.statusFilter.set("all");
+    component.sortKey.set("active");
+    component.sortDir.set("asc");
+    expect(component.sorted().map((s) => s.id)).toEqual(["s1", "s2"]);
+    component.sortDir.set("desc");
+    expect(component.sorted().map((s) => s.id)).toEqual(["s2", "s1"]);
+  });
+
   it("toggleSort flips direction on the same key, resets to asc on a new key", () => {
     component.toggleSort("name");
     expect(component.sortDir()).toBe("desc");
+    component.toggleSort("name");
+    expect(component.sortDir()).toBe("asc");
     component.toggleSort("category");
     expect(component.sortKey()).toBe("category");
     expect(component.sortDir()).toBe("asc");
+  });
+
+  it("sorted() treats a null field as an empty string (first operand null)", () => {
+    component.suppliers.set([
+      { ...supplierA, category: null },
+      { ...supplierB, active: true, category: "Apparel" },
+    ]);
+    component.statusFilter.set("all");
+    component.sortKey.set("category");
+    component.sortDir.set("asc");
+    expect(component.sorted().map((s) => s.id)).toEqual(["s1", "s2"]);
+  });
+
+  it("sorted() treats a null field as an empty string (second operand null)", () => {
+    component.suppliers.set([
+      { ...supplierA, category: "Apparel" },
+      { ...supplierB, active: true, category: null },
+    ]);
+    component.statusFilter.set("all");
+    component.sortKey.set("category");
+    component.sortDir.set("asc");
+    expect(component.sorted().map((s) => s.id)).toEqual(["s2", "s1"]);
   });
 
   it("sortIcon reflects the active sort", () => {
@@ -109,6 +142,16 @@ describe("SuppliersComponent", () => {
     component.openEdit(supplierB);
     expect(component.editing()).toBe(supplierB);
     expect(component.photoPreview()).toContain("/photos/z.png");
+  });
+
+  it("openEdit falls back to empty strings for a supplier with no optional fields set", () => {
+    const bare: Supplier = { ...supplierA, category: null, contact_name: null, phone: null, email: null, photo_url: null };
+    component.openEdit(bare);
+    expect(component.form.get("category")!.value).toBe("");
+    expect(component.form.get("contact_name")!.value).toBe("");
+    expect(component.form.get("phone")!.value).toBe("");
+    expect(component.form.get("email")!.value).toBe("");
+    expect(component.photoPreview()).toBeNull();
   });
 
   it("closeDrawer closes it", () => {
@@ -185,6 +228,23 @@ describe("SuppliersComponent", () => {
     component.submit();
     expect(component.photoError()).toBe("too large");
     expect(component.form.get("name")!.getError("server")).toBe("already taken");
+  });
+
+  it("submit clears formError when the only field error was for the photo", () => {
+    component.openCreate();
+    component.form.patchValue({ name: "New Supplier" });
+    service.create.and.returnValue(throwError(() => new HttpErrorResponse({ error: { errors: { photo: ["too large"] } } })));
+    component.submit();
+    expect(component.photoError()).toBe("too large");
+    expect(component.formError()).toBeNull();
+  });
+
+  it("submit joins unmatched field errors (not mapped to any control) into formError", () => {
+    component.openCreate();
+    component.form.patchValue({ name: "New Supplier" });
+    service.create.and.returnValue(throwError(() => new HttpErrorResponse({ error: { errors: { base: ["something went wrong"] } } })));
+    component.submit();
+    expect(component.formError()).toBe("something went wrong");
   });
 
   it("submit falls back to a generic error message with no field errors", () => {

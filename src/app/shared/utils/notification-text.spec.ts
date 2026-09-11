@@ -51,6 +51,20 @@ describe("notification-text utils", () => {
       const { body } = notificationText(translate, n);
       expect(body).toContain("—");
     });
+
+    it("document_expiring falls back to an em dash for a missing title and '' for a missing folder", () => {
+      const n = notif("document_expiring", { title: null, folder_name: null, expires_on: "2026-10-01" });
+      const { body } = notificationText(translate, n);
+      expect(body).toContain("—");
+    });
+
+    it("formatDate falls back to 'fr' when the translate service has no currentLang", () => {
+      const noLang = jasmine.createSpyObj<TranslateService>("TranslateService", ["instant"], { currentLang: "" });
+      noLang.instant.and.callFake((key: string, params?: object) => (params ? `${key}:${JSON.stringify(params)}` : key));
+      const n = notif("contract_expiring", { client_name: "Rami", contract_type: "Mensuel", expires_at: "2026-09-20" });
+      const { body } = notificationText(noLang, n);
+      expect(body).toBeTruthy();
+    });
   });
 
   describe("notificationCtaKey", () => {
