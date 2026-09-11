@@ -1,11 +1,8 @@
-<<<<<<< HEAD
 # Fitora — Frontend
 
-**Fitora** is a modern fitness and wellness platform designed to connect users with fitness services, companies, coaches, and personalized experiences.
-
-🌐 **Production:** [fitora.com](https://fitora.com?utm_source=chatgpt.com)
-
-This repository contains the **Fitora frontend**, built with **Angular** and designed to communicate with the Fitora backend API.
+**Fitora** is a gym-management SaaS: scheduling, memberships, payments, staff and payroll
+for gyms and fitness studios. This repository is the **Fitora frontend**, built with
+**Angular** and talking to the Fitora backend API (a separate repository).
 
 ---
 
@@ -45,7 +42,7 @@ Clone the repository:
 
 ```bash
 git clone <repository-url>
-cd fitora_frontend
+cd frontend
 ```
 
 Install dependencies:
@@ -118,10 +115,16 @@ src/environments/
 
 ## 🧪 Testing
 
-Run unit tests:
+Run unit tests (Karma/Jasmine):
 
 ```bash
 ng test
+```
+
+Run them headless, as CI does:
+
+```bash
+ng test --watch=false --browsers=ChromeHeadless --code-coverage
 ```
 
 End-to-end testing can be added using the preferred E2E framework.
@@ -163,12 +166,10 @@ A simplified project structure:
 ```text
 src/
 ├── app/
-│   ├── components/
-│   ├── pages/
-│   ├── services/
-│   ├── guards/
-│   ├── interceptors/
-│   ├── models/
+│   ├── core/          # services, guards, interceptors, models, auth
+│   ├── features/       # routed feature areas (owner, coach, admin, auth…)
+│   ├── layout/          # shells (owner/coach/admin) + navbar
+│   ├── shared/           # reusable UI components, pipes, utils
 │   └── app.routes.ts
 │
 ├── assets/
@@ -194,35 +195,30 @@ Frontend responsibilities include:
 * Role-based UI access
 * Error handling
 
-Authentication logic should remain centralized in the appropriate services, guards, and HTTP interceptors.
+Authentication logic is centralized in `core/auth`, `core/guards`, and `core/interceptors`.
 
 ---
 
 ## 🔌 Backend
 
-The frontend communicates with the **Fitora backend API**.
+The frontend communicates with the **Fitora backend API**, a separate repository
+(its own git history, deployed independently).
 
 The backend is responsible for:
 
 * Authentication and authorization
-* Users
-* Companies
-* Subscriptions
-* Clients
-* Coaches
-* Fitness services
+* Companies, staff, roles & permissions
+* Clients, coaches, scheduling
+* Contracts, payments
 * Business logic
 * Data persistence
 
-Frontend and backend should be configured independently through environment variables.
+Frontend and backend are configured and deployed independently through environment
+variables — there is no shared monorepo between them.
 
 ---
 
 ## 🚀 Deployment
-
-The production application is deployed under:
-
-**https://fitora.com**
 
 For a production deployment:
 
@@ -239,7 +235,8 @@ dist/
 
 ### SPA Routing
 
-Because Fitora is an Angular Single Page Application, the web server must redirect unknown routes to:
+Because Fitora is an Angular Single Page Application, the web server must redirect unknown
+routes to:
 
 ```text
 index.html
@@ -248,9 +245,9 @@ index.html
 For example:
 
 ```text
-fitora.com/login
-fitora.com/dashboard
-fitora.com/company/...
+/login
+/owner/dashboard
+/owner/clients/...
 ```
 
 should all be handled by Angular's router.
@@ -260,14 +257,14 @@ should all be handled by Angular's router.
 ## 🛠️ Useful Commands
 
 | Command                               | Description               |
-| ------------------------------------- | ------------------------- |
-| `npm install`                         | Install dependencies      |
-| `ng serve`                            | Start development server  |
-| `ng build`                            | Build the application     |
-| `ng build --configuration production` | Production build          |
-| `ng test`                             | Run unit tests            |
-| `ng lint`                             | Run linting if configured |
-| `ng generate`                         | Generate Angular code     |
+| -------------------------------------- | ------------------------- |
+| `npm install`                          | Install dependencies      |
+| `ng serve`                             | Start development server  |
+| `ng build`                             | Build the application     |
+| `ng build --configuration production`  | Production build          |
+| `ng test`                              | Run unit tests            |
+| `ng lint`                              | Run linting               |
+| `ng generate`                          | Generate Angular code     |
 
 ---
 
@@ -283,6 +280,8 @@ Before opening a pull request:
 6. Do not commit secrets or credentials.
 7. Test production builds before deployment.
 8. Keep UI responsive across desktop and mobile.
+9. CI (`.github/workflows/ci.yml`) must pass — type check, unit tests, and a
+   production build — before merging.
 
 ---
 
@@ -291,26 +290,3 @@ Before opening a pull request:
 This project is proprietary software.
 
 © Fitora. All rights reserved.
-=======
-# Fitora
-
-Multi-tenant management platform. Monorepo:
-
-| Path        | Stack                                          |
-|-------------|------------------------------------------------|
-| `backend/`  | Rails 8 API-only · PostgreSQL · Sidekiq         |
-| `frontend/` | Angular · standalone components                |
-| `mobile/`   | Expo / React Native *(separate repo for now)*   |
-
-Each app keeps its own README, `.gitignore`, and dependency manifests.
-History for `backend/` and `frontend/` was preserved when the three
-original repos were merged (Sept 2026); `backend/production.dump` was
-scrubbed from history at that time.
-
-## Getting started
-
-```
-cd backend  && bundle install && bin/rails db:setup && bin/dev
-cd frontend && npm install    && npm start
-```
->>>>>>> 81844ec (chore: initialize Fitora monorepo root)
