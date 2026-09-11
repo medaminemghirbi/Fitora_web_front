@@ -153,4 +153,70 @@ describe("NotificationService", () => {
     expect(req.request.method).toBe("GET");
     req.flush({ notification: {} });
   });
+
+  it("markRead swallows an error from the backend without throwing", () => {
+    service.loadFirstPage();
+    httpMock.expectOne((r) => r.url === `${API_BASE_URL}/notifications`).flush({
+      notifications: [{ id: "n1", read: false }],
+      unread_count: 1,
+      meta: { page: 1, total_pages: 1 },
+    });
+    service.markRead("n1");
+    expect(() => httpMock.expectOne(`${API_BASE_URL}/notifications/n1/read`).error(new ProgressEvent("error"))).not.toThrow();
+  });
+
+  it("markAllRead swallows an error from the backend without throwing", () => {
+    service.markAllRead();
+    expect(() => httpMock.expectOne(`${API_BASE_URL}/notifications/read_all`).error(new ProgressEvent("error"))).not.toThrow();
+  });
+
+  it("connect() opens a real subscription for an owner with a token, and disconnect() tears it down", () => {
+    authStub.currentUser.and.returnValue({ role: "owner" });
+    authStub.getToken.and.returnValue("tok123");
+
+    service.connect();
+    // A second connect() while already connected is a no-op (early return).
+    service.connect();
+
+    expect(() => service.disconnect()).not.toThrow();
+    expect(service.items()).toEqual([]);
+    expect(service.unreadCount()).toBe(0);
+  });
+
+  describe("onEvent (live ActionCable pushes)", () => {
+    function fireEvent(event: unknown): void {
+      (service as unknown as { onEvent(e: unknown): void }).onEvent(event);
+    }
+
+    it("an unread_count event updates the badge", () => {
+      fireEvent({ type: "unread_count", count: 4 });
+      expect(service.unreadCount()).toBe(4);
+    });
+
+    it("an unread_count event with no count defaults to 0", () => {
+      fireEvent({ type: "unread_count" });
+      expect(service.unreadCount()).toBe(0);
+    });
+
+    it("a created event prepends the notification", () => {
+      fireEvent({ type: "created", id: "n1", kind: "document_expiring" });
+      expect(service.items()[0].id).toBe("n1");
+    });
+
+    it("a created event is ignored if that id is already in the list", () => {
+      fireEvent({ type: "created", id: "n1", kind: "document_expiring" });
+      fireEvent({ type: "created", id: "n1", kind: "document_expiring" });
+      expect(service.items().length).toBe(1);
+    });
+
+    it("a created system_update event also refreshes the app version badge", () => {
+      fireEvent({ type: "created", id: "n2", kind: "system_update" });
+      expect(appVersionStub.refresh).toHaveBeenCalled();
+    });
+
+    it("a created event with no id is ignored", () => {
+      fireEvent({ type: "created" });
+      expect(service.items()).toEqual([]);
+    });
+  });
 });

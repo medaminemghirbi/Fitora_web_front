@@ -53,4 +53,27 @@ describe("HasPermissionDirective", () => {
 
     expect(rendered()).toBe(true);
   });
+
+  it("hides content that was previously shown once the permission is revoked", () => {
+    hasPermission.and.returnValue(true);
+    fixture.detectChanges();
+    expect(rendered()).toBe(true);
+
+    hasPermission.and.returnValue(false);
+    fixture.componentInstance.perm.set("payments2");
+    fixture.detectChanges();
+
+    expect(rendered()).toBe(false);
+  });
+
+  it("re-showing an already-visible view is a no-op (doesn't re-create the embedded view)", () => {
+    hasPermission.and.returnValue(true);
+    fixture.detectChanges();
+    const first = fixture.nativeElement.querySelector(".protected");
+
+    fixture.componentInstance.perm.set("payments"); // same key, still permitted
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".protected")).toBe(first);
+  });
 });

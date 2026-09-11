@@ -112,6 +112,12 @@ describe("staff.guard", () => {
       expect(await resolve(run("clients"))).toBe(tree);
       expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
     });
+
+    it("fails open (allows through) when the bootstrap load errors", async () => {
+      authStub.currentUser.and.returnValue({ role: "staff" } as User);
+      configStub.ensureLoaded.and.returnValue(throwError(() => new Error("network")));
+      expect(await resolve(run("clients"))).toBe(true);
+    });
   });
 
   describe("settingsAccessGuard", () => {
@@ -145,6 +151,12 @@ describe("staff.guard", () => {
       authStub.currentUser.and.returnValue({ role: "staff" } as User);
       authStub.hasPermission.and.returnValue(false);
       expect(await resolve(run())).toBe(tree);
+    });
+
+    it("fails open (allows through) when the bootstrap load errors", async () => {
+      authStub.currentUser.and.returnValue({ role: "staff" } as User);
+      configStub.ensureLoaded.and.returnValue(throwError(() => new Error("network")));
+      expect(await resolve(run())).toBe(true);
     });
   });
 
@@ -197,6 +209,12 @@ describe("staff.guard", () => {
       authStub.coachShellApplies.and.returnValue(false);
       expect(await resolve(run())).toBe(tree);
       expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+    });
+
+    it("fails open (allows through) when the bootstrap load errors", async () => {
+      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach" } as User);
+      configStub.ensureLoaded.and.returnValue(throwError(() => new Error("network")));
+      expect(await resolve(run())).toBe(true);
     });
   });
 });

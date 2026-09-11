@@ -1,11 +1,15 @@
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideRouter } from "@angular/router";
+import { Component } from "@angular/core";
+import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
+import { Router, provideRouter } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
 import { AuthService } from "../../core/auth/auth.service";
 import { NavGroup, NavLeaf } from "../../core/configuration/navigation.service";
 import { NavbarComponent } from "./navbar.component";
+
+@Component({ standalone: true, template: "" })
+class BlankComponent {}
 
 describe("NavbarComponent", () => {
   let fixture: ComponentFixture<NavbarComponent>;
@@ -30,7 +34,7 @@ describe("NavbarComponent", () => {
     await TestBed.configureTestingModule({
       imports: [NavbarComponent, TranslateModule.forRoot()],
       providers: [
-        provideRouter([]),
+        provideRouter([{ path: "**", component: BlankComponent }]),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: AuthService, useValue: authStub },
@@ -107,4 +111,35 @@ describe("NavbarComponent", () => {
     (component as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/somewhere/else");
     expect(component.activePageLabel()).toBeNull();
   });
+
+  it("activePageLabel picks the longest of several matching paths", () => {
+    // allLeaves() reads plain @Input properties (not signals) — it's only
+    // ever (re)computed the first time something reads it, so every input
+    // must be set before the very first detectChanges()/computed read.
+    const fresh = TestBed.createComponent(NavbarComponent);
+    fresh.componentInstance.dashboardItem = dashboardItem;
+    fresh.componentInstance.groups = groups;
+    fresh.componentInstance.flatItems = [
+      { path: "/owner", icon: "bi-house", labelKey: "nav.root" },
+      { path: "/owner/clients/4", icon: "bi-people", labelKey: "nav.clients_section" },
+    ];
+    fresh.detectChanges();
+
+    (fresh.componentInstance as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/owner/clients/42");
+    expect(fresh.componentInstance.activePageLabel()).toBe("nav.clients_section");
+  });
+
+  it("a real NavigationEnd event updates the active URL and closes every menu", fakeAsync(() => {
+    const router = TestBed.inject(Router);
+    component.toggleGroup("sales");
+    component.mobileOpen.set(true);
+
+    router.navigateByUrl("/owner/payments");
+    tick();
+    fixture.detectChanges();
+
+    expect(component.activeGroupId()).toBe("sales");
+    expect(component.openGroup()).toBeNull();
+    expect(component.mobileOpen()).toBe(false);
+  }));
 });
