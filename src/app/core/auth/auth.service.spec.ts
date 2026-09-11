@@ -77,6 +77,12 @@ describe("AuthService", () => {
       const auth = buildService();
       expect(auth.currentUser()).toBeNull();
     });
+
+    it("tolerates corrupt JSON in the impersonator stash", () => {
+      localStorage.setItem("fitora_impersonator", "{not json");
+      const auth = buildService();
+      expect(auth.isImpersonating()).toBe(false);
+    });
   });
 
   describe("login / register", () => {
@@ -275,6 +281,14 @@ describe("AuthService", () => {
       auth.loadConfiguration();
 
       expect(configStub.load).toHaveBeenCalled();
+    });
+
+    it("swallows a bootstrap load failure", () => {
+      localStorage.setItem("fitora_user", JSON.stringify(owner));
+      const auth = buildService();
+      configStub.load.and.returnValue({ subscribe: (o: { error?: () => void }) => o.error?.() });
+
+      expect(() => auth.loadConfiguration()).not.toThrow();
     });
   });
 

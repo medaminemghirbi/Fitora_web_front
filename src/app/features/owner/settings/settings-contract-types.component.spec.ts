@@ -19,10 +19,10 @@ describe("SettingsContractTypesComponent", () => {
     booking_limit: null, priority_booking: false, color: "#000", active: true, location_ids: [], activity_ids: [],
   };
 
-  function build(queryParams: Record<string, string> = {}): void {
+  function build(queryParams: Record<string, string> = {}, listError = false): void {
     TestBed.resetTestingModule();
     service = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list", "create", "update"]);
-    service.list.and.returnValue(of({ plans: [plan] }));
+    service.list.and.returnValue(listError ? throwError(() => new Error("nope")) : of({ plans: [plan] }));
 
     TestBed.configureTestingModule({
       imports: [SettingsContractTypesComponent, TranslateModule.forRoot()],
@@ -42,6 +42,11 @@ describe("SettingsContractTypesComponent", () => {
 
   it("loads plans on init", () => {
     expect(component.plans()).toEqual([plan]);
+  });
+
+  it("stops loading even when the initial load fails", () => {
+    build({}, true);
+    expect(component.loading()).toBe(false);
   });
 
   it("opens the create modal automatically for ?action=new", () => {

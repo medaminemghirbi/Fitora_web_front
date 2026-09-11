@@ -77,6 +77,23 @@ describe("SuppliersComponent", () => {
     expect(component.sorted().map((s) => s.id)).toEqual(["s2", "s1"]);
   });
 
+  it("sorted() compares booleans directly when the first operand is false and the second is true", () => {
+    component.suppliers.set([supplierB, supplierA]);
+    component.statusFilter.set("all");
+    component.sortKey.set("active");
+    component.sortDir.set("asc");
+    expect(component.sorted().map((s) => s.id)).toEqual(["s1", "s2"]);
+  });
+
+  it("sorted() treats two equal booleans as a tie when sorting by 'active'", () => {
+    const supplierC: Supplier = { ...supplierA, id: "s3", name: "Bravo Supplies" };
+    component.suppliers.set([supplierA, supplierC]);
+    component.statusFilter.set("all");
+    component.sortKey.set("active");
+    component.sortDir.set("asc");
+    expect(component.sorted().map((s) => s.id)).toEqual(["s1", "s3"]);
+  });
+
   it("toggleSort flips direction on the same key, resets to asc on a new key", () => {
     component.toggleSort("name");
     expect(component.sortDir()).toBe("desc");
@@ -196,6 +213,13 @@ describe("SuppliersComponent", () => {
     control.setErrors({ server: "Name already used" });
     control.markAsTouched();
     expect(component.fieldError("name")).toBe("Name already used");
+  });
+
+  it("fieldError is null for a touched, invalid control with neither a server nor a required error", () => {
+    const control = component.form.get("name")!;
+    control.setErrors({ minlength: true });
+    control.markAsTouched();
+    expect(component.fieldError("name")).toBeNull();
   });
 
   it("submit does nothing with an invalid form", () => {

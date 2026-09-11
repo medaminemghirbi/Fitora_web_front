@@ -122,6 +122,16 @@ describe("CalendarComponent", () => {
     expect(clientsService.list).not.toHaveBeenCalled();
   });
 
+  it("tolerates coaches/activities/clients failing to load (best-effort)", () => {
+    coachesService.list.and.returnValue(throwError(() => new Error("nope")));
+    activitiesService.list.and.returnValue(throwError(() => new Error("nope")));
+    clientsService.list.and.returnValue(throwError(() => new Error("nope")));
+    expect(() => {
+      fixture = TestBed.createComponent(CalendarComponent);
+      fixture.detectChanges();
+    }).not.toThrow();
+  });
+
   it("applies the location's business hours once loaded", () => {
     expect(component.calendarOptions().slotMinTime).toBe("6:00");
   });
@@ -390,6 +400,32 @@ describe("CalendarComponent", () => {
       attendanceService.forSession.and.returnValue(of({ session, bookings: [] }));
       internal().onEventClick({ event: { extendedProps: { session } } });
       expect(component.selectedSession()).toBe(session);
+    });
+
+    it("wires eventClick/eventDrop/dateClick/datesSet through to their handlers", async () => {
+      attendanceService.forSession.and.returnValue(of({ session, bookings: [] }));
+      const opts = component.calendarOptions() as unknown as {
+        eventClick: (arg: unknown) => void;
+        eventDrop: (arg: unknown) => Promise<void>;
+        dateClick: (arg: { date: Date; dayEl: HTMLElement }) => void;
+        datesSet: (arg: { start: Date; end: Date }) => void;
+      };
+
+      opts.eventClick({ event: { extendedProps: { session } } });
+      expect(component.selectedSession()).toBe(session);
+
+      spyOn(confirmService, "ask").and.resolveTo(false);
+      const revert = jasmine.createSpy();
+      await opts.eventDrop({ event: { extendedProps: { session }, start: new Date() }, revert });
+      expect(revert).toHaveBeenCalled();
+
+      const el = document.createElement("div");
+      opts.dateClick({ date: new Date("2026-01-05T10:00:00"), dayEl: el });
+      expect(component.createModalOpen()).toBe(true);
+
+      calendarService.range.and.returnValue(of([]));
+      opts.datesSet({ start: new Date("2026-01-01"), end: new Date("2026-01-08") });
+      expect(calendarService.range).toHaveBeenCalled();
     });
 
     it("onDateClick opens the create modal for someone who can manage sessions", () => {

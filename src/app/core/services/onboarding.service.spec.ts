@@ -31,4 +31,13 @@ describe("OnboardingService", () => {
 
     expect(configStub.load).toHaveBeenCalled();
   });
+
+  it("swallows a failure while reloading the bootstrap configuration", () => {
+    configStub.load.and.returnValue({ subscribe: (o: { error?: () => void }) => o.error?.() } as never);
+    expect(() => {
+      service.dismiss().subscribe();
+      const req = httpMock.expectOne(`${API_BASE_URL}/onboarding/dismiss`);
+      req.flush({ setup: { dismissed: true } });
+    }).not.toThrow();
+  });
 });

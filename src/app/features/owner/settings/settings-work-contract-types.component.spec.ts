@@ -36,6 +36,13 @@ describe("SettingsWorkContractTypesComponent", () => {
     expect(component.types()).toEqual([type]);
   });
 
+  it("stops loading even when the initial load fails", () => {
+    hr.contractTypes.and.returnValue(throwError(() => new Error("nope")));
+    fixture = TestBed.createComponent(SettingsWorkContractTypesComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.loading()).toBe(false);
+  });
+
   it("filtered/meta reflect the search term", () => {
     component.search.set("cdi");
     expect(component.filtered().length).toBe(1);

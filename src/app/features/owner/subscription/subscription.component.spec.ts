@@ -105,6 +105,12 @@ describe("SubscriptionComponent", () => {
     expect(component.featureDesc("clients")).toBe("modules.clients.desc");
   });
 
+  it("loadTickets stops loading even when it fails", () => {
+    ticketsService.list.and.returnValue(throwError(() => new Error("nope")));
+    component.setTab("contact");
+    expect(component.loadingTickets()).toBe(false);
+  });
+
   it("setTab('contact') loads tickets only once", () => {
     ticketsService.list.and.returnValue(of({ support_tickets: [ticket] }));
     component.setTab("contact");

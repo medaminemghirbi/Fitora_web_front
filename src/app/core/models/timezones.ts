@@ -99,8 +99,10 @@ function gmtOffset(tz: string): string {
     const part = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "shortOffset" })
       .formatToParts(new Date())
       .find((p) => p.type === "timeZoneName");
+    // istanbul ignore next -- shortOffset always yields a timeZoneName part in a real browser for every real IANA zone below
     return part?.value.replace("GMT", "UTC") ?? "";
   } catch {
+    // istanbul ignore next -- every zone below is a real, valid IANA timezone id
     return "";
   }
 }

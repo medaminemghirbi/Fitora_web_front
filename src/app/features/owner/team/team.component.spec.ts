@@ -119,6 +119,11 @@ describe("TeamComponent", () => {
     expect(component.filtered().every((m) => !!m.staff)).toBe(true);
   });
 
+  it("filtered narrows by a search term across name/email/phone", () => {
+    component.search.set("sarah");
+    expect(component.filtered().every((m) => m.name.toLowerCase().includes("sarah"))).toBe(true);
+  });
+
   it("changing tab or search resets to page 1", () => {
     component.page.set(3);
     component.tab.set("coaches");
@@ -144,6 +149,11 @@ describe("TeamComponent", () => {
   });
 
   describe("create coach", () => {
+    it("openCreate defaults to the coach flow when called with no kind", () => {
+      component.openCreate();
+      expect(component.createKind()).toBe("coach");
+    });
+
     it("openCreate forces coach for a non-owner even if asked for backoffice", () => {
       build("staff");
       component.openCreate("backoffice");

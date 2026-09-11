@@ -40,6 +40,13 @@ describe("SettingsRolesComponent", () => {
     expect(component.catalog()).toEqual(catalog);
   });
 
+  it("stops loading even when the initial load fails", () => {
+    service.list.and.returnValue(throwError(() => new Error("nope")));
+    fixture = TestBed.createComponent(SettingsRolesComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.loading()).toBe(false);
+  });
+
   it("isOwnerRole is true only while editing the owner role", () => {
     component.openEdit(ownerRole);
     expect(component.isOwnerRole()).toBe(true);

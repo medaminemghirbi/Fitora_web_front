@@ -111,6 +111,13 @@ describe("OwnerPaymentsComponent", () => {
     expect(paymentsService.list).toHaveBeenCalledWith({ status: undefined, q: "amy", page: 1 });
   }));
 
+  it("onSearchChange cancels a pending debounce timer on rapid typing", fakeAsync(() => {
+    component.onSearchChange("a");
+    component.onSearchChange("am");
+    tick(1000);
+    expect(paymentsService.list).toHaveBeenCalledWith(jasmine.objectContaining({ q: "am" }));
+  }));
+
   it("onPageChange loads the requested page", () => {
     component.onPageChange(2);
     expect(component.page()).toBe(2);

@@ -75,6 +75,31 @@ describe("CommandPaletteComponent", () => {
     expect(component.sections().some((s) => s.key === "goto")).toBe(true);
   });
 
+  it("re-opening actually resets a dirtied query/active index/remote state (not just matching defaults)", () => {
+    palette.open();
+    fixture.detectChanges();
+    component.query.set("something");
+    component.active.set(3);
+    palette.close();
+    fixture.detectChanges();
+
+    palette.open();
+    fixture.detectChanges();
+
+    expect(component.query()).toBe("");
+    expect(component.active()).toBe(0);
+  });
+
+  it("opening focuses the search input on the next microtask", fakeAsync(() => {
+    document.body.appendChild(fixture.nativeElement);
+    palette.open();
+    fixture.detectChanges();
+    tick();
+    const input = document.getElementById("cmdk-input");
+    expect(document.activeElement).toBe(input);
+    document.body.removeChild(fixture.nativeElement);
+  }));
+
   it("action commands only show for an owner with a non-empty query", () => {
     palette.open();
     fixture.detectChanges();

@@ -85,6 +85,7 @@ export class CommandPaletteComponent {
     const has = (c: Cmd) =>
       !q ||
       (c.label ?? "").toLowerCase().includes(q) ||
+      // istanbul ignore next -- every Cmd that reaches has() (nav/action) always carries a labelKey
       (c.labelKey ? this.translate.instant(c.labelKey).toLowerCase().includes(q) : false);
 
     const navItems = this.navCmds().filter(has).slice(0, 8);
@@ -114,14 +115,17 @@ export class CommandPaletteComponent {
   });
 
   constructor() {
-    effect(() => {
-      if (this.palette.isOpen()) {
-        this.query.set("");
-        this.active.set(0);
-        this.remote.set({ clients: [], contracts: [], payments: [] });
-        queueMicrotask(() => document.getElementById("cmdk-input")?.focus());
-      }
-    });
+    effect(
+      () => {
+        if (this.palette.isOpen()) {
+          this.query.set("");
+          this.active.set(0);
+          this.remote.set({ clients: [], contracts: [], payments: [] });
+          queueMicrotask(() => document.getElementById("cmdk-input")?.focus());
+        }
+      },
+      { allowSignalWrites: true }
+    );
   }
 
   onQuery(value: string): void {

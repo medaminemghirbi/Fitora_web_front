@@ -78,6 +78,12 @@ describe("NotificationService", () => {
     expect(service.hasMore()).toBe(true);
   });
 
+  it("loadFirstPage stops loading even when the fetch fails", () => {
+    service.loadFirstPage();
+    httpMock.expectOne((r) => r.url === `${API_BASE_URL}/notifications`).error(new ProgressEvent("error"));
+    expect(service.loading()).toBe(false);
+  });
+
   it("loadMore fetches the next page and appends", () => {
     service.loadFirstPage();
     httpMock.expectOne((r) => r.url === `${API_BASE_URL}/notifications`).flush({
@@ -133,12 +139,20 @@ describe("NotificationService", () => {
     expect(() => httpMock.expectNone(`${API_BASE_URL}/notifications/n1/read`)).not.toThrow();
   });
 
-  it("markAllRead POSTs and clears the unread count", () => {
+  it("markAllRead POSTs, marks every local item read, and clears the unread count", () => {
+    service.loadFirstPage();
+    httpMock.expectOne((r) => r.url === `${API_BASE_URL}/notifications`).flush({
+      notifications: [{ id: "n1", read: false }, { id: "n2", read: false }],
+      unread_count: 2,
+      meta: { page: 1, total_pages: 1 },
+    });
+
     service.markAllRead();
     const req = httpMock.expectOne(`${API_BASE_URL}/notifications/read_all`);
     expect(req.request.method).toBe("POST");
     req.flush({});
     expect(service.unreadCount()).toBe(0);
+    expect(service.items().every((n) => n.read)).toBe(true);
   });
 
   it("refresh reloads page 1 and the unread count", () => {
@@ -151,6 +165,18 @@ describe("NotificationService", () => {
     const countReq = httpMock.expectOne(`${API_BASE_URL}/notifications/unread_count`);
     countReq.flush({ count: 7 });
     expect(service.unreadCount()).toBe(7);
+  });
+
+  it("refresh swallows a failure to reload the unread count", () => {
+    service.refresh();
+    httpMock.expectOne((r) => r.url === `${API_BASE_URL}/notifications`).flush({
+      notifications: [],
+      unread_count: 0,
+      meta: { page: 1, total_pages: 1 },
+    });
+    expect(() =>
+      httpMock.expectOne(`${API_BASE_URL}/notifications/unread_count`).error(new ProgressEvent("error"))
+    ).not.toThrow();
   });
 
   it("get() GETs a single notification", () => {
@@ -187,6 +213,17 @@ describe("NotificationService", () => {
     expect(() => service.disconnect()).not.toThrow();
     expect(service.items()).toEqual([]);
     expect(service.unreadCount()).toBe(0);
+  });
+
+  it("connect()'s subscription forwards received pushes to onEvent", () => {
+    authStub.currentUser.and.returnValue({ role: "owner" });
+    authStub.getToken.and.returnValue("tok123");
+
+    service.connect();
+    const subscription = (service as unknown as { subscription: { received: (raw: unknown) => void } }).subscription;
+    subscription.received({ type: "unread_count", count: 7 });
+
+    expect(service.unreadCount()).toBe(7);
   });
 
   describe("onEvent (live ActionCable pushes)", () => {

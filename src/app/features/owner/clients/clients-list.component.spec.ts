@@ -98,6 +98,15 @@ describe("ClientsListComponent", () => {
     expect(component.statusFilter()).toBe("active");
   }));
 
+  it("the status filter chip's clear() removes just the status filter", () => {
+    component.search.set("amy");
+    component.statusFilter.set("active");
+    const chips = component.filterChips();
+    chips[1].clear();
+    expect(component.statusFilter()).toBe("");
+    expect(component.search()).toBe("amy");
+  });
+
   it("onSearchChange debounces the search", fakeAsync(() => {
     component.page.set(3);
     component.onSearchChange("amy");

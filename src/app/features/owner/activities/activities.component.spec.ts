@@ -107,6 +107,13 @@ describe("ActivitiesComponent", () => {
     expect(component.capacityBounds()).toEqual({ min: 1, max: 1 });
   });
 
+  it("openEdit falls back to an empty emoji/description when the activity has none", () => {
+    const bare: Activity = { ...activity, emoji: null, description: null };
+    component.openEdit(bare);
+    expect(component.form.value.emoji).toBe("");
+    expect(component.form.value.description).toBe("");
+  });
+
   it("closeModal closes it", () => {
     component.modalOpen.set(true);
     component.closeModal();

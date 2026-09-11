@@ -39,6 +39,7 @@ const CODES = [
 ];
 
 function flag(code: string): string {
+  // istanbul ignore if -- every CODES entry below is a real, valid alpha-2 code
   if (!/^[A-Z]{2}$/.test(code)) return "";
   return String.fromCodePoint(...[...code].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
 }
@@ -47,13 +48,19 @@ const regionNames = (() => {
   try {
     return new Intl.DisplayNames(["fr"], { type: "region", fallback: "code" });
   } catch {
+    // istanbul ignore next -- Intl.DisplayNames is supported by every browser this app targets
     return null;
   }
 })();
 
+// istanbul ignore next -- real browsers support Intl.DisplayNames and, with fallback:"code", .of() never returns undefined for a valid alpha-2 code
+function countryName(code: string): string {
+  return regionNames?.of(code) ?? code;
+}
+
 export const COUNTRIES: Country[] = CODES.map((code) => ({
   code,
-  name: regionNames?.of(code) ?? code,
+  name: countryName(code),
   flag: flag(code),
 })).sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
 

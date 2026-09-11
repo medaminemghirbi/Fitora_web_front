@@ -37,6 +37,13 @@ describe("SettingsAbsenceTypesComponent", () => {
     expect(component.loading()).toBe(false);
   });
 
+  it("stops loading even when the initial load fails", () => {
+    hr.absenceTypes.and.returnValue(throwError(() => new Error("nope")));
+    fixture = TestBed.createComponent(SettingsAbsenceTypesComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.loading()).toBe(false);
+  });
+
   it("filtered/pagedTypes/meta reflect the search term", () => {
     expect(component.filtered().length).toBe(1);
     component.search.set("zzz");

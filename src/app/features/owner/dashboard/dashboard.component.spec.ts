@@ -44,14 +44,16 @@ describe("DashboardComponent", () => {
     },
   };
 
-  function build(setup: SetupState | null = null): void {
+  function build(setup: SetupState | null = null, auditLogsError = false): void {
     TestBed.resetTestingModule();
     dashboardService = jasmine.createSpyObj("DashboardService", ["get"]);
     dashboardService.get.and.returnValue(of(response));
     revenueService = jasmine.createSpyObj("RevenueService", ["get"]);
     revenueService.get.and.returnValue(of({ today: 0, this_week: 0, this_month: 0, by_day: [{ date: "2026-01-01", total: 50 }] }));
     auditLogsService = jasmine.createSpyObj("AuditLogsService", ["list"]);
-    auditLogsService.list.and.returnValue(of({ audit_logs: [], meta: { page: 1, per_page: 5, total: 0, total_pages: 0 } }));
+    auditLogsService.list.and.returnValue(
+      auditLogsError ? throwError(() => new Error("nope")) : of({ audit_logs: [], meta: { page: 1, per_page: 5, total: 0, total_pages: 0 } })
+    );
     reportsService = jasmine.createSpyObj("ReportsService", ["exportCompany"]);
     onboardingService = jasmine.createSpyObj("OnboardingService", ["dismiss"]);
     configStub = { setup: jasmine.createSpy().and.returnValue(setup) };
@@ -93,8 +95,7 @@ describe("DashboardComponent", () => {
   });
 
   it("stops audit-log loading even when it fails", () => {
-    auditLogsService.list.and.returnValue(throwError(() => new Error("nope")));
-    build();
+    build(null, true);
     expect(component.auditLogsLoading()).toBe(false);
   });
 

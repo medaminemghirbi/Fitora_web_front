@@ -49,6 +49,7 @@ export class NavigationService {
     const dash = this.dashboardItem();
     if (dash) return dash.path;
     const firstGroupItem = this.groups()[0]?.items.find((i) => !i.comingSoon);
+    // istanbul ignore next -- NAV_BLUEPRINT's "planning" group always has the permission-free /owner/calendar item, so groups() is never empty here
     return firstGroupItem?.path ?? "/owner/settings";
   });
 

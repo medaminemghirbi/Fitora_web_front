@@ -91,6 +91,13 @@ describe("CompanyLibraryFolderComponent", () => {
     expect(documentsService.list).toHaveBeenCalledWith({ folder_id: "f1", status: undefined, q: "lease", page: 1 });
   }));
 
+  it("onSearchChange cancels a pending debounce timer on rapid typing", fakeAsync(() => {
+    component.onSearchChange("l");
+    component.onSearchChange("le");
+    tick(1000);
+    expect(documentsService.list).toHaveBeenCalledWith(jasmine.objectContaining({ q: "le" }));
+  }));
+
   it("onPageChange loads the requested page", () => {
     component.onPageChange(2);
     expect(component.page()).toBe(2);
@@ -173,6 +180,16 @@ describe("CompanyLibraryFolderComponent", () => {
     component.view(doc);
     expect(fakeWin.location.href).toContain("blob:");
   });
+
+  it("view revokes the blob URL after the timeout", fakeAsync(() => {
+    const fakeWin = { location: { href: "" }, close: jasmine.createSpy() };
+    spyOn(window, "open").and.returnValue(fakeWin as unknown as Window);
+    documentsService.downloadFile.and.returnValue(of(new Blob(["x"], { type: "application/pdf" })));
+    spyOn(URL, "revokeObjectURL");
+    component.view(doc);
+    tick(60_000);
+    expect(URL.revokeObjectURL).toHaveBeenCalled();
+  }));
 
   it("view closes the tab and shows a toast on failure", () => {
     const fakeWin = { location: { href: "" }, close: jasmine.createSpy() };

@@ -43,6 +43,14 @@ describe("SettingsMobileComponent", () => {
     expect(fixture.componentInstance.loading()).toBe(false);
   });
 
+  it("tolerates the QR code failing to load", () => {
+    service.getMobileKeyQr.and.returnValue(throwError(() => new Error("nope")));
+    expect(() => {
+      fixture = TestBed.createComponent(SettingsMobileComponent);
+      fixture.detectChanges();
+    }).not.toThrow();
+  });
+
   it("ngOnDestroy revokes the QR object URL", () => {
     spyOn(URL, "revokeObjectURL");
     fixture.destroy();

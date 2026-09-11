@@ -188,6 +188,7 @@ describe("ClientProfileComponent", () => {
 
   it("selectedPlan / contractFormTotal reflect the chosen plan and discount", () => {
     expect(component.selectedPlan()).toBeNull();
+    expect(component.contractFormTotal()).toBe(0);
     component.contractForm.patchValue({ contract_type_id: "ct1", discount: 20 });
     expect(component.selectedPlan()).toEqual(contractType);
     expect(component.contractFormTotal()).toBe(80);

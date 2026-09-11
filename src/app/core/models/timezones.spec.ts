@@ -24,6 +24,11 @@ describe("timezones", () => {
     expect(browserTimezone()).toBe("Africa/Tunis");
   });
 
+  it("browserTimezone falls back to Africa/Tunis when Intl throws", () => {
+    spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").and.throwError("unsupported");
+    expect(browserTimezone()).toBe("Africa/Tunis");
+  });
+
   describe("countryForTimezone", () => {
     it("resolves a known zone to its country", () => {
       expect(countryForTimezone("Africa/Tunis")).toBe("TN");
