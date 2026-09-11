@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # Compiled output
@@ -44,35 +43,3 @@ Thumbs.db
 
 # graphify knowledge graph (generated)
 /graphify-out
-=======
-# ── Fitora monorepo root ───────────────────────────────────────────────
-# Per-app ignores live in backend/.gitignore and frontend/.gitignore.
-
-# Mobile stays a separate repo for now — merged or extracted later.
-/mobile/
-
-# Backend has its own repo (backend/.git, remote fitora_backend) — it was
-# briefly double-tracked here too (plain files, not a submodule) after an
-# earlier monorepo-merge attempt, which let this copy silently drift from
-# backend/.git's real history. Same treatment as mobile/: ignored here,
-# backend/.git is the sole source of truth.
-/backend/
-
-# Generated knowledge graph (regenerate with `graphify`).
-/graphify-out/
-/frontend/graphify-out/
-
-# Sales / prospect lists — business data, not code.
-/fitora_prospects*.csv
-/fitora_prospects*.xlsx
-
-# Local tooling / editor state.
-/.claude/
-/.ruby-lsp/
-
-# OS
-.DS_Store
->>>>>>> 81844ec (chore: initialize Fitora monorepo root)
-
-.nx/cache
-.nx/workspace-data
