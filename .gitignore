@@ -43,3 +43,4 @@ Thumbs.db
 
 # graphify knowledge graph (generated)
 /graphify-out
+.claude/
