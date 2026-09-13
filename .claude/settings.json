@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(grep -B2 -A25 \"FAILED$\")",
-      "Bash(python3 -c ' *)",
-      "Bash(git commit -m ' *)"
-    ]
-  }
-}
