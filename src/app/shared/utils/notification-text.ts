@@ -29,22 +29,12 @@ export function notificationText(t: TranslateService, n: AppNotification): { tit
         title: t.instant("notifications.system_update.title", { version: d["version"] ?? "" }),
         body: d["title"] ?? "",
       };
-    default:
-      return {
-        title: t.instant("notifications.document_expiring.title"),
-        body: t.instant("notifications.document_expiring.body", {
-          title: d["title"] ?? "—",
-          folder: d["folder_name"] ?? "",
-          date: formatDate(t, d["expires_on"]),
-        }),
-      };
   }
 }
 
 /** i18n key for the "open the related resource" button on the detail page. */
 export function notificationCtaKey(n: AppNotification): string {
   return {
-    document_expiring: "notifications.open_document",
     contract_expiring: "notifications.open_contract",
     employee_birthday: "notifications.open_employee",
     system_update: "notifications.open_system_update",

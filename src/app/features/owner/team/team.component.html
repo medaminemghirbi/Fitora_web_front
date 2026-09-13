@@ -75,17 +75,13 @@
           }
 
           <div class="fx-person-card-actions">
-            @if (isOwner() && m.staffMemberId) {
-              <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/owner/team', m.staffMemberId]">
-                <i class="bi bi-person-vcard"></i> {{ "team.employee_file" | translate }}
-              </a>
-            } @else if (isOwner() && m.coach) {
-              <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/owner/team/coach', m.coach.id]">
-                <i class="bi bi-person-vcard"></i> {{ "team.employee_file" | translate }}
-              </a>
-            } @else if (m.coach) {
+            @if (m.coach) {
               <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openEditCoach(m.coach)">
                 <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
+              </button>
+            } @else if (m.staff && isOwner()) {
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openRole(m.staff)">
+                <i class="bi bi-shield-lock"></i> {{ "team.action_web_access" | translate }}
               </button>
             }
 

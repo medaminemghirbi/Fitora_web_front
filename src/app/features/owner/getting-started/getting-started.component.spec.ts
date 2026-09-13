@@ -37,18 +37,18 @@ describe("GettingStartedComponent", () => {
   }
 
   it("stays put while setup is incomplete and not dismissed", () => {
-    build({ activity: false, contract_type: false, coach: false, work_contract: false, dismissed: false, complete: false });
+    build({ activity: false, contract_type: false, coach: false, dismissed: false, complete: false });
     expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 
   it("redirects to the dashboard once setup is complete", fakeAsync(() => {
-    build({ activity: true, contract_type: true, coach: true, work_contract: true, dismissed: false, complete: true });
+    build({ activity: true, contract_type: true, coach: true, dismissed: false, complete: true });
     tick();
     expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/dashboard");
   }));
 
   it("redirects to the dashboard once dismissed", fakeAsync(() => {
-    build({ activity: false, contract_type: false, coach: false, work_contract: false, dismissed: true, complete: false });
+    build({ activity: false, contract_type: false, coach: false, dismissed: true, complete: false });
     tick();
     expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/dashboard");
   }));

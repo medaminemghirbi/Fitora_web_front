@@ -55,20 +55,11 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
     ],
   },
   {
-    id: "resources",
-    labelKey: "nav.directories",
-    items: [
-      { path: "/owner/directories/company-library", icon: "bi-folder2-open", labelKey: "nav.company_library", permission: "company_library" },
-      { path: "/owner/directories/suppliers", icon: "bi-truck", labelKey: "nav.suppliers" },
-    ],
-  },
-  {
-    id: "hr",
-    labelKey: "nav.hr",
+    id: "team",
+    labelKey: "nav.team",
     ownerOnly: true,
     items: [
       { path: "/owner/team", icon: "bi-person-vcard", labelKey: "nav.team", subtitleKey: "nav.team_subtitle", permission: "coaches" },
-      { path: "/owner/hr/payroll", icon: "bi-file-earmark-ruled", labelKey: "nav.payroll_presheet", ownerOnly: true },
     ],
   },
 ];

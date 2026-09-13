@@ -6,10 +6,7 @@ export const MODULE_ICONS: Record<string, string> = {
   bookings: "bi-journal-check",
   memberships: "bi-file-earmark-text",
   billing: "bi-credit-card",
-  ged: "bi-folder2-open",
   hr: "bi-person-vcard",
-  payroll: "bi-file-earmark-ruled",
-  suppliers: "bi-truck",
 };
 
 export function moduleIcon(key: string): string {

@@ -117,17 +117,17 @@ describe("DashboardComponent", () => {
   });
 
   it("showSetupCard is true for an incomplete, non-dismissed setup as owner", () => {
-    build({ activity: false, contract_type: false, coach: false, work_contract: false, dismissed: false, complete: false });
+    build({ activity: false, contract_type: false, coach: false, dismissed: false, complete: false });
     expect(component.showSetupCard).toBe(true);
   });
 
   it("showSetupCard is false once complete or dismissed", () => {
-    build({ activity: true, contract_type: true, coach: true, work_contract: true, dismissed: false, complete: true });
+    build({ activity: true, contract_type: true, coach: true, dismissed: false, complete: true });
     expect(component.showSetupCard).toBe(false);
   });
 
   it("showSetupCard is false for a non-owner even with incomplete setup", () => {
-    build({ activity: false, contract_type: false, coach: false, work_contract: false, dismissed: false, complete: false });
+    build({ activity: false, contract_type: false, coach: false, dismissed: false, complete: false });
     authStub.currentUser.and.returnValue({ first_name: "K", role: "staff" });
     expect(component.showSetupCard).toBe(false);
   });

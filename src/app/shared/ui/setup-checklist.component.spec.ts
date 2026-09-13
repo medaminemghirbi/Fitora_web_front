@@ -12,7 +12,6 @@ describe("SetupChecklistComponent", () => {
     activity: true,
     contract_type: true,
     coach: false,
-    work_contract: false,
     dismissed: false,
     complete: false,
   };
@@ -27,8 +26,8 @@ describe("SetupChecklistComponent", () => {
     component = fixture.componentInstance;
   });
 
-  it("lists the 4 onboarding steps", () => {
-    expect(component.steps.map((s) => s.key)).toEqual(["activity", "contract_type", "coach", "work_contract"]);
+  it("lists the 3 onboarding steps", () => {
+    expect(component.steps.map((s) => s.key)).toEqual(["activity", "contract_type", "coach"]);
   });
 
   it("doneCount is 0 with no setup state", () => {
@@ -44,7 +43,7 @@ describe("SetupChecklistComponent", () => {
     component.setup = setup;
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll(".sc-status").length).toBe(2);
-    expect(fixture.nativeElement.querySelectorAll(".sc-cta").length).toBe(2);
+    expect(fixture.nativeElement.querySelectorAll(".sc-cta").length).toBe(1);
   });
 
   it("shows the skip button only when dismissable, and emits dismiss on click", () => {

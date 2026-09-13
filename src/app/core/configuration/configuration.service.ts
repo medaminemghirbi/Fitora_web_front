@@ -24,13 +24,12 @@ export interface CompanyRole {
 }
 
 // The owner-only "Premiers pas" checklist. Each step flag is derived
-// server-side from data (has an activity? a formule? a coach? a work
-// contract?), so completing a step anywhere in the app ticks it off.
+// server-side from data (has an activity? a formule? a coach?), so
+// completing a step anywhere in the app ticks it off.
 export interface SetupState {
   activity: boolean;
   contract_type: boolean;
   coach: boolean;
-  work_contract: boolean;
   dismissed: boolean;
   complete: boolean;
 }

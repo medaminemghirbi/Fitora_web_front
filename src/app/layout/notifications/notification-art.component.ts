@@ -2,7 +2,6 @@ import { Component, Input } from "@angular/core";
 import { NotificationKind } from "../../core/models/notification.model";
 
 const EMOJI: Record<NotificationKind, string> = {
-  document_expiring: "📄",
   contract_expiring: "📋",
   employee_birthday: "🎂",
   system_update: "🚀",
@@ -69,7 +68,6 @@ const EMOJI: Record<NotificationKind, string> = {
       .art--mini { width: 40px; height: 40px; border-radius: 11px; }
       .art[data-kind="employee_birthday"] { background: linear-gradient(150deg, #fef3c7, #fde68a); }
       .art[data-kind="contract_expiring"] { background: linear-gradient(150deg, #e0e7ff, #c7d2fe); }
-      .art[data-kind="document_expiring"] { background: linear-gradient(150deg, #dbeafe, #bfdbfe); }
       .art-svg { width: 76%; height: 76%; }
       .art-emoji {
         position: absolute;

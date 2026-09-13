@@ -9,8 +9,6 @@ import { SettingsBrandingComponent } from "./settings-branding.component";
 import { SettingsMobileComponent } from "./settings-mobile.component";
 import { SettingsPlanningComponent } from "./settings-planning.component";
 import { SettingsContractTypesComponent } from "./settings-contract-types.component";
-import { SettingsWorkContractTypesComponent } from "./settings-work-contract-types.component";
-import { SettingsAbsenceTypesComponent } from "./settings-absence-types.component";
 import { SettingsRolesComponent } from "./settings-roles.component";
 import { SettingsAppearanceComponent } from "./settings-appearance.component";
 import { ActivitiesComponent } from "../activities/activities.component";
@@ -29,8 +27,6 @@ import { ActivitiesComponent } from "../activities/activities.component";
     SettingsMobileComponent,
     SettingsPlanningComponent,
     SettingsContractTypesComponent,
-    SettingsWorkContractTypesComponent,
-    SettingsAbsenceTypesComponent,
     SettingsRolesComponent,
     SettingsAppearanceComponent,
     ActivitiesComponent,

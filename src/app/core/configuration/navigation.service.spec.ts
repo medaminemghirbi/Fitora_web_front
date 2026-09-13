@@ -16,11 +16,11 @@ describe("NavigationService", () => {
     service = TestBed.inject(NavigationService);
   }
 
-  it("an owner sees the dashboard and every group, including the owner-only HR group", () => {
-    build("owner", ["reports"]);
+  it("an owner sees the dashboard and every group, including the owner-only Team group", () => {
+    build("owner", ["reports", "coaches"]);
     expect(service.dashboardItem()?.path).toBe("/owner/dashboard");
-    expect(service.groups().some((g) => g.id === "hr")).toBe(true);
-    // calendar and suppliers carry no `permission` — visible to anyone.
+    expect(service.groups().some((g) => g.id === "team")).toBe(true);
+    // calendar carries no `permission` — visible to anyone.
     const planning = service.groups().find((g) => g.id === "planning")!;
     expect(planning.items.map((i) => i.path)).toContain("/owner/calendar");
   });
@@ -35,9 +35,9 @@ describe("NavigationService", () => {
     expect(service.dashboardItem()).not.toBeNull();
   });
 
-  it("drops the owner-only HR group entirely for staff, even with every permission", () => {
-    build("staff", ["clients", "contracts", "bookings", "payments", "company_library", "coaches"]);
-    expect(service.groups().some((g) => g.id === "hr")).toBe(false);
+  it("drops the owner-only Team group entirely for staff, even with every permission", () => {
+    build("staff", ["clients", "contracts", "bookings", "payments", "coaches"]);
+    expect(service.groups().some((g) => g.id === "team")).toBe(false);
   });
 
   it("drops a group with no visible items", () => {

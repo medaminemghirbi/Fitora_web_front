@@ -43,8 +43,6 @@ export class SettingsSectionsService {
     { path: "activities", icon: "bi-lightning-charge", labelKey: "settings.nav_activities", descKey: "settings.desc_activities", group: "planning", permission: "activities" },
     { path: "contract-types", icon: "bi-award", labelKey: "settings.nav_contract_types", descKey: "settings.desc_contract_types", group: "planning", permission: "contracts" },
     { path: "roles", icon: "bi-shield-lock", labelKey: "settings.nav_roles", descKey: "settings.desc_roles", group: "hr", ownerOnly: true },
-    { path: "work-contract-types", icon: "bi-file-earmark-text", labelKey: "settings.nav_work_contract_types", descKey: "settings.desc_work_contract_types", group: "hr", ownerOnly: true },
-    { path: "absence-types", icon: "bi-calendar-x", labelKey: "settings.nav_absence_types", descKey: "settings.desc_absence_types", group: "hr", ownerOnly: true },
   ];
 
   readonly sections = computed(() => this.all.filter((s) => this.isVisible(s)));

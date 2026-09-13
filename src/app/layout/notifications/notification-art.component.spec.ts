@@ -24,12 +24,6 @@ describe("NotificationArtComponent", () => {
     expect(component.emoji).toBe("📋");
   });
 
-  it("shows the document emoji and falls back to the default scene", () => {
-    component.kind = "document_expiring";
-    fixture.detectChanges();
-    expect(component.emoji).toBe("📄");
-  });
-
   it("shows the rocket emoji for a system update", () => {
     component.kind = "system_update";
     fixture.detectChanges();

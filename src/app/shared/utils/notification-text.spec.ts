@@ -38,22 +38,8 @@ describe("notification-text utils", () => {
       expect(body).toBe("Nouvelle fonctionnalité");
     });
 
-    it("composes a document_expiring notification (the default case)", () => {
-      const n = notif("document_expiring", { title: "Assurance", folder_name: "Contrats", expires_on: "2026-10-01" });
-      const { title, body } = notificationText(translate, n);
-      expect(title).toBe("notifications.document_expiring.title");
-      expect(body).toContain("Assurance");
-      expect(body).toContain("Contrats");
-    });
-
     it("falls back to an em dash for missing fields", () => {
       const n = notif("employee_birthday", { name: null });
-      const { body } = notificationText(translate, n);
-      expect(body).toContain("—");
-    });
-
-    it("document_expiring falls back to an em dash for a missing title and '' for a missing folder", () => {
-      const n = notif("document_expiring", { title: null, folder_name: null, expires_on: "2026-10-01" });
       const { body } = notificationText(translate, n);
       expect(body).toContain("—");
     });
@@ -69,7 +55,6 @@ describe("notification-text utils", () => {
 
   describe("notificationCtaKey", () => {
     it("maps each kind to its CTA key", () => {
-      expect(notificationCtaKey(notif("document_expiring", {}))).toBe("notifications.open_document");
       expect(notificationCtaKey(notif("contract_expiring", {}))).toBe("notifications.open_contract");
       expect(notificationCtaKey(notif("employee_birthday", {}))).toBe("notifications.open_employee");
       expect(notificationCtaKey(notif("system_update", {}))).toBe("notifications.open_system_update");

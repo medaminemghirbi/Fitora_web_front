@@ -1,4 +1,4 @@
-export type NotificationKind = "document_expiring" | "contract_expiring" | "employee_birthday" | "system_update";
+export type NotificationKind = "contract_expiring" | "employee_birthday" | "system_update";
 
 export interface AppNotification {
   id: string;

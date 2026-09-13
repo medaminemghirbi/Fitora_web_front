@@ -18,14 +18,13 @@ import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 
 type Tab = "subscription" | "contact";
 
-// The 9 included features, grouped for the "everything included" section.
+// The 6 included features, grouped for the "everything included" section.
 // Keys match ModuleCatalog::KEYS / module-icons.ts; labels + descriptions
 // are i18n'd as modules.<key>.name / .desc.
 const FEATURE_GROUPS: { label: string; keys: string[] }[] = [
   { label: "subscription.group_members", keys: ["clients", "classes", "bookings"] },
   { label: "subscription.group_billing", keys: ["memberships", "billing"] },
-  { label: "subscription.group_hr", keys: ["hr", "payroll"] },
-  { label: "subscription.group_docs", keys: ["ged", "suppliers"] },
+  { label: "subscription.group_hr", keys: ["hr"] },
 ];
 
 const MAX_FILES = 5;

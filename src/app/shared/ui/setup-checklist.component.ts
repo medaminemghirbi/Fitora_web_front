@@ -4,7 +4,7 @@ import { TranslateModule } from "@ngx-translate/core";
 import { SetupState } from "../../core/configuration/configuration.service";
 
 interface Step {
-  key: keyof Pick<SetupState, "activity" | "contract_type" | "coach" | "work_contract">;
+  key: keyof Pick<SetupState, "activity" | "contract_type" | "coach">;
   labelKey: string;
   descKey: string;
   route: string;
@@ -15,7 +15,6 @@ const STEPS: Step[] = [
   { key: "activity", labelKey: "getting_started.step_activity", descKey: "getting_started.step_activity_desc", route: "/owner/settings/activities", icon: "bi-lightning-charge" },
   { key: "contract_type", labelKey: "getting_started.step_contract_type", descKey: "getting_started.step_contract_type_desc", route: "/owner/settings/contract-types", icon: "bi-card-checklist" },
   { key: "coach", labelKey: "getting_started.step_coach", descKey: "getting_started.step_coach_desc", route: "/owner/team", icon: "bi-person-badge" },
-  { key: "work_contract", labelKey: "getting_started.step_work_contract", descKey: "getting_started.step_work_contract_desc", route: "/owner/team", icon: "bi-file-earmark-text" },
 ];
 
 // Presentational "Premiers pas" checklist. Step completion is derived from

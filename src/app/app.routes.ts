@@ -55,8 +55,6 @@ export const routes: Routes = [
       { path: "contracts", canActivate: [capabilityGuard("contracts")], loadComponent: () => import("./features/owner/contracts/contracts.component").then((m) => m.ContractsComponent) },
       { path: "payments", canActivate: [capabilityGuard("payments")], loadComponent: () => import("./features/owner/payments/payments.component").then((m) => m.OwnerPaymentsComponent) },
       { path: "team", canActivate: [capabilityGuard("coaches")], loadComponent: () => import("./features/owner/team/team.component").then((m) => m.TeamComponent) },
-      { path: "team/coach/:id", data: { entity: "coach" }, canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/team/employee-file.component").then((m) => m.EmployeeFileComponent) },
-      { path: "team/:id", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/team/employee-file.component").then((m) => m.EmployeeFileComponent) },
       // Coaches + Staff were merged into one Team page — keep the old paths working.
       { path: "coaches", pathMatch: "full", redirectTo: "team" },
       { path: "staff", pathMatch: "full", redirectTo: "team" },
@@ -70,14 +68,6 @@ export const routes: Routes = [
       // The marketplace is gone — every feature is included in the subscription.
       { path: "modules", pathMatch: "full", redirectTo: "subscription" },
       { path: "updates", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/updates/updates.component").then((m) => m.OwnerUpdatesComponent) },
-      { path: "hr/payroll", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/hr/payroll.component").then((m) => m.PayrollComponent) },
-      { path: "hr/payroll/:staffMemberId", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/hr/payroll.component").then((m) => m.PayrollComponent) },
-      { path: "directories/company-library", canActivate: [capabilityGuard("company_library")], loadComponent: () => import("./features/owner/company-library/company-library.component").then((m) => m.CompanyLibraryComponent) },
-      { path: "directories/company-library/:folderId", canActivate: [capabilityGuard("company_library")], loadComponent: () => import("./features/owner/company-library/company-library-folder.component").then((m) => m.CompanyLibraryFolderComponent) },
-      { path: "directories/suppliers", loadComponent: () => import("./features/owner/directories/suppliers/suppliers.component").then((m) => m.SuppliersComponent) },
-      // Nav entry in Répertoires whose feature doesn't exist yet — lands on
-      // a "coming soon" placeholder rather than a dead (unclickable) link.
-      { path: "directories/maintenance", data: { titleKey: "nav.maintenance" }, loadComponent: () => import("./features/owner/coming-soon/coming-soon.component").then((m) => m.ComingSoonComponent) },
       { path: "", pathMatch: "full", redirectTo: "dashboard" },
     ],
   },

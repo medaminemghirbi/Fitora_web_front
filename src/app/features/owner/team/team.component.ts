@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, effect, signal } from "@angular/core";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ActivatedRoute, RouterLink } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import { forkJoin, of, Observable } from "rxjs";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Coach } from "../../../core/models/coach.model";
@@ -45,8 +45,7 @@ export interface TeamMember {
   roleName: string;
   coach: Coach | null;
   staff: StaffMember | null;
-  // Set for anyone with a staff account (coach mobile login included) — the
-  // key to their HR "fiche employé" at /owner/team/:staffMemberId.
+  // Set for anyone with a staff account (coach mobile login included).
   staffMemberId: string | null;
 }
 
@@ -56,7 +55,6 @@ export interface TeamMember {
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    RouterLink,
     TranslateModule,
     AvatarComponent,
     EmptyStateComponent,
