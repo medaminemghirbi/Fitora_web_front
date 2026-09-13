@@ -16,7 +16,7 @@ export interface Company {
   currency_symbol: string;
   locale: string;
   // Days the company operates, as JS getDay() / Ruby wday integers
-  // (0 = Sunday … 6 = Saturday). Drives the payroll pré-fiche.
+  // (0 = Sunday … 6 = Saturday). Edited in Settings > Planning.
   working_days: number[];
   active: boolean;
   slug: string | null;
