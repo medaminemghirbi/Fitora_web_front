@@ -41,7 +41,17 @@ export class VerifyEmailComponent implements OnInit {
     }
 
     this.recovery.verifyEmail(token).subscribe({
-      next: () => this.status.set("success"),
+      next: () => {
+        this.status.set("success");
+        // The backend record is now verified, but the cached currentUser
+        // (localStorage + the signal every shell reads for the "confirm
+        // your email" banner) doesn't know that yet — without this, someone
+        // already signed in on this device still sees the banner after
+        // successfully verifying, since nothing else refetches /auth/me.
+        if (this.isAuthenticated()) {
+          this.auth.refreshCurrentUser().subscribe({ next: () => {}, error: () => {} });
+        }
+      },
       // The only error this endpoint returns is the machine code
       // "invalid_or_expired_token" — never worth showing raw, so this
       // app's own translated copy is always the right message here.

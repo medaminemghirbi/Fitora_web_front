@@ -11,13 +11,14 @@ describe("VerifyEmailComponent", () => {
   let fixture: ComponentFixture<VerifyEmailComponent>;
   let component: VerifyEmailComponent;
   let recovery: jasmine.SpyObj<AccountRecoveryService>;
-  let authStub: { isAuthenticated: jasmine.Spy; homeRouteForCurrentUser: jasmine.Spy };
+  let authStub: { isAuthenticated: jasmine.Spy; homeRouteForCurrentUser: jasmine.Spy; refreshCurrentUser: jasmine.Spy };
 
   function build(token: string | null): void {
     recovery = jasmine.createSpyObj<AccountRecoveryService>("AccountRecoveryService", ["verifyEmail"]);
     authStub = {
       isAuthenticated: jasmine.createSpy().and.returnValue(false),
       homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      refreshCurrentUser: jasmine.createSpy().and.returnValue(of(undefined)),
     };
 
     TestBed.configureTestingModule({
@@ -73,5 +74,20 @@ describe("VerifyEmailComponent", () => {
     recovery.verifyEmail.and.returnValue(of(undefined));
     fixture.detectChanges();
     expect(component.continueUrl()).toBe("/auth/login");
+  });
+
+  it("refreshes the cached current user after verifying, when already signed in", () => {
+    build("tok123");
+    recovery.verifyEmail.and.returnValue(of(undefined));
+    authStub.isAuthenticated.and.returnValue(true);
+    fixture.detectChanges();
+    expect(authStub.refreshCurrentUser).toHaveBeenCalled();
+  });
+
+  it("does not try to refresh the current user for a signed-out visitor", () => {
+    build("tok123");
+    recovery.verifyEmail.and.returnValue(of(undefined));
+    fixture.detectChanges();
+    expect(authStub.refreshCurrentUser).not.toHaveBeenCalled();
   });
 });
