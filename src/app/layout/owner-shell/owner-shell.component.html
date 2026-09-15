@@ -30,19 +30,34 @@
     </div>
   }
 
-  <app-navbar
-    [dashboardItem]="dashboardNavItem()"
-    [groups]="navGroups()"
-    [secondaryItems]="showOwnerOnlySections() ? secondaryNavItems() : []"
-    [brandName]="'Fitora'"
-    [brandLogoUrl]="branding.logoUrl()"
-    [brandHome]="nav.homePath()"
-    [brandSuffix]="versionSuffix()"
-    [showNotifications]="true"
-    [showSupport]="showOwnerOnlySections()"
-  />
+  <div class="owner-shell-body">
+    <app-sidebar
+      [dashboardItem]="dashboardNavItem()"
+      [groups]="navGroups()"
+      [secondaryItems]="showOwnerOnlySections() ? secondaryNavItems() : []"
+      [brandName]="'Fitora'"
+      [brandLogoUrl]="branding.logoUrl()"
+      [brandHome]="nav.homePath()"
+    />
 
-  <main class="app-content">
-    <router-outlet></router-outlet>
-  </main>
+    <div class="owner-shell-main">
+      <app-navbar
+        [dashboardItem]="dashboardNavItem()"
+        [groups]="navGroups()"
+        [secondaryItems]="showOwnerOnlySections() ? secondaryNavItems() : []"
+        [brandName]="'Fitora'"
+        [brandLogoUrl]="branding.logoUrl()"
+        [brandHome]="nav.homePath()"
+        [brandSuffix]="versionSuffix()"
+        [showBrand]="false"
+        [showDesktopNav]="false"
+        [showNotifications]="true"
+        [showSupport]="showOwnerOnlySections()"
+      />
+
+      <main class="app-content">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  </div>
 </div>

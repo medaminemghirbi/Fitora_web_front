@@ -1,13 +1,25 @@
 import { Component, OnInit, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { AdminSubscriptionPricingService, SubscriptionPricing } from "../../../core/services/admin-subscription-pricing.service";
+import {
+  AdminSubscriptionPricingService,
+  SubscriptionPricing,
+  UNLIMITED_TIER,
+} from "../../../core/services/admin-subscription-pricing.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
 import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
+
+interface TierRow {
+  companyLimit: number;
+  unlimited: boolean;
+  labelKey: string;
+  monthlyUnits: number;
+  annualCents: number;
+}
 
 @Component({
   selector: "app-admin-pricing",
@@ -26,8 +38,8 @@ export class AdminPricingComponent implements OnInit {
   readonly pricing = signal<SubscriptionPricing | null>(null);
 
   readonly currency = signal("TND");
-  readonly monthlyUnits = signal(0);
   readonly discount = signal(0);
+  readonly tiers = signal<TierRow[]>([]);
 
   ngOnInit(): void {
     this.load();
@@ -53,20 +65,32 @@ export class AdminPricingComponent implements OnInit {
     this.load();
   }
 
+  tierLabelKey(companyLimit: number, unlimited: boolean): string {
+    if (unlimited) return "admin.pricing_tier_unlimited";
+    return companyLimit === 1 ? "admin.pricing_tier_one" : "admin.pricing_tier_many";
+  }
+
   get dirty(): boolean {
     const p = this.pricing();
     if (!p) return false;
-    return Math.round(this.monthlyUnits() * 100) !== p.monthly_cents || this.discount() !== p.annual_discount_percent;
+    if (this.discount() !== p.annual_discount_percent) return true;
+
+    return this.tiers().some((row) => {
+      const original = p.tiers.find((t) => t.company_limit === row.companyLimit);
+      return !original || Math.round(row.monthlyUnits * 100) !== original.monthly_cents;
+    });
   }
 
   save(): void {
     this.saving.set(true);
+
+    const tierPayload: Record<string, number> = {};
+    this.tiers().forEach((row) => {
+      tierPayload[String(row.companyLimit)] = Math.max(0, Math.round(row.monthlyUnits * 100));
+    });
+
     this.service
-      .update({
-        currency: this.currency(),
-        monthly_cents: Math.max(0, Math.round(this.monthlyUnits() * 100)),
-        annual_discount_percent: this.discount(),
-      })
+      .update({ currency: this.currency(), tiers: tierPayload, annual_discount_percent: this.discount() })
       .subscribe({
         next: (res) => {
           this.saving.set(false);
@@ -83,7 +107,15 @@ export class AdminPricingComponent implements OnInit {
   private apply(res: SubscriptionPricing): void {
     this.pricing.set(res);
     this.currency.set(res.currency);
-    this.monthlyUnits.set(res.monthly_cents / 100);
     this.discount.set(res.annual_discount_percent);
+    this.tiers.set(
+      res.tiers.map((t) => ({
+        companyLimit: t.company_limit,
+        unlimited: t.unlimited || t.company_limit === UNLIMITED_TIER,
+        labelKey: this.tierLabelKey(t.company_limit, t.unlimited),
+        monthlyUnits: t.monthly_cents / 100,
+        annualCents: t.annual_cents,
+      }))
+    );
   }
 }

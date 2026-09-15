@@ -11,6 +11,17 @@ export interface MePermissions {
   permissions: string[];
 }
 
+// One of an owner's companies, for the navbar switcher — the lightweight
+// shape (CompanySummarySerializer on the backend), not the full company
+// settings payload.
+export interface CompanySummary {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  currency: string;
+  active: boolean;
+}
+
 export interface User {
   id: string;
   first_name: string;
@@ -23,4 +34,9 @@ export interface User {
   email_verified: boolean;
   company_id: string | null;
   staff_role: StaffRole | null;
+  // Present (non-null) for an owner — every company they run, one flagged
+  // active; null for staff/admin, never []. Optional (not just nullable)
+  // so existing test fixtures across the app don't all need updating —
+  // the navbar switcher already treats "missing" the same as "null".
+  companies?: CompanySummary[] | null;
 }

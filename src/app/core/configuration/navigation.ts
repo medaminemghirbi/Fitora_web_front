@@ -37,6 +37,7 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
     items: [
       { path: "/owner/clients", icon: "bi-people", labelKey: "nav.clients", permission: "clients" },
       { path: "/owner/contracts", icon: "bi-file-earmark-text", labelKey: "nav.contracts", permission: "contracts" },
+      { path: "/owner/data-exchange", icon: "bi-arrow-down-up", labelKey: "nav.data_exchange", ownerOnly: true },
     ],
   },
   {

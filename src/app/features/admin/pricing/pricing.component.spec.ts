@@ -14,10 +14,13 @@ describe("AdminPricingComponent", () => {
   const pricing: SubscriptionPricing = {
     currencies: ["TND", "EUR"],
     currency: "TND",
-    monthly_cents: 15000,
     annual_discount_percent: 10,
-    annual_cents: 162000,
     companies_count: 5,
+    tiers: [
+      { company_limit: 1, unlimited: false, monthly_cents: 15000, annual_cents: 162000 },
+      { company_limit: 3, unlimited: false, monthly_cents: 37500, annual_cents: 405000 },
+      { company_limit: 0, unlimited: true, monthly_cents: 75000, annual_cents: 810000 },
+    ],
   };
 
   beforeEach(async () => {
@@ -35,9 +38,9 @@ describe("AdminPricingComponent", () => {
     fixture.detectChanges();
   });
 
-  it("loads pricing for the default currency on init and hydrates the form", () => {
+  it("loads pricing for the default currency on init and hydrates all three tier rows" , () => {
     expect(service.get).toHaveBeenCalledWith("TND");
-    expect(component.monthlyUnits()).toBe(150);
+    expect(component.tiers().map((t) => t.monthlyUnits)).toEqual([ 150, 375, 750 ]);
     expect(component.discount()).toBe(10);
     expect(component.loading()).toBe(false);
   });
@@ -65,18 +68,22 @@ describe("AdminPricingComponent", () => {
     expect(fresh.componentInstance.dirty).toBe(false);
   });
 
-  it("dirty is true once the monthly price or discount changes", () => {
-    component.monthlyUnits.set(200);
+  it("dirty is true once any tier's price or the discount changes", () => {
+    component.tiers()[0].monthlyUnits = 200;
     expect(component.dirty).toBe(true);
   });
 
-  it("save() clamps a negative monthly price to 0 and shows a success toast", () => {
-    component.monthlyUnits.set(-5);
-    service.update.and.returnValue(of({ ...pricing, monthly_cents: 0 }));
+  it("save() sends every tier's price keyed by company_limit, clamping negatives to 0" , () => {
+    component.tiers()[0].monthlyUnits = -5;
+    service.update.and.returnValue(of(pricing));
 
     component.save();
 
-    expect(service.update).toHaveBeenCalledWith({ currency: "TND", monthly_cents: 0, annual_discount_percent: 10 });
+    expect(service.update).toHaveBeenCalledWith({
+      currency: "TND",
+      tiers: { "1": 0, "3": 37500, "0": 75000 },
+      annual_discount_percent: 10,
+    });
     expect(component.saving()).toBe(false);
     expect(toast.toasts()[0].kind).toBe("success");
   });

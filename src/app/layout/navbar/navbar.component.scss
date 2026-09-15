@@ -223,3 +223,41 @@
   &:hover { background: var(--color-surface-hover); text-decoration: none; }
   &.is-active { background: var(--color-primary-soft); color: var(--color-primary); i { color: var(--color-primary); } }
 }
+
+.app-company-switcher-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 36px;
+  padding: 0 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  max-width: 12rem;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+
+  &:hover { background: var(--color-surface-hover); }
+  &[aria-expanded="true"] { border-color: var(--color-primary); }
+  &:disabled { opacity: 0.6; cursor: wait; }
+
+  i.bi-building { color: var(--color-muted); font-size: 0.95rem; }
+  i.bi-chevron-down { font-size: 0.7rem; color: var(--color-muted); }
+}
+
+.app-company-switcher-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-company-switcher-logo {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 3px;
+  object-fit: cover;
+  flex-shrink: 0;
+}

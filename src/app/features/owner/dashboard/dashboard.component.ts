@@ -3,14 +3,11 @@ import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
-import { ChartConfiguration } from "chart.js";
-import { NgChartsModule } from "ng2-charts";
 import { AuditLog } from "../../../core/models/audit-log.model";
 import { AuditLogsService } from "../../../core/services/audit-logs.service";
-import { DashboardResponse, DashboardService } from "../../../core/services/dashboard.service";
+import { DashboardResponse, DashboardService, TodaysScheduleItem } from "../../../core/services/dashboard.service";
 import { downloadBlob } from "../../../core/services/download.util";
 import { ReportPeriodType, ReportsService } from "../../../core/services/reports.service";
-import { RevenueResponse, RevenueService } from "../../../core/services/revenue.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ConfigurationService } from "../../../core/configuration/configuration.service";
@@ -41,7 +38,6 @@ import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
     KpiCardComponent,
     SkeletonComponent,
     ErrorStateComponent,
-    NgChartsModule,
     SetupChecklistComponent,
   ],
   templateUrl: "./dashboard.component.html",
@@ -51,7 +47,6 @@ export class DashboardComponent {
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly data = signal<DashboardResponse | null>(null);
-  readonly revenue = signal<RevenueResponse | null>(null);
   readonly auditLogs = signal<AuditLog[]>([]);
   readonly auditLogsLoading = signal(true);
 
@@ -60,38 +55,14 @@ export class DashboardComponent {
   readonly exportYear = signal(new Date().getFullYear());
   readonly exporting = signal(false);
 
-  readonly chartData = signal<ChartConfiguration<"line">["data"]>({ labels: [], datasets: [] });
-  readonly chartOptions: ChartConfiguration<"line">["options"] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: "#0f172a",
-        padding: 10,
-        cornerRadius: 8,
-        displayColors: false,
-      },
-    },
-    elements: { point: { radius: 0, hoverRadius: 4 } },
-    scales: {
-      y: {
-        beginAtZero: true,
-        border: { display: false },
-        grid: { color: "rgba(148, 163, 184, 0.18)" },
-        ticks: { color: "#94a3b8", font: { size: 11 } },
-      },
-      x: {
-        border: { display: false },
-        grid: { display: false },
-        ticks: { color: "#94a3b8", font: { size: 11 }, maxRotation: 0 },
-      },
-    },
-  };
+  // The export form and the audit log are occasional tasks, not something an
+  // owner needs open on every visit — collapsed behind the utility bar below
+  // the fold, expanded on demand instead of always taking up a full card.
+  readonly exportOpen = signal(false);
+  readonly activityOpen = signal(false);
 
   constructor(
     private readonly dashboardService: DashboardService,
-    private readonly revenueService: RevenueService,
     private readonly reportsService: ReportsService,
     private readonly auditLogsService: AuditLogsService,
     private readonly toast: ToastService,
@@ -109,23 +80,6 @@ export class DashboardComponent {
       },
       error: () => this.auditLogsLoading.set(false),
     });
-
-    this.revenueService.get().subscribe((res) => {
-      this.revenue.set(res);
-      this.chartData.set({
-        labels: res.by_day.map((d) => new Date(d.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })),
-        datasets: [
-          {
-            data: res.by_day.map((d) => d.total),
-            label: this.translate.instant("dashboard.revenue_overview"),
-            borderColor: "#4a2a8f",
-            backgroundColor: "rgba(74, 42, 143, 0.14)",
-            fill: true,
-            tension: 0.3,
-          },
-        ],
-      });
-    });
   }
 
   get setup() {
@@ -139,6 +93,15 @@ export class DashboardComponent {
 
   dismissSetup(): void {
     this.onboarding.dismiss().subscribe();
+  }
+
+  /** Fill ratio (0-100) for the schedule row's mini capacity bar. */
+  fillPct(item: TodaysScheduleItem): number {
+    return item.capacity > 0 ? Math.min(100, (item.confirmed_count / item.capacity) * 100) : 0;
+  }
+
+  hasOutstanding(amount: string): boolean {
+    return parseFloat(amount) > 0;
   }
 
   greetingKey(): string {

@@ -23,11 +23,25 @@ describe("CompanyService", () => {
     req.flush({ company: {} });
   });
 
-  it("create POSTs a wrapped payload", () => {
+  it("create POSTs a wrapped payload to the plural collection", () => {
     service.create({ name: "Acme" }).subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/company`);
+    const req = httpMock.expectOne(`${API_BASE_URL}/companies`);
     expect(req.request.method).toBe("POST");
     expect(req.request.body).toEqual({ company: { name: "Acme" } });
+    req.flush({ company: {} });
+  });
+
+  it("list GETs every company this owner runs", () => {
+    service.list().subscribe();
+    const req = httpMock.expectOne(`${API_BASE_URL}/companies`);
+    expect(req.request.method).toBe("GET");
+    req.flush({ companies: [] });
+  });
+
+  it("switchTo POSTs to the company's switch action", () => {
+    service.switchTo("co-1").subscribe();
+    const req = httpMock.expectOne(`${API_BASE_URL}/companies/co-1/switch`);
+    expect(req.request.method).toBe("POST");
     req.flush({ company: {} });
   });
 

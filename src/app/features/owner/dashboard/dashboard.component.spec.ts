@@ -11,7 +11,6 @@ import { AuditLogsService } from "../../../core/services/audit-logs.service";
 import { DashboardResponse, DashboardService } from "../../../core/services/dashboard.service";
 import { OnboardingService } from "../../../core/services/onboarding.service";
 import { ReportsService } from "../../../core/services/reports.service";
-import { RevenueService } from "../../../core/services/revenue.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { DashboardComponent } from "./dashboard.component";
 
@@ -19,7 +18,6 @@ describe("DashboardComponent", () => {
   let fixture: ComponentFixture<DashboardComponent>;
   let component: DashboardComponent;
   let dashboardService: jasmine.SpyObj<DashboardService>;
-  let revenueService: jasmine.SpyObj<RevenueService>;
   let auditLogsService: jasmine.SpyObj<AuditLogsService>;
   let reportsService: jasmine.SpyObj<ReportsService>;
   let onboardingService: jasmine.SpyObj<OnboardingService>;
@@ -48,8 +46,6 @@ describe("DashboardComponent", () => {
     TestBed.resetTestingModule();
     dashboardService = jasmine.createSpyObj("DashboardService", ["get"]);
     dashboardService.get.and.returnValue(of(response));
-    revenueService = jasmine.createSpyObj("RevenueService", ["get"]);
-    revenueService.get.and.returnValue(of({ today: 0, this_week: 0, this_month: 0, by_day: [{ date: "2026-01-01", total: 50 }] }));
     auditLogsService = jasmine.createSpyObj("AuditLogsService", ["list"]);
     auditLogsService.list.and.returnValue(
       auditLogsError ? throwError(() => new Error("nope")) : of({ audit_logs: [], meta: { page: 1, per_page: 5, total: 0, total_pages: 0 } })
@@ -66,7 +62,6 @@ describe("DashboardComponent", () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: DashboardService, useValue: dashboardService },
-        { provide: RevenueService, useValue: revenueService },
         { provide: AuditLogsService, useValue: auditLogsService },
         { provide: ReportsService, useValue: reportsService },
         { provide: OnboardingService, useValue: onboardingService },
@@ -99,17 +94,44 @@ describe("DashboardComponent", () => {
     expect(component.auditLogsLoading()).toBe(false);
   });
 
-  it("builds the revenue chart data from by_day", () => {
-    expect(component.chartData().datasets?.[0].data).toEqual([50]);
-    expect(component.revenue()?.today).toBe(0);
-  });
-
   it("renders the KPI cards", () => {
     expect(fixture.nativeElement.querySelectorAll("app-kpi-card").length).toBe(5);
   });
 
   it("renders today's schedule rows", () => {
-    expect(fixture.nativeElement.querySelectorAll("tbody tr").length).toBe(1);
+    expect(fixture.nativeElement.querySelectorAll(".dashboard-schedule-list li").length).toBe(1);
+  });
+
+  describe("fillPct", () => {
+    it("computes the confirmed/capacity percentage", () => {
+      expect(component.fillPct({ confirmed_count: 3, capacity: 4 } as never)).toBe(75);
+    });
+
+    it("caps at 100 for an overbooked session", () => {
+      expect(component.fillPct({ confirmed_count: 5, capacity: 4 } as never)).toBe(100);
+    });
+
+    it("returns 0 for a zero-capacity session instead of dividing by zero", () => {
+      expect(component.fillPct({ confirmed_count: 0, capacity: 0 } as never)).toBe(0);
+    });
+  });
+
+  describe("hasOutstanding", () => {
+    it("is true for a positive amount", () => {
+      expect(component.hasOutstanding("65")).toBe(true);
+    });
+
+    it("is false for zero", () => {
+      expect(component.hasOutstanding("0")).toBe(false);
+      expect(component.hasOutstanding("0.00")).toBe(false);
+    });
+  });
+
+  describe("utility bar toggles", () => {
+    it("export and activity panels start collapsed", () => {
+      expect(component.exportOpen()).toBe(false);
+      expect(component.activityOpen()).toBe(false);
+    });
   });
 
   it("showSetupCard is false with no setup state", () => {

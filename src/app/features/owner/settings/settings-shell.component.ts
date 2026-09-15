@@ -12,6 +12,7 @@ import { SettingsContractTypesComponent } from "./settings-contract-types.compon
 import { SettingsRolesComponent } from "./settings-roles.component";
 import { SettingsAppearanceComponent } from "./settings-appearance.component";
 import { ActivitiesComponent } from "../activities/activities.component";
+import { SallesComponent } from "../salles/salles.component";
 
 // Direction A — persistent left rail + detail panel. The rail is flush to the
 // left edge and full height; `/owner/settings/:section` selects the section
@@ -30,6 +31,7 @@ import { ActivitiesComponent } from "../activities/activities.component";
     SettingsRolesComponent,
     SettingsAppearanceComponent,
     ActivitiesComponent,
+    SallesComponent,
   ],
   templateUrl: "./settings-shell.component.html",
   styleUrl: "./settings-shell.component.scss",

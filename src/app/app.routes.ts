@@ -54,6 +54,7 @@ export const routes: Routes = [
       { path: "bookings", canActivate: [capabilityGuard("bookings")], loadComponent: () => import("./features/owner/bookings/bookings.component").then((m) => m.OwnerBookingsComponent) },
       { path: "contracts", canActivate: [capabilityGuard("contracts")], loadComponent: () => import("./features/owner/contracts/contracts.component").then((m) => m.ContractsComponent) },
       { path: "payments", canActivate: [capabilityGuard("payments")], loadComponent: () => import("./features/owner/payments/payments.component").then((m) => m.OwnerPaymentsComponent) },
+      { path: "data-exchange", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/data-exchange/data-exchange.component").then((m) => m.DataExchangeComponent) },
       { path: "team", canActivate: [capabilityGuard("coaches")], loadComponent: () => import("./features/owner/team/team.component").then((m) => m.TeamComponent) },
       // Coaches + Staff were merged into one Team page — keep the old paths working.
       { path: "coaches", pathMatch: "full", redirectTo: "team" },

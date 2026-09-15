@@ -7,8 +7,8 @@
 
       <nav class="lp-nav-links">
         <a [routerLink]="['/']" fragment="features">{{ "landing.nav_features" | translate }}</a>
+        <a [routerLink]="['/']" fragment="solutions">{{ "landing.nav_solutions" | translate }}</a>
         <a [routerLink]="['/']" fragment="flow">{{ "landing.nav_how" | translate }}</a>
-        <a [routerLink]="['/']" fragment="pricing">{{ "landing.nav_pricing" | translate }}</a>
       </nav>
 
       <div class="lp-nav-right">
@@ -42,8 +42,8 @@
 
     <div class="lp-mobile-menu" [class.is-open]="mobileOpen()">
       <a [routerLink]="['/']" fragment="features" (click)="mobileOpen.set(false)">{{ "landing.nav_features" | translate }}</a>
+      <a [routerLink]="['/']" fragment="solutions" (click)="mobileOpen.set(false)">{{ "landing.nav_solutions" | translate }}</a>
       <a [routerLink]="['/']" fragment="flow" (click)="mobileOpen.set(false)">{{ "landing.nav_how" | translate }}</a>
-      <a [routerLink]="['/']" fragment="pricing" (click)="mobileOpen.set(false)">{{ "landing.nav_pricing" | translate }}</a>
       <div class="lp-mobile-cta">
         <a routerLink="/auth/login" class="lp-btn lp-btn--ghost" (click)="mobileOpen.set(false)">{{ "auth.login" | translate }}</a>
         <a routerLink="/auth/register" class="lp-btn lp-btn--grad" (click)="mobileOpen.set(false)">{{ "landing.cta_start" | translate }}</a>
@@ -55,20 +55,23 @@
     <!-- HERO -->
     <section class="lp-hero">
       <span class="lp-glow"></span>
+      <span class="lp-blob lp-blob--1" aria-hidden="true"></span>
+      <span class="lp-blob lp-blob--2" aria-hidden="true"></span>
+      <span class="lp-blob lp-blob--3" aria-hidden="true"></span>
       <div class="lp-shell lp-hero-grid">
         <div class="lp-hero-copy">
           <span class="lp-eyebrow">{{ "landing.eyebrow" | translate }}</span>
-          <h1 class="lp-h1">{{ "landing.hero_title_1" | translate }}<br /><span class="lp-grad-text">{{ "landing.hero_title_2" | translate }}</span></h1>
+          <h1 class="lp-h1">{{ "landing.hero_title_1" | translate }}<br /><span class="lp-grad-text lp-shimmer">{{ "landing.hero_title_2" | translate }}</span></h1>
           <p class="lp-hero-sub">{{ "landing.hero_subtitle" | translate }}</p>
           <div class="lp-hero-cta">
             <a routerLink="/auth/register" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.hero_cta_primary" | translate }}</a>
-            <a [routerLink]="['/']" fragment="features" class="lp-btn lp-btn--ghost lp-btn--lg">{{ "landing.hero_cta_secondary" | translate }}</a>
           </div>
           <p class="lp-hero-note">{{ "landing.hero_note" | translate }}</p>
         </div>
 
         <div class="lp-cockpit-wrap">
-          <div class="lp-cockpit">
+          <div class="lp-cockpit" [style.transform]="cockpitTilt() ? 'perspective(1200px) ' + cockpitTilt() : 'perspective(1200px)'"
+               (mousemove)="onCockpitMove($event)" (mouseleave)="onCockpitLeave()">
             <div class="lp-cp-head">
               <span class="lp-cp-title">{{ "landing.panel_today" | translate }}</span>
               <span class="lp-cp-ctx">{{ "landing.panel_context" | translate }}</span>
@@ -90,32 +93,28 @@
               <svg viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
                 <defs>
                   <linearGradient id="lpArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#e8005f" stop-opacity="0.42" />
+                    <stop offset="0" stop-color="#e8005f" stop-opacity="0.28" />
                     <stop offset="1" stop-color="#e8005f" stop-opacity="0" />
                   </linearGradient>
                 </defs>
                 <path d="M10,53.7 L60,47 L110,49.8 L160,37.6 L210,42 L260,28.2 L310,19.3 L310,88 L10,88 Z" fill="url(#lpArea)" />
-                <path d="M10,53.7 L60,47 L110,49.8 L160,37.6 L210,42 L260,28.2 L310,19.3" fill="none" stroke="#ffbc00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <circle cx="310" cy="19.3" r="3.6" fill="#ffbc00" />
+                <path d="M10,53.7 L60,47 L110,49.8 L160,37.6 L210,42 L260,28.2 L310,19.3" fill="none" stroke="#e8005f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="310" cy="19.3" r="3.6" fill="#e8005f" />
               </svg>
             </div>
 
-            <div class="lp-cp-agenda">
-              <div class="lp-cp-row">
-                <span class="lp-cp-slot" [innerHTML]="'landing.panel_slot_1' | translate"></span>
-                <span class="lp-cp-fill">18 / 20</span>
-                <span class="lp-cp-pill">{{ "landing.panel_confirmed" | translate }}</span>
+            <div class="lp-cp-cal">
+              <div class="lp-cp-cal-head">
+                <span></span><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span>
               </div>
-              <div class="lp-cp-row">
-                <span class="lp-cp-slot" [innerHTML]="'landing.panel_slot_2' | translate"></span>
-                <span class="lp-cp-fill">11 / 12</span>
-                <span class="lp-cp-pill">{{ "landing.panel_confirmed" | translate }}</span>
-              </div>
-              <div class="lp-cp-row">
-                <span class="lp-cp-slot" [innerHTML]="'landing.panel_slot_3' | translate"></span>
-                <span class="lp-cp-fill">1 / 1</span>
-                <span class="lp-cp-pill">{{ "landing.panel_slot_tag" | translate }}</span>
-              </div>
+              @for (row of week; track row.time; let ri = $index) {
+                <div class="lp-cp-cal-row" [style.animation-delay.ms]="ri * 90">
+                  <span class="lp-cp-cal-time">{{ row.time }}</span>
+                  @for (c of row.cells; track $index) {
+                    <span class="lp-cp-cal-cell" [class.on]="c.s === 'on'" [class.full]="c.s === 'f'" [class.grad1]="c.s === 'on' && (ri + $index) % 3 === 0" [class.grad2]="c.s === 'on' && (ri + $index) % 3 === 1" [class.grad3]="c.s === 'on' && (ri + $index) % 3 === 2">{{ c.n }}</span>
+                  }
+                </div>
+              }
             </div>
           </div>
           <span class="lp-cp-float">{{ "landing.panel_checkins" | translate }}</span>
@@ -123,20 +122,118 @@
       </div>
     </section>
 
-    <!-- VOCAB BAND -->
-    <section class="lp-band">
+    <!-- MARQUEE -->
+    <div class="lp-marquee" aria-hidden="true">
+      <div class="lp-marquee-track">
+        @for (i of [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]; track $index) {
+          <span>{{ "landing.marquee_" + i | translate }}</span>
+          <span class="lp-marquee-dot">✦</span>
+        }
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section class="lp-section lp-reveal">
       <div class="lp-shell">
-        <p class="lp-band-lead">{{ "landing.vocab_lead" | translate }}</p>
-        <div class="lp-pills">
-          @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
-            <span class="lp-pill">{{ "landing.vocab_" + i | translate }}</span>
+        <div class="lp-sec-head">
+          <span class="lp-eyebrow">{{ "landing.overview_kicker" | translate }}</span>
+          <h2 class="lp-h2">{{ "landing.overview_title" | translate }}</h2>
+          <p>{{ "landing.overview_lead" | translate }}</p>
+        </div>
+        <div class="lp-overview-grid">
+          <article class="lp-overview-card lp-overview-card--grad">
+            <span class="lp-overview-tag">{{ "landing.overview_1_tag" | translate }}</span>
+            <h3>{{ "landing.overview_1_title" | translate }}</h3>
+            <p>{{ "landing.overview_1_desc" | translate }}</p>
+          </article>
+          <article class="lp-overview-card">
+            <span class="lp-overview-tag">{{ "landing.overview_2_tag" | translate }}</span>
+            <h3>{{ "landing.overview_2_title" | translate }}</h3>
+            <p>{{ "landing.overview_2_desc" | translate }}</p>
+          </article>
+          <article class="lp-overview-card">
+            <span class="lp-overview-tag">{{ "landing.overview_3_tag" | translate }}</span>
+            <h3>{{ "landing.overview_3_title" | translate }}</h3>
+            <p>{{ "landing.overview_3_desc" | translate }}</p>
+          </article>
+          <article class="lp-overview-card">
+            <span class="lp-overview-tag">{{ "landing.overview_4_tag" | translate }}</span>
+            <h3>{{ "landing.overview_4_title" | translate }}</h3>
+            <p>{{ "landing.overview_4_desc" | translate }}</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BENEFITS -->
+    <section class="lp-benefits-band lp-reveal">
+      <div class="lp-shell">
+        <div class="lp-benefits-grid">
+          @for (b of benefits; track b.icon) {
+            <div class="lp-benefit-card">
+              <span class="lp-benefit-icon"><i class="bi" [ngClass]="b.icon"></i></span>
+              <p>{{ b.textKey | translate }}</p>
+            </div>
           }
         </div>
       </div>
     </section>
 
-    <!-- FEATURES -->
-    <section class="lp-section" id="features">
+    <!-- INTEGRATIONS -->
+    <section class="lp-section lp-reveal">
+      <div class="lp-shell">
+        <div class="lp-sec-head">
+          <span class="lp-eyebrow">{{ "landing.integrations_kicker" | translate }}</span>
+          <h2 class="lp-h2">{{ "landing.integrations_title" | translate }}</h2>
+          <p>{{ "landing.integrations_lead" | translate }}</p>
+        </div>
+        <div class="lp-int-tabs">
+          @for (i of [1, 2, 3, 4, 5]; track i; let first = $first) {
+            <span class="lp-int-tab" [class.is-active]="first">{{ "landing.integrations_tab_" + i | translate }}</span>
+          }
+        </div>
+        <div class="lp-int-chips">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <span class="lp-int-chip">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M2 10h20" stroke="currentColor" stroke-width="1.8"/></svg>
+              {{ "landing.integrations_chip_" + i | translate }}
+            </span>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- PROBLEMS -->
+    <section class="lp-section lp-section--alt lp-reveal">
+      <div class="lp-shell">
+        <div class="lp-sec-head">
+          <span class="lp-eyebrow">{{ "landing.problems_kicker" | translate }}</span>
+          <h2 class="lp-h2">{{ "landing.problems_title" | translate }}</h2>
+          <p>{{ "landing.problems_lead" | translate }}</p>
+        </div>
+        <div class="lp-problems-grid">
+          <div class="lp-member-view">
+            @for (i of [1, 2, 3]; track i) {
+              <div class="lp-member-step"><span class="lp-member-step-n">{{ i }}</span> {{ "landing.problems_step_" + i | translate }}</div>
+            }
+          </div>
+          <div class="lp-problems-list">
+            @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+              <div class="lp-problem">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>
+                {{ "landing.problems_item_" + i | translate }}
+              </div>
+            }
+            <div class="lp-problems-cta">
+              <a [routerLink]="['/']" fragment="features" class="lp-btn lp-btn--grad">{{ "landing.problems_cta" | translate }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES / MODULES -->
+    <section class="lp-section lp-reveal" id="features">
       <div class="lp-shell">
         <div class="lp-sec-head">
           <span class="lp-eyebrow">{{ "landing.features_kicker" | translate }}</span>
@@ -193,8 +290,94 @@
       </div>
     </section>
 
+    <!-- VERTICALS / SOLUTIONS -->
+    <section class="lp-section lp-section--alt lp-reveal" id="solutions">
+      <div class="lp-shell">
+        <div class="lp-sec-head">
+          <span class="lp-eyebrow">{{ "landing.solutions_kicker" | translate }}</span>
+          <h2 class="lp-h2">{{ "landing.solutions_title" | translate }}</h2>
+          <p>{{ "landing.solutions_lead" | translate }}</p>
+        </div>
+        <div class="lp-verticals">
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div class="lp-vert-card">
+              <span class="lp-vert-icon">
+                @switch (i) {
+                  @case (1) { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="#fff" stroke-width="1.8"><path d="M6 7v10M18 7v10M2 12h4M18 12h4M6 12h12"/></svg> }
+                  @case (2) { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="#fff" stroke-width="1.8"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M8.5 12h7"/></svg> }
+                  @case (3) { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg> }
+                  @default { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> }
+                }
+              </span>
+              <h3>{{ "landing.solutions_" + i | translate }}</h3>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="lp-section lp-reveal">
+      <div class="lp-shell">
+        <div class="lp-sec-head">
+          <span class="lp-eyebrow">{{ "landing.testimonials_kicker" | translate }}</span>
+          <h2 class="lp-h2">{{ "landing.testimonials_title" | translate }}</h2>
+          <span class="lp-testi-tag">{{ "landing.testimonials_tag" | translate }}</span>
+        </div>
+        <div class="lp-testis">
+          @for (t of testimonials; track t.who) {
+            <div class="lp-testi-card">
+              <p class="lp-testi-quote">{{ t.quote | translate }}</p>
+              <div class="lp-testi-who"><span class="lp-testi-avatar"></span> {{ t.who | translate }}</div>
+            </div>
+          }
+        </div>
+        <div class="lp-logo-strip">
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+            <span class="lp-logo-chip">{{ "landing.testimonials_logo_" + i | translate }}</span>
+          }
+        </div>
+        <p class="lp-placeholder-note">{{ "landing.testimonials_note" | translate }}</p>
+      </div>
+    </section>
+
+    <!-- MOBILE APP -->
+    <section class="lp-section lp-section--alt lp-reveal">
+      <div class="lp-shell lp-mobile">
+        <div>
+          <span class="lp-eyebrow">{{ "landing.mobile_kicker" | translate }}</span>
+          <h2 class="lp-h2" style="margin-top: 12px;">{{ "landing.mobile_title" | translate }}</h2>
+          <p class="lp-hero-sub" style="margin-top: 12px; max-width: none;">{{ "landing.mobile_subtitle" | translate }}</p>
+          <div class="lp-mobile-features">
+            @for (i of [1, 2, 3]; track i) {
+              <div class="lp-mfeat">
+                <span class="lp-mfeat-icon">
+                  @switch (i) {
+                    @case (1) { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> }
+                    @case (2) { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> }
+                    @default { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> }
+                  }
+                </span>
+                <div>
+                  <h4>{{ "landing.mobile_feat_" + i + "_t" | translate }}</h4>
+                  <p>{{ "landing.mobile_feat_" + i + "_d" | translate }}</p>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="lp-store-badges">
+            <span class="lp-store-badge"><i class="bi bi-apple"></i> {{ "landing.mobile_ios" | translate }}</span>
+            <span class="lp-store-badge"><i class="bi bi-google-play"></i> {{ "landing.mobile_android" | translate }}</span>
+          </div>
+        </div>
+        <div class="lp-mobile-art">
+          <img src="assets/images/dispo.jpeg" [alt]="'landing.mobile_title' | translate" loading="lazy" />
+        </div>
+      </div>
+    </section>
+
     <!-- FLOW -->
-    <section class="lp-section lp-section--alt" id="flow">
+    <section class="lp-section lp-reveal" id="flow">
       <div class="lp-shell">
         <div class="lp-sec-head">
           <span class="lp-eyebrow">{{ "landing.flow_kicker" | translate }}</span>
@@ -213,33 +396,118 @@
       </div>
     </section>
 
-    <!-- PRICING -->
-    <section class="lp-section" id="pricing">
-      <div class="lp-shell lp-price-wrap">
-        <div class="lp-price">
-          <span class="lp-eyebrow">{{ "landing.pricing_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.pricing_title" | translate }}</h2>
-          <p class="lp-lede">{{ "landing.pricing_lede" | translate }}</p>
-          <a routerLink="/auth/register" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.pricing_cta" | translate }}</a>
-          <ul>
-            @for (i of [1, 2, 3, 4]; track i) {
-              <li>{{ "landing.pricing_li_" + i | translate }}</li>
-            }
-          </ul>
+    <!-- ROI CALCULATOR -->
+    <section class="lp-section lp-section--alt lp-reveal">
+      <div class="lp-shell">
+        <div class="lp-sec-head">
+          <span class="lp-eyebrow">{{ "landing.roi_kicker" | translate }}</span>
+          <h2 class="lp-h2">{{ "landing.roi_title" | translate }}</h2>
+          <p>{{ "landing.roi_lead" | translate }}</p>
         </div>
+        <div class="lp-roi">
+          <div>
+            <div class="lp-roi-field">
+              <label for="roiMembers">{{ "landing.roi_label_members" | translate }}</label>
+              <input id="roiMembers" type="number" min="0" [ngModel]="roiMembers()" (ngModelChange)="roiMembers.set($event)" />
+            </div>
+            <div class="lp-roi-field">
+              <label for="roiPrice">{{ "landing.roi_label_price" | translate }}</label>
+              <input id="roiPrice" type="number" min="0" [ngModel]="roiPrice()" (ngModelChange)="roiPrice.set($event)" />
+            </div>
+            <div class="lp-roi-field">
+              <label for="roiLate">{{ "landing.roi_label_late" | translate }}</label>
+              <input id="roiLate" type="number" min="0" max="100" [ngModel]="roiLatePct()" (ngModelChange)="roiLatePct.set($event)" />
+            </div>
+            <div class="lp-roi-field">
+              <label for="roiChurn">{{ "landing.roi_label_churn" | translate }}</label>
+              <input id="roiChurn" type="number" min="0" max="100" [ngModel]="roiChurnPct()" (ngModelChange)="roiChurnPct.set($event)" />
+            </div>
+          </div>
+          <div class="lp-roi-result">
+            <div class="lp-roi-card">
+              <div class="k">{{ "landing.roi_atrisk_label" | translate }}</div>
+              <div class="v">{{ roiAtRisk() | number: "1.0-0" }} DT</div>
+            </div>
+            <div class="lp-roi-card">
+              <div class="k">{{ "landing.roi_recoverable_label" | translate }}</div>
+              <div class="v grad">{{ roiRecoverable() | number: "1.0-0" }} DT</div>
+            </div>
+            <p class="lp-roi-foot">{{ "landing.roi_foot" | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="lp-section lp-reveal" id="faq">
+      <div class="lp-shell">
+        <div class="lp-sec-head" style="margin-inline: auto; text-align: center; align-items: center;">
+          <span class="lp-eyebrow">{{ "landing.faq_kicker" | translate }}</span>
+          <h2 class="lp-h2">{{ "landing.faq_title" | translate }}</h2>
+        </div>
+        <div class="lp-faq">
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track i) {
+            <div class="lp-faq-item" [class.is-open]="openFaq() === i">
+              <button type="button" class="lp-faq-q" [attr.aria-expanded]="openFaq() === i" (click)="toggleFaq(i)">
+                <span>{{ "landing.faq_q_" + i | translate }}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="lp-faq-a-wrap">
+                <div class="lp-faq-a-inner">
+                  <div class="lp-faq-a">{{ "landing.faq_a_" + i | translate }}</div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="lp-final lp-reveal">
+      <div class="lp-shell lp-final-in">
+        <h2>{{ "landing.final_title" | translate }}</h2>
+        <p>{{ "landing.final_lead" | translate }}</p>
+        <a routerLink="/auth/register" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.final_cta" | translate }}</a>
       </div>
     </section>
   </main>
 
   <footer class="lp-foot">
-    <div class="lp-shell lp-foot-in">
-      <a routerLink="/" class="lp-brand"><span class="lp-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span> FITORA</a>
-      <p class="lp-foot-tag">{{ "landing.footer_tag" | translate }}</p>
-      <nav class="lp-foot-links">
-        <a [routerLink]="['/']" fragment="features">{{ "landing.nav_features" | translate }}</a>
-        <a [routerLink]="['/']" fragment="pricing">{{ "landing.nav_pricing" | translate }}</a>
-        <a routerLink="/auth/login">{{ "auth.login" | translate }}</a>
-      </nav>
+    <div class="lp-shell">
+      <div class="lp-foot-grid">
+        <div class="lp-foot-brand">
+          <a routerLink="/" class="lp-brand"><span class="lp-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span> FITORA</a>
+          <p class="lp-foot-tag">{{ "landing.footer_tag" | translate }}</p>
+          <p class="lp-foot-made">{{ "landing.footer_made" | translate }}</p>
+          <div class="lp-foot-social">
+            <a href="mailto:contact@fitora.io" class="lp-foot-social-btn" [attr.aria-label]="'landing.footer_contact' | translate"><i class="bi bi-envelope"></i></a>
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" class="lp-foot-social-btn" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" class="lp-foot-social-btn" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" class="lp-foot-social-btn" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+          </div>
+        </div>
+
+        <nav class="lp-foot-col">
+          <h4>{{ "landing.footer_col_product" | translate }}</h4>
+          <a [routerLink]="['/']" fragment="features">{{ "landing.nav_features" | translate }}</a>
+          <a [routerLink]="['/']" fragment="solutions">{{ "landing.nav_solutions" | translate }}</a>
+          <a [routerLink]="['/']" fragment="flow">{{ "landing.nav_how" | translate }}</a>
+        </nav>
+
+        <nav class="lp-foot-col">
+          <h4>{{ "landing.footer_col_resources" | translate }}</h4>
+          <a [routerLink]="['/']" fragment="faq">{{ "landing.footer_faq" | translate }}</a>
+          <a href="mailto:contact@fitora.io">{{ "landing.footer_contact" | translate }}</a>
+        </nav>
+
+        <nav class="lp-foot-col">
+          <h4>{{ "landing.footer_col_account" | translate }}</h4>
+          <a routerLink="/auth/login">{{ "auth.login" | translate }}</a>
+          <a routerLink="/auth/register">{{ "landing.cta_start" | translate }}</a>
+        </nav>
+      </div>
+
       <p class="lp-foot-copy">© {{ year() }} Fitora · {{ "landing.footer_rights" | translate }}</p>
     </div>
   </footer>

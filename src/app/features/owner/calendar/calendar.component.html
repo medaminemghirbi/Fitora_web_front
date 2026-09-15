@@ -4,13 +4,21 @@
     <h1 class="fx-page-header-title">{{ "nav.calendar" | translate }}</h1>
     <p class="fx-page-header-desc">{{ "schedule.subtitle" | translate }}</p>
   </div>
-  @if (canManageSessions()) {
-    <div class="fx-page-header-actions">
+  <div class="fx-page-header-actions">
+    <button type="button" class="btn btn-outline-primary" (click)="printSchedule()" [disabled]="printingSchedule()">
+      @if (printingSchedule()) {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      } @else {
+        <i class="bi bi-printer"></i>
+      }
+      {{ "schedule.print_week" | translate }}
+    </button>
+    @if (canManageSessions()) {
       <button type="button" class="btn btn-primary" (click)="openCreate()">
         <i class="bi bi-plus-lg"></i> {{ "schedule.new_session" | translate }}
       </button>
-    </div>
-  }
+    }
+  </div>
 </header>
 
 <div class="app-card mb-4">

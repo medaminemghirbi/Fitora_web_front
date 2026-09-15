@@ -1,21 +1,122 @@
-.dashboard-chart {
-  height: 260px;
+// ---------- compact KPI strip ----------
+// Same app-kpi-card component used elsewhere (client-profile) — tightened
+// only inside this page's strip via ::ng-deep, not globally.
+.dashboard-kpi-strip {
+  grid-template-columns: repeat(5, 1fr);
+
+  ::ng-deep .fx-kpi { padding: var(--space-3) var(--space-4); gap: 0.2rem; }
+  ::ng-deep .fx-kpi-value { font-size: var(--font-size-xl); }
 }
 
-.dashboard-revenue-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+@media (max-width: 991.98px) {
+  .dashboard-kpi-strip { grid-template-columns: repeat(2, 1fr); }
+}
 
-  strong {
-    display: inline-block;
-    margin-inline-start: 0.3rem;
-    color: var(--color-text);
-    font-size: 0.8125rem;
+// ---------- main split: schedule (wide) + side column ----------
+.dashboard-main-split {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 991.98px) {
+  .dashboard-main-split { grid-template-columns: 1fr; }
+}
+
+.dashboard-schedule-card .app-card-header { display: flex; align-items: center; justify-content: space-between; }
+
+.dashboard-view-all {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+  &:hover { text-decoration: underline; }
+}
+
+.dashboard-schedule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--space-5) var(--space-4);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0.6rem 0;
+    border-top: 1px solid var(--color-border);
+
+    &:first-child { border-top: 0; }
   }
 }
+
+.dashboard-schedule-time {
+  font-family: var(--font-family);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  width: 42px;
+  flex-shrink: 0;
+}
+
+.dashboard-schedule-name {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-schedule-bar {
+  width: 64px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.dashboard-schedule-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-success);
+  &.is-full { background: var(--color-warning); }
+}
+
+.dashboard-schedule-count {
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  width: 40px;
+  flex-shrink: 0;
+}
+
+// ---------- side column: compact revenue + "needs attention" ----------
+.dashboard-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+
+  .app-card { margin-bottom: 0; }
+}
+
+.dashboard-attention-list li { align-items: center; gap: 0.6rem; }
+
+.dashboard-attention-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-text-secondary);
+
+  &.is-warning { background: var(--color-warning); }
+  &.is-accent { background: var(--color-accent); }
+}
+
+.dashboard-attention-warning { color: var(--color-warning); }
 
 .dashboard-cols {
   display: grid;
@@ -23,8 +124,28 @@
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 
   .app-card { margin-bottom: 0; }
+  .app-card-header { display: flex; align-items: center; justify-content: space-between; }
 }
 
-@media (max-width: 575.98px) {
-  .dashboard-revenue-legend { width: 100%; gap: 0.5rem 1rem; }
+// ---------- de-emphasized utility bar (export / activity log) ----------
+.dashboard-utility-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dashboard-utility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.3rem 0.2rem;
+  cursor: pointer;
+
+  &:hover { color: var(--color-text); }
+  i:last-child { font-size: 0.7rem; }
 }

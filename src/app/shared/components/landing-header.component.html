@@ -8,7 +8,6 @@
     <nav class="mkt-nav-links">
       <a [routerLink]="['/']" fragment="features">{{ "landing.nav_features" | translate }}</a>
       <a [routerLink]="['/']" fragment="flow">{{ "landing.nav_how" | translate }}</a>
-      <a [routerLink]="['/']" fragment="pricing">{{ "landing.nav_pricing" | translate }}</a>
     </nav>
 
     <div class="mkt-nav-actions">
@@ -43,7 +42,6 @@
   <div class="mkt-mobile-menu" [class.is-open]="mobileOpen()">
     <a [routerLink]="['/']" fragment="features" (click)="closeMobile()">{{ "landing.nav_features" | translate }}</a>
     <a [routerLink]="['/']" fragment="flow" (click)="closeMobile()">{{ "landing.nav_how" | translate }}</a>
-    <a [routerLink]="['/']" fragment="pricing" (click)="closeMobile()">{{ "landing.nav_pricing" | translate }}</a>
     <div class="mkt-mobile-menu-cta">
       <a routerLink="/auth/login" class="mkt-btn mkt-btn--ghost" (click)="closeMobile()">{{ "auth.login" | translate }}</a>
       <a routerLink="/auth/register" class="mkt-btn mkt-btn--primary" (click)="closeMobile()">{{ "landing.cta_start" | translate }}</a>

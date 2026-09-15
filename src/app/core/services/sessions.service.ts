@@ -63,6 +63,11 @@ export class SessionsService {
   cancel(id: string): Observable<{ session: Session }> {
     return this.http.post<{ session: Session }>(`${API_BASE_URL}/sessions/${id}/cancel`, {});
   }
+
+  // PDF planning for the week containing `from` (YYYY-MM-DD), one page per coach.
+  schedulePdf(from: string): Observable<Blob> {
+    return this.http.get(`${API_BASE_URL}/sessions/schedule_pdf`, { params: { from }, responseType: "blob" });
+  }
 }
 
 export interface PageMeta {

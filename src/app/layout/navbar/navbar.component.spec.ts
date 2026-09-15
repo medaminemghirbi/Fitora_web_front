@@ -4,8 +4,10 @@ import { Component } from "@angular/core";
 import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
 import { Router, provideRouter } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
+import { of, throwError } from "rxjs";
 import { AuthService } from "../../core/auth/auth.service";
 import { NavGroup, NavLeaf } from "../../core/configuration/navigation.service";
+import { CompanyService } from "../../core/services/company.service";
 import { NavbarComponent } from "./navbar.component";
 
 @Component({ standalone: true, template: "" })
@@ -15,6 +17,7 @@ describe("NavbarComponent", () => {
   let fixture: ComponentFixture<NavbarComponent>;
   let component: NavbarComponent;
   let authStub: { currentUser: jasmine.Spy; logout: jasmine.Spy };
+  let companyServiceStub: { switchTo: jasmine.Spy };
 
   const dashboardItem: NavLeaf = { path: "/owner/dashboard", icon: "bi-house", labelKey: "nav.dashboard" };
   const groups: NavGroup[] = [
@@ -30,6 +33,7 @@ describe("NavbarComponent", () => {
 
   beforeEach(async () => {
     authStub = { currentUser: jasmine.createSpy().and.returnValue({ role: "owner" }), logout: jasmine.createSpy() };
+    companyServiceStub = { switchTo: jasmine.createSpy().and.returnValue(of({ company: {} })) };
 
     await TestBed.configureTestingModule({
       imports: [NavbarComponent, TranslateModule.forRoot()],
@@ -38,6 +42,7 @@ describe("NavbarComponent", () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: AuthService, useValue: authStub },
+        { provide: CompanyService, useValue: companyServiceStub },
       ],
     }).compileComponents();
 
@@ -150,4 +155,96 @@ describe("NavbarComponent", () => {
     expect(component.openGroup()).toBeNull();
     expect(component.mobileOpen()).toBe(false);
   }));
+
+  describe("company switcher", () => {
+    const companies = [
+      { id: "co-1", name: "Gym One", logo_url: null, currency: "TND", active: true },
+      { id: "co-2", name: "Gym Two", logo_url: null, currency: "TND", active: false },
+    ];
+
+    // switchableCompanies/activeCompany are computed() signals — they only
+    // re-run when a tracked Signal dependency changes. authStub.currentUser
+    // is a plain jasmine spy, not a real Signal, so changing its return
+    // value on the shared component (already read once in the outer
+    // beforeEach) wouldn't be picked up. A fresh component per test, with
+    // the stub set before its first read, sidesteps that entirely.
+    function freshWith(user: Record<string, unknown>): NavbarComponent {
+      authStub.currentUser.and.returnValue(user);
+      const fresh = TestBed.createComponent(NavbarComponent);
+      fresh.componentInstance.groups = groups;
+      fresh.detectChanges();
+      return fresh.componentInstance;
+    }
+
+    it("switchableCompanies is null for an owner with just one company", () => {
+      expect(freshWith({ role: "owner", companies: [companies[0]] }).switchableCompanies()).toBeNull();
+    });
+
+    it("switchableCompanies is null when there's no companies field at all (staff/admin)", () => {
+      expect(freshWith({ role: "staff" }).switchableCompanies()).toBeNull();
+    });
+
+    it("switchableCompanies lists every company once there's more than one, and activeCompany picks the flagged one", () => {
+      const withCompanies = freshWith({ role: "owner", companies });
+      expect(withCompanies.switchableCompanies()).toEqual(companies);
+      expect(withCompanies.activeCompany()?.id).toBe("co-1");
+    });
+
+    it("toggleCompanySwitcher opens it and closes the group/user menus", () => {
+      component.openGroup.set("sales");
+      component.userMenuOpen.set(true);
+
+      component.toggleCompanySwitcher();
+
+      expect(component.companySwitcherOpen()).toBe(true);
+      expect(component.openGroup()).toBeNull();
+      expect(component.userMenuOpen()).toBe(false);
+    });
+
+    it("toggleCompanySwitcher twice closes it again", () => {
+      component.toggleCompanySwitcher();
+      component.toggleCompanySwitcher();
+      expect(component.companySwitcherOpen()).toBe(false);
+    });
+
+    it("switchCompany does nothing but close the menu when picking the already-active company", () => {
+      const owner = freshWith({ role: "owner", companies });
+      owner.companySwitcherOpen.set(true);
+
+      owner.switchCompany("co-1");
+
+      expect(companyServiceStub.switchTo).not.toHaveBeenCalled();
+      expect(owner.companySwitcherOpen()).toBe(false);
+    });
+
+    it("switchCompany calls the service and reloads to the dashboard on success", () => {
+      const owner = freshWith({ role: "owner", companies });
+      const reload = spyOn(owner as unknown as { reloadToDashboard(): void }, "reloadToDashboard");
+
+      owner.switchCompany("co-2");
+
+      expect(companyServiceStub.switchTo).toHaveBeenCalledWith("co-2");
+      expect(reload).toHaveBeenCalled();
+    });
+
+    it("switchCompany resets state and stops spinning on failure", () => {
+      const owner = freshWith({ role: "owner", companies });
+      companyServiceStub.switchTo.and.returnValue(throwError(() => new Error("nope")));
+      owner.companySwitcherOpen.set(true);
+
+      owner.switchCompany("co-2");
+
+      expect(owner.switching()).toBe(false);
+      expect(owner.companySwitcherOpen()).toBe(false);
+    });
+
+    it("switchCompany ignores a second click while already switching", () => {
+      const owner = freshWith({ role: "owner", companies });
+      owner.switching.set(true);
+
+      owner.switchCompany("co-2");
+
+      expect(companyServiceStub.switchTo).not.toHaveBeenCalled();
+    });
+  });
 });

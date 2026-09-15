@@ -12,6 +12,7 @@ import { BookingsService } from "../../../core/services/bookings.service";
 import { CalendarEvent, CalendarService } from "../../../core/services/calendar.service";
 import { ClientsService } from "../../../core/services/clients.service";
 import { CoachesService } from "../../../core/services/coaches.service";
+import { CompanyService } from "../../../core/services/company.service";
 import { ConfirmService } from "../../../core/services/confirm.service";
 import { LocationsService } from "../../../core/services/locations.service";
 import { LocaleService } from "../../../core/services/locale.service";
@@ -41,6 +42,7 @@ describe("CalendarComponent", () => {
   let bookingsService: jasmine.SpyObj<BookingsService>;
   let clientsService: jasmine.SpyObj<ClientsService>;
   let locationsService: jasmine.SpyObj<LocationsService>;
+  let companyService: jasmine.SpyObj<CompanyService>;
   let confirmService: ConfirmService;
   let toast: ToastService;
   let authStub: { hasPermission: jasmine.Spy };
@@ -64,13 +66,14 @@ describe("CalendarComponent", () => {
     TestBed.resetTestingModule();
     authStub = { hasPermission: jasmine.createSpy().and.returnValue(role === "owner") };
     calendarService = jasmine.createSpyObj<CalendarService>("CalendarService", ["range"]);
-    sessionsService = jasmine.createSpyObj<SessionsService>("SessionsService", ["update", "create", "cancel"]);
+    sessionsService = jasmine.createSpyObj<SessionsService>("SessionsService", ["update", "create", "cancel", "schedulePdf"]);
     coachesService = jasmine.createSpyObj<CoachesService>("CoachesService", ["list"]);
     activitiesService = jasmine.createSpyObj<ActivitiesService>("ActivitiesService", ["list"]);
     attendanceService = jasmine.createSpyObj<AttendanceService>("AttendanceService", ["forSession", "mark"]);
     bookingsService = jasmine.createSpyObj<BookingsService>("BookingsService", ["create"]);
     clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["list"]);
     locationsService = jasmine.createSpyObj<LocationsService>("LocationsService", ["get"]);
+    companyService = jasmine.createSpyObj<CompanyService>("CompanyService", ["get"]);
 
     // FullCalendar renders for real in ChromeHeadless and immediately invokes
     // the events fetcher wired up by onDatesSet — every test needs this
@@ -80,6 +83,7 @@ describe("CalendarComponent", () => {
     activitiesService.list.and.returnValue(of({ activities: [activity, individualActivity] }));
     clientsService.list.and.returnValue(of({ clients: [client], meta: { page: 1, per_page: 100, total: 1, total_pages: 1 } }));
     locationsService.get.and.returnValue(of({ location: { business_hours_start: 6, business_hours_end: 22 } as never }));
+    companyService.get.and.returnValue(of({ company: { working_days: [1, 2, 3, 4, 5] } as never }));
 
     TestBed.configureTestingModule({
       imports: [CalendarComponent, TranslateModule.forRoot()],
@@ -93,6 +97,7 @@ describe("CalendarComponent", () => {
         { provide: BookingsService, useValue: bookingsService },
         { provide: ClientsService, useValue: clientsService },
         { provide: LocationsService, useValue: locationsService },
+        { provide: CompanyService, useValue: companyService },
       ],
     });
 
@@ -144,6 +149,28 @@ describe("CalendarComponent", () => {
     expect((fixture.componentInstance as CalendarComponent).calendarOptions().slotMinTime).toBe("06:00:00");
   });
 
+  it("shades business hours using the company's configured working days and opening hours", () => {
+    const businessHours = component.calendarOptions().businessHours as { daysOfWeek: number[]; startTime: string; endTime: string };
+    expect(businessHours.daysOfWeek).toEqual([1, 2, 3, 4, 5]);
+    expect(businessHours.startTime).toBe("6:00");
+    expect(businessHours.endTime).toBe("22:00");
+  });
+
+  it("hides closed days from the grid entirely instead of just dimming them", () => {
+    expect(component.calendarOptions().hiddenDays).toEqual([0, 6]);
+  });
+
+  it("keeps every day as a working day (nothing hidden) when the company call fails", () => {
+    build("owner");
+    companyService.get.and.returnValue(throwError(() => new Error("nope")));
+    fixture = TestBed.createComponent(CalendarComponent);
+    fixture.detectChanges();
+    const opts = (fixture.componentInstance as CalendarComponent).calendarOptions();
+    const businessHours = opts.businessHours as { daysOfWeek: number[] };
+    expect(businessHours.daysOfWeek).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(opts.hiddenDays).toEqual([]);
+  });
+
   it("clientOptions maps clients to select options", () => {
     expect(component.clientOptions()).toEqual([{ value: "cl1", label: "Amy Client" }]);
   });
@@ -169,6 +196,26 @@ describe("CalendarComponent", () => {
       expect(() => component.prev()).not.toThrow();
       expect(() => component.next()).not.toThrow();
       expect(() => component.applyFilters()).not.toThrow();
+    });
+  });
+
+  describe("printSchedule", () => {
+    it("downloads a pdf for the currently visible week and resets the loading state", () => {
+      sessionsService.schedulePdf.and.returnValue(of(new Blob(["%PDF"], { type: "application/pdf" })));
+
+      component.printSchedule();
+
+      expect(sessionsService.schedulePdf).toHaveBeenCalled();
+      expect(component.printingSchedule()).toBe(false);
+    });
+
+    it("shows an error toast and resets loading state when the pdf request fails", () => {
+      sessionsService.schedulePdf.and.returnValue(throwError(() => new Error("boom")));
+
+      component.printSchedule();
+
+      expect(toast.toasts()[0].kind).toBe("error");
+      expect(component.printingSchedule()).toBe(false);
     });
   });
 

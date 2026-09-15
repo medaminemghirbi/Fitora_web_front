@@ -22,6 +22,7 @@ import { BookingsService } from "../../../core/services/bookings.service";
 import { CalendarEvent, CalendarService } from "../../../core/services/calendar.service";
 import { ClientsService } from "../../../core/services/clients.service";
 import { CoachesService } from "../../../core/services/coaches.service";
+import { CompanyService } from "../../../core/services/company.service";
 import { LocaleService } from "../../../core/services/locale.service";
 import { LocationsService } from "../../../core/services/locations.service";
 import { SessionsService } from "../../../core/services/sessions.service";
@@ -29,14 +30,22 @@ import { ThemeService } from "../../../core/services/theme.service";
 import { ConfirmService } from "../../../core/services/confirm.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
+import { downloadBlob } from "../../../core/services/download.util";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ModalComponent } from "../../../shared/components/modal.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
 import { SearchableSelectComponent } from "../../../shared/ui/searchable-select.component";
 
+// Local calendar date, not UTC — toISOString() would roll a local midnight
+// back to the previous day for any timezone ahead of UTC (e.g. Africa/Tunis),
+// which silently shifted week-start snapping (backend beginning_of_week) to
+// the wrong week.
 function toDateInputValue(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 @Component({
@@ -58,6 +67,11 @@ export class CalendarComponent implements OnInit {
 
   readonly coachFilter = signal<string | null>(null);
   readonly activityFilter = signal<string | null>(null);
+
+  // Tracks the currently visible view's start date so "print planning"
+  // exports the week actually on screen, not always the current one.
+  private currentRangeStart = new Date();
+  readonly printingSchedule = signal(false);
 
   readonly canManageSessions: Signal<boolean>;
 
@@ -103,6 +117,26 @@ export class CalendarComponent implements OnInit {
     return this.calendarComponent?.getApi();
   }
 
+  // Business hours shade working days/hours distinctly from closed ones in
+  // every FullCalendar view (week, day, month) — driven by the company's
+  // configured working days + opening hours (Settings → Gestion
+  // planification) instead of a fixed Mon-Sat assumption. Tracked locally
+  // since the two settings arrive from separate, independent requests.
+  private businessStart = "06:00";
+  private businessEnd = "22:00";
+  private workingDays: number[] = [0, 1, 2, 3, 4, 5, 6];
+
+  private applyBusinessHours(): void {
+    const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !this.workingDays.includes(d));
+    this.calendarOptions.update((opts) => ({
+      ...opts,
+      businessHours: { daysOfWeek: this.workingDays, startTime: this.businessStart, endTime: this.businessEnd },
+      // Closed days are dropped from the grid entirely (not just dimmed) —
+      // a day the gym never opens has no column to show.
+      hiddenDays: closedDays,
+    }));
+  }
+
   readonly calendarOptions = signal<CalendarOptions>({
     plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
     locales: [frLocale, arLocale],
@@ -130,6 +164,7 @@ export class CalendarComponent implements OnInit {
     private readonly bookingsService: BookingsService,
     private readonly clientsService: ClientsService,
     private readonly locationsService: LocationsService,
+    private readonly companyService: CompanyService,
     readonly locale: LocaleService,
     readonly theme: ThemeService,
     readonly auth: AuthService,
@@ -216,11 +251,26 @@ export class CalendarComponent implements OnInit {
     // best-effort: any error keeps the hardcoded 06:00-22:00 fallback above.
     this.locationsService.get().subscribe({
       next: (res) => {
+        this.businessStart = `${res.location.business_hours_start}:00`;
+        this.businessEnd = `${res.location.business_hours_end}:00`;
         this.calendarOptions.update((opts) => ({
           ...opts,
-          slotMinTime: `${res.location.business_hours_start}:00`,
-          slotMaxTime: `${res.location.business_hours_end}:00`,
+          slotMinTime: this.businessStart,
+          slotMaxTime: this.businessEnd,
         }));
+        this.applyBusinessHours();
+      },
+      error: () => {},
+    });
+
+    // Working days (Settings → Gestion planification) — same best-effort
+    // read as above: only the owner's own company GET is reachable by
+    // every role that can view the calendar, so a coach/receptionist just
+    // keeps the "every day is a working day" fallback on failure.
+    this.companyService.get().subscribe({
+      next: (res) => {
+        this.workingDays = res.company.working_days;
+        this.applyBusinessHours();
       },
       error: () => {},
     });
@@ -247,6 +297,7 @@ export class CalendarComponent implements OnInit {
   }
 
   private onDatesSet(start: Date, end: Date): void {
+    this.currentRangeStart = start;
     this.calendarOptions.update((opts) => ({
       ...opts,
       events: (_info, successCallback, failureCallback) => {
@@ -481,5 +532,20 @@ export class CalendarComponent implements OnInit {
           this.formError.set(extractErrorMessage(err, this.translate.instant("common.error_generic")));
         },
       });
+  }
+
+  // === Print planning ===
+  printSchedule(): void {
+    this.printingSchedule.set(true);
+    this.sessionsService.schedulePdf(toDateInputValue(this.currentRangeStart)).subscribe({
+      next: (blob) => {
+        this.printingSchedule.set(false);
+        downloadBlob(blob, `planning-${toDateInputValue(this.currentRangeStart)}.pdf`);
+      },
+      error: (err) => {
+        this.printingSchedule.set(false);
+        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
   }
 }

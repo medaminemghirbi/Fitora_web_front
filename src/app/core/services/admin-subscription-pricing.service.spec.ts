@@ -32,10 +32,10 @@ describe("AdminSubscriptionPricingService", () => {
   });
 
   it("update PATCHes the payload", () => {
-    service.update({ monthly_cents: 1000 }).subscribe();
+    service.update({ tiers: { "1": 1000 } }).subscribe();
     const req = httpMock.expectOne(`${API_BASE_URL}/admin/subscription_pricing`);
     expect(req.request.method).toBe("PATCH");
-    expect(req.request.body).toEqual({ monthly_cents: 1000 });
+    expect(req.request.body).toEqual({ tiers: { "1": 1000 } });
     req.flush({});
   });
 });

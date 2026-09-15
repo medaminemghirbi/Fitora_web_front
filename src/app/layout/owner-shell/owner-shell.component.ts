@@ -8,11 +8,12 @@ import { NavigationService } from "../../core/configuration/navigation.service";
 import { BrandingService } from "../../core/services/branding.service";
 import { AppVersionService } from "../../core/services/app-version.service";
 import { NavbarComponent } from "../navbar/navbar.component";
+import { SidebarComponent } from "../sidebar/sidebar.component";
 
 @Component({
   selector: "app-owner-shell",
   standalone: true,
-  imports: [RouterLink, RouterOutlet, TranslateModule, NavbarComponent],
+  imports: [RouterLink, RouterOutlet, TranslateModule, NavbarComponent, SidebarComponent],
   templateUrl: "./owner-shell.component.html",
   styleUrl: "./owner-shell.component.scss",
 })

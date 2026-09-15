@@ -1,0 +1,101 @@
+<div class="fx-page">
+  <app-page-header [title]="'nav.data_exchange' | translate" [description]="'data_exchange.subtitle' | translate"></app-page-header>
+
+  <div class="data-exchange-selector">
+    <label for="data-exchange-entity">{{ "data_exchange.select_module" | translate }}</label>
+    <select id="data-exchange-entity" class="form-select" [ngModel]="selectedEntity()" (ngModelChange)="selectEntity($event)">
+      @for (card of entities; track card.entity) {
+        <option [value]="card.entity">{{ card.titleKey | translate }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <h2><i class="bi" [class]="selectedCard().icon"></i> {{ selectedCard().titleKey | translate }}</h2>
+    </div>
+    <div class="app-card-body">
+      <p class="text-muted-token small">{{ selectedCard().descKey | translate }}</p>
+
+      <div class="data-exchange-actions">
+        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="downloadingTemplate()" (click)="downloadTemplate()">
+          @if (downloadingTemplate()) { <app-spinner [size]="14" /> } @else { <i class="bi bi-filetype-csv"></i> }
+          {{ "data_exchange.download_template" | translate }}
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="exporting()" (click)="exportData()">
+          @if (exporting()) { <app-spinner [size]="14" /> } @else { <i class="bi bi-download"></i> }
+          {{ "common.export" | translate }}
+        </button>
+      </div>
+
+      @if (!previewFile()) {
+        <label class="data-exchange-upload">
+          <i class="bi bi-upload"></i>
+          <span>{{ "data_exchange.upload_cta" | translate }}</span>
+          <input type="file" accept=".csv,text/csv" (change)="onFileSelected($event)" hidden />
+        </label>
+
+        @if (previewError()) {
+          <p class="data-exchange-preview-error"><i class="bi bi-exclamation-triangle"></i> {{ previewError() }}</p>
+        }
+      } @else {
+        <div class="data-exchange-preview">
+          <div class="data-exchange-preview-head">
+            <span><i class="bi bi-filetype-csv"></i> {{ previewFile()?.name }}</span>
+            <span class="text-muted-token small">{{ "data_exchange.preview_rows" | translate: { count: previewTotalRows() } }}</span>
+          </div>
+
+          <div class="data-exchange-preview-scroll">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  @for (h of previewHeaders(); track $index) {
+                    <th>{{ h }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of previewRows(); track $index) {
+                  <tr>
+                    @for (cell of row; track $index) {
+                      <td>{{ cell }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (previewTotalRows() > previewRows().length) {
+            <p class="text-muted-token small">{{ "data_exchange.preview_truncated" | translate: { shown: previewRows().length, total: previewTotalRows() } }}</p>
+          }
+
+          <div class="data-exchange-preview-actions">
+            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="importing()" (click)="clearPreview()">
+              {{ "common.cancel" | translate }}
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" [disabled]="importing()" (click)="confirmImport()">
+              @if (importing()) { <app-spinner [size]="14" /> } @else { <i class="bi bi-upload"></i> }
+              {{ "data_exchange.confirm_import" | translate }}
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (results()[selectedEntity()]; as result) {
+        <div class="data-exchange-result" [class.has-errors]="result.errors.length > 0">
+          <p class="data-exchange-result-summary">
+            <i class="bi bi-check-circle-fill"></i>
+            {{ "data_exchange.import_created" | translate: { count: result.created } }}
+          </p>
+          @if (result.errors.length > 0) {
+            <ul class="data-exchange-errors">
+              @for (err of result.errors; track err.row) {
+                <li><strong>{{ "data_exchange.row" | translate }} {{ err.row }}</strong> — {{ err.message }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

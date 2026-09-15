@@ -1,0 +1,302 @@
+<title>Fitora Data Model</title>
+<style>
+  :root {
+    --ground: #f7f5fb;
+    --panel: #ffffff;
+    --panel-2: #fbfaff;
+    --line: #e8e3f2;
+    --line-strong: #d0c7e2;
+    --ink: #1d1533;
+    --ink-soft: #5a5175;
+    --ink-dim: #948aae;
+    --iris: #6946aa;
+    --raspberry: #e8005f;
+    --sunglow: #ffbc00;
+    --f-display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+    --f-body: "Inter", system-ui, -apple-system, sans-serif;
+    --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #150b26;
+      --panel: #1c1330;
+      --panel-2: #221839;
+      --line: #33244f;
+      --line-strong: #47386a;
+      --ink: #f2ecfb;
+      --ink-soft: #b4a4d3;
+      --ink-dim: #7c7099;
+      --iris: #b79af0;
+      --raspberry: #ff5c95;
+      --sunglow: #ffbc00;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #150b26;
+    --panel: #1c1330;
+    --panel-2: #221839;
+    --line: #33244f;
+    --line-strong: #47386a;
+    --ink: #f2ecfb;
+    --ink-soft: #b4a4d3;
+    --ink-dim: #7c7099;
+    --iris: #b79af0;
+    --raspberry: #ff5c95;
+    --sunglow: #ffbc00;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    line-height: 1.55;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-block: 48px 80px;
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-soft);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 24px;
+    height: 2px;
+    background: linear-gradient(112deg, var(--iris), var(--raspberry) 60%, var(--sunglow));
+  }
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 800;
+    font-size: clamp(1.8rem, 3.4vw, 2.5rem);
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sub {
+    color: var(--ink-soft);
+    max-width: 62ch;
+    font-size: 0.98rem;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    margin: 22px 0 8px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+  .sw-core { background: var(--iris); }
+  .sw-money { background: var(--raspberry); }
+  .sw-join { background: var(--sunglow); }
+  .sw-access { background: var(--ink-dim); }
+
+  .diagram-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 1px 2px rgba(29, 21, 51, 0.05);
+    overflow-x: auto;
+  }
+  .diagram-card pre.mermaid {
+    margin: 0;
+    min-width: 920px;
+  }
+
+  .groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+  }
+  .group-card {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .group-card h3 {
+    font-family: var(--f-display);
+    font-size: 0.92rem;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .group-card p {
+    margin: 0;
+    font-size: 0.84rem;
+    color: var(--ink-soft);
+  }
+  .group-card code {
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+  }
+
+  footer {
+    margin-top: 30px;
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+    font-family: var(--f-mono);
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Backend Fitora — Rails</span>
+    <h1>Modèle de données</h1>
+    <p class="sub">Diagramme de classes des modèles ActiveRecord et de leurs relations (sans attributs) — pour comprendre comment les entités s'articulent autour d'une société (<code style="font-family: var(--f-mono); font-size: 0.86em;">Company</code>).</p>
+  </header>
+
+  <div class="legend">
+    <span><span class="swatch sw-core"></span>Cœur métier (client, planning)</span>
+    <span><span class="swatch sw-money"></span>Argent (abonnements, paiements)</span>
+    <span><span class="swatch sw-join"></span>Tables de jointure</span>
+    <span><span class="swatch sw-access"></span>Accès &amp; système</span>
+  </div>
+
+  <div class="diagram-card">
+    <pre class="mermaid">
+classDiagram
+    direction LR
+
+    class User
+    class Company
+    class Location
+    class Coach
+    class StaffMember
+    class Role
+
+    class Client
+    class Activity
+    class Session
+    class RecurringSchedule
+    class Booking
+    class AttendanceRecord
+
+    class ContractType
+    class Contract
+    class ContractPeriod
+    class Payment
+    class Subscription
+
+    class CoachLocation
+    class ContractTypeLocation
+    class ContractTypeActivity
+    class StaffMemberLocation
+
+    class Notification
+    class AuditLog
+    class SupportTicket
+    class AppUpdate
+
+    User "1" --> "0..1" Company : owns
+    Company "1" --> "*" Location
+    Company "1" --> "*" Coach
+    Company "1" --> "*" StaffMember
+    Company "1" --> "*" Role
+    Company "1" --> "*" Client
+    Company "1" --> "*" ContractType
+    Company "1" --> "*" Contract
+    Company "1" --> "*" Payment
+    Company "1" --> "*" RecurringSchedule
+    Company "1" --> "*" AuditLog
+    Company "1" --> "*" Notification
+    Company "1" --> "*" SupportTicket
+    Company "1" --> "0..1" Subscription
+
+    StaffMember --> User
+    StaffMember --> Role : assigned_role
+    StaffMember --> "0..1" Coach
+    StaffMember --> "*" StaffMemberLocation
+    StaffMemberLocation --> Location
+
+    Coach --> "*" CoachLocation
+    CoachLocation --> Location
+    Coach --> "*" Session
+
+    Location --> "*" Activity
+    Location --> "*" Session
+    Location --> "*" ContractTypeLocation
+    ContractTypeLocation --> ContractType
+
+    Activity --> "*" Session
+    Activity --> "*" ContractTypeActivity
+    ContractTypeActivity --> ContractType
+
+    RecurringSchedule --> Activity
+    RecurringSchedule --> Location
+    RecurringSchedule --> "0..1" Coach
+    RecurringSchedule --> "*" Session : generates
+
+    Session --> "*" Booking
+    Booking --> Client
+    Booking --> "0..1" ContractPeriod
+    Booking --> "0..1" AttendanceRecord
+    Booking --> "*" Payment
+
+    Client --> "*" Contract
+    Client --> "*" Booking
+    Client --> "*" Payment
+
+    ContractType --> "*" Contract
+    Contract --> "*" ContractPeriod
+    ContractPeriod --> "*" Payment
+    ContractPeriod --> "*" Booking
+
+    Payment --> Client
+    Payment --> "0..1" ContractPeriod
+    Payment --> "0..1" Booking
+
+    Notification --> User : recipient
+    AuditLog --> "0..1" User
+    SupportTicket --> User : created_by
+    AppUpdate --> User : created_by
+    </pre>
+  </div>
+
+  <div class="groups">
+    <div class="group-card">
+      <h3><span class="swatch sw-core"></span>Organisation</h3>
+      <p><code>Company · Location · User · StaffMember · Coach · Role</code></p>
+    </div>
+    <div class="group-card">
+      <h3><span class="swatch sw-core"></span>Planning</h3>
+      <p><code>Activity · RecurringSchedule · Session · Booking · AttendanceRecord</code></p>
+    </div>
+    <div class="group-card">
+      <h3><span class="swatch sw-money"></span>Argent</h3>
+      <p><code>ContractType · Contract · ContractPeriod · Payment · Subscription</code></p>
+    </div>
+    <div class="group-card">
+      <h3><span class="swatch sw-join"></span>Jointures</h3>
+      <p><code>CoachLocation · StaffMemberLocation · ContractTypeLocation · ContractTypeActivity</code></p>
+    </div>
+    <div class="group-card">
+      <h3><span class="swatch sw-access"></span>Système</h3>
+      <p><code>Notification · AuditLog · SupportTicket · AppUpdate</code></p>
+    </div>
+  </div>
+
+  <footer>app/models/*.rb — associations belongs_to / has_many / has_one, sans attributs</footer>
+</div>

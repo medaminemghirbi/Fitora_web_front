@@ -62,4 +62,12 @@ describe("SessionsService", () => {
     expect(req.request.method).toBe("POST");
     req.flush({ session: {} });
   });
+
+  it("schedulePdf GETs a blob with the from date", () => {
+    service.schedulePdf("2026-09-14").subscribe();
+    const req = httpMock.expectOne((r) => r.url === `${API_BASE_URL}/sessions/schedule_pdf`);
+    expect(req.request.params.get("from")).toBe("2026-09-14");
+    expect(req.request.responseType).toBe("blob");
+    req.flush(new Blob());
+  });
 });
