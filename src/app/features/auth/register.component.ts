@@ -4,14 +4,13 @@ import { Router, RouterLink } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AuthService } from "../../core/auth/auth.service";
 import { extractErrorMessage } from "../../core/services/error.util";
+import { AuthMemberShellComponent } from "../../shared/ui/auth-member-shell.component";
 import { SpinnerComponent } from "../../shared/components/spinner.component";
-import { LandingHeaderComponent } from "../../shared/components/landing-header.component";
-import { LandingFooterComponent } from "../../shared/components/landing-footer.component";
 
 @Component({
   selector: "app-register",
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule, SpinnerComponent, LandingHeaderComponent, LandingFooterComponent],
+  imports: [AuthMemberShellComponent, ReactiveFormsModule, RouterLink, TranslateModule, SpinnerComponent],
   templateUrl: "./register.component.html",
   styleUrl: "./auth.component.scss",
 })
@@ -43,7 +42,9 @@ export class RegisterComponent {
     this.loading.set(true);
     this.error.set(null);
 
-    this.auth.register(this.form.getRawValue()).subscribe({
+    // The only self-registration in the app: a person looking for a gym. A
+    // gym asks for a demo or a quote instead (/demo, /devis).
+    this.auth.registerClient(this.form.getRawValue()).subscribe({
       next: () => this.router.navigateByUrl(this.auth.homeRouteForCurrentUser()),
       error: (err) => {
         this.error.set(extractErrorMessage(err, this.translate.instant("common.error_generic")));

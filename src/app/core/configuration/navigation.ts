@@ -19,6 +19,8 @@ export interface NavLeafBlueprint {
 export interface NavGroupBlueprint {
   id: string;
   labelKey: string;
+  // Shown on the top bar next to the group's label.
+  icon: string;
   ownerOnly?: boolean;
   items: NavLeafBlueprint[];
 }
@@ -33,15 +35,16 @@ export const DASHBOARD_NAV: NavLeafBlueprint = {
 export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
   {
     id: "management",
+    icon: "bi-people",
     labelKey: "nav.management",
     items: [
       { path: "/owner/clients", icon: "bi-people", labelKey: "nav.clients", permission: "clients" },
       { path: "/owner/contracts", icon: "bi-file-earmark-text", labelKey: "nav.contracts", permission: "contracts" },
-      { path: "/owner/data-exchange", icon: "bi-arrow-down-up", labelKey: "nav.data_exchange", ownerOnly: true },
     ],
   },
   {
     id: "planning",
+    icon: "bi-calendar3",
     labelKey: "nav.planning",
     items: [
       { path: "/owner/calendar", icon: "bi-calendar3", labelKey: "nav.calendar" },
@@ -50,6 +53,7 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
   },
   {
     id: "finances",
+    icon: "bi-credit-card",
     labelKey: "nav.finances",
     items: [
       { path: "/owner/payments", icon: "bi-credit-card", labelKey: "nav.payments", permission: "payments" },
@@ -57,6 +61,7 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
   },
   {
     id: "team",
+    icon: "bi-person-vcard",
     labelKey: "nav.team",
     ownerOnly: true,
     items: [

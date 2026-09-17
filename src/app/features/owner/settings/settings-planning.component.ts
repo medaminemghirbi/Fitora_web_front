@@ -1,9 +1,7 @@
 import { Component, OnInit, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { forkJoin } from "rxjs";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { CompanyService } from "../../../core/services/company.service";
-import { LocationsService } from "../../../core/services/locations.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
@@ -40,22 +38,19 @@ export class SettingsPlanningComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     private readonly companyService: CompanyService,
-    private readonly locationsService: LocationsService,
     private readonly toast: ToastService,
     private readonly translate: TranslateService
   ) {}
 
   ngOnInit(): void {
-    forkJoin({
-      location: this.locationsService.get(),
-      company: this.companyService.get(),
-    }).subscribe({
+    // Hours and working days are both the company's now — one call, not two.
+    this.companyService.get().subscribe({
       next: (res) => {
         this.form.patchValue({
-          business_hours_start: res.location.location.business_hours_start,
-          business_hours_end: res.location.location.business_hours_end,
+          business_hours_start: res.company.business_hours_start,
+          business_hours_end: res.company.business_hours_end,
         });
-        this.workingDays.set(res.company.company.working_days ?? [1, 2, 3, 4, 5]);
+        this.workingDays.set(res.company.working_days ?? [1, 2, 3, 4, 5]);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -84,10 +79,9 @@ export class SettingsPlanningComponent implements OnInit {
     }
 
     this.saving.set(true);
-    forkJoin({
-      location: this.locationsService.update(this.form.getRawValue()),
-      company: this.companyService.update({ working_days: this.workingDays() }),
-    }).subscribe({
+    this.companyService
+      .update({ ...this.form.getRawValue(), working_days: this.workingDays() })
+      .subscribe({
       next: () => {
         this.saving.set(false);
         this.toast.success(this.translate.instant("common.save"));

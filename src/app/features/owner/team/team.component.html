@@ -1,12 +1,6 @@
-<div class="fx-page">
-  <app-page-header [title]="'nav.team' | translate" [description]="'team.subtitle' | translate">
-    <button type="button" class="btn btn-primary" (click)="openCreate('coach')">
-      <i class="bi bi-plus-lg"></i> {{ "team.new" | translate }}
-    </button>
-  </app-page-header>
-
-  @if (!loading() && !error() && members().length > 0) {
-    <div class="fx-toolbar">
+<div class="fx-listpage">
+  <app-filter-rail [activeCount]="filterChips().length">
+    <div class="fx-rail-block">
       <div class="fx-input-icon">
         <i class="bi bi-search"></i>
         <input
@@ -15,106 +9,158 @@
           [ngModel]="search()"
           (ngModelChange)="search.set($event)"
           [placeholder]="'team.search_placeholder' | translate"
+          [attr.aria-label]="'team.search_placeholder' | translate"
         />
       </div>
-      <div class="fx-segmented" role="group" [attr.aria-label]="'team.title' | translate">
-        @for (t of tabs(); track t.id) {
-          <button type="button" [class.is-active]="tab() === t.id" (click)="tab.set(t.id)">{{ t.label }}</button>
+    </div>
+
+    <app-status-filter
+      name="team-access"
+      [legend]="'team.filter_access' | translate"
+      [value]="accessFilter()"
+      [options]="accessOptions()"
+      (valueChange)="applyAccessFilter($event)"
+    />
+
+    @if (hasFilters()) {
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+        <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+      </button>
+    }
+  </app-filter-rail>
+
+  <div class="fx-listpage-main">
+    <app-page-header [title]="'nav.team' | translate" [description]="'team.subtitle' | translate">
+      <button type="button" class="btn btn-primary" (click)="openCreate('coach')">
+        <i class="bi bi-plus-lg"></i> {{ "team.new" | translate }}
+      </button>
+    </app-page-header>
+
+    <nav class="fx-cat-tabs" [attr.aria-label]="'team.title' | translate">
+      @for (t of tabs(); track t.id) {
+        <button type="button" class="fx-cat-tab" [class.is-active]="tab() === t.id"
+                [style.--fx-tab-color]="t.color" (click)="applyTab(t.id)">
+          {{ t.label }} ({{ t.count }})
+        </button>
+      }
+    </nav>
+
+    <div class="fx-stats-bar">
+      <dl class="fx-stats">
+        <div><dt>{{ "team.stat_total" | translate }}</dt><dd>{{ stats().total }}</dd></div>
+        <div><dt>{{ "team.stat_coaches" | translate }}</dt><dd>{{ stats().coaches }}</dd></div>
+        <div><dt>{{ "common.active" | translate }}</dt><dd class="text-success-token">{{ stats().active }}</dd></div>
+        <div><dt>{{ "team.access_mobile" | translate }}</dt><dd>{{ stats().withMobile }}</dd></div>
+        <div><dt>{{ "team.access_web" | translate }}</dt><dd>{{ stats().withWeb }}</dd></div>
+        <div><dt>{{ "common.inactive" | translate }}</dt><dd class="fx-muted">{{ stats().inactive }}</dd></div>
+      </dl>
+    </div>
+
+    @if (filterChips().length > 0) {
+      <div class="fx-active-filters">
+        @for (chip of filterChips(); track chip.label) {
+          <span class="fx-active-chip">
+            {{ chip.label }}
+            <button type="button" (click)="chip.clear()" [attr.aria-label]="'common.reset' | translate">
+              <i class="bi bi-x"></i>
+            </button>
+          </span>
         }
       </div>
-    </div>
-  }
+    }
 
-  @if (loading()) {
-    <app-skeleton variant="cards" [count]="6" />
-  } @else if (error()) {
-    <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
-  } @else if (members().length === 0) {
-    <div class="app-card">
-      <div class="app-card-body">
-        <app-empty-state [title]="'team.empty_title' | translate" [body]="'team.empty_body' | translate" icon="bi-person-vcard">
-          <button type="button" class="btn btn-primary" (click)="openCreate('coach')">
-            <i class="bi bi-plus-lg"></i> {{ "team.new" | translate }}
-          </button>
-        </app-empty-state>
+    @if (loading()) {
+      <app-skeleton variant="cards" [count]="6" />
+    } @else if (error()) {
+      <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
+    } @else if (members().length === 0) {
+      <div class="app-card">
+        <div class="app-card-body">
+          <app-empty-state [title]="'team.empty_title' | translate" [body]="'team.empty_body' | translate" icon="bi-person-vcard">
+            <button type="button" class="btn btn-primary" (click)="openCreate('coach')">
+              <i class="bi bi-plus-lg"></i> {{ "team.new" | translate }}
+            </button>
+          </app-empty-state>
+        </div>
       </div>
-    </div>
-  } @else if (filtered().length === 0) {
-    <div class="app-card"><div class="app-card-body">
-      <app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" />
-    </div></div>
-  } @else {
-    <div class="fx-people-grid">
-      @for (m of pagedMembers(); track m.key) {
-        <div class="fx-person-card">
-          <div class="fx-person-card-head">
-            <app-avatar [name]="m.name" [size]="44" />
-            <div class="fx-person-card-id">
-              <div class="fx-person-card-name" [innerHTML]="m.name | highlight: search()"></div>
-              <div class="fx-person-card-sub">
-                @if (m.email) { <span [innerHTML]="m.email | highlight: search()"></span> } @else { — }
+    } @else if (filtered().length === 0) {
+      <div class="app-card"><div class="app-card-body">
+        <app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" />
+      </div></div>
+    } @else {
+      <div class="fx-people-grid">
+        @for (m of pagedMembers(); track m.key) {
+          <div class="fx-person-card">
+            <div class="fx-person-card-head">
+              <app-avatar [name]="m.name" [size]="44" />
+              <div class="fx-person-card-id">
+                <div class="fx-person-card-name" [innerHTML]="m.name | highlight: search()"></div>
+                <div class="fx-person-card-sub">
+                  @if (m.email) { <span [innerHTML]="m.email | highlight: search()"></span> } @else { — }
+                </div>
               </div>
+              <app-status-badge [status]="m.active ? 'active' : 'inactive'">
+                {{ (m.active ? "common.active" : "common.inactive") | translate }}
+              </app-status-badge>
             </div>
-            <app-status-badge [status]="m.active ? 'active' : 'inactive'">
-              {{ (m.active ? "common.active" : "common.inactive") | translate }}
-            </app-status-badge>
-          </div>
 
-          <div class="team-chips">
-            <span class="badge text-bg-secondary">{{ m.roleName }}</span>
-            @if (m.hasMobile) {
-              <span class="team-access"><i class="bi bi-phone"></i> {{ "team.access_mobile" | translate }}</span>
-            }
-            @if (m.hasWeb) {
-              <span class="team-access"><i class="bi bi-window-desktop"></i> {{ "team.access_web" | translate }}</span>
-            }
-          </div>
-
-          @if (m.bio) {
-            <p class="fx-person-card-bio">{{ m.bio }}</p>
-          }
-
-          <div class="fx-person-card-actions">
-            @if (m.coach) {
-              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openEditCoach(m.coach)">
-                <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
-              </button>
-            } @else if (m.staff && isOwner()) {
-              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openRole(m.staff)">
-                <i class="bi bi-shield-lock"></i> {{ "team.action_web_access" | translate }}
-              </button>
-            }
-
-            <app-action-menu>
-              @if (m.coach) {
-                <button type="button" class="fx-menu-item" (click)="openEditCoach(m.coach)">
-                  <i class="bi bi-pencil"></i> {{ "coaches.edit" | translate }}
-                </button>
-                <button type="button" class="fx-menu-item" (click)="openLogin(m.coach)">
-                  <i class="bi bi-phone"></i>
-                  {{ (m.hasMobile ? "coaches.reset_login" : "coaches.set_login") | translate }}
-                </button>
+            <div class="team-chips">
+              <span class="badge text-bg-secondary">{{ m.roleName }}</span>
+              @if (m.hasMobile) {
+                <span class="team-access"><i class="bi bi-phone"></i> {{ "team.access_mobile" | translate }}</span>
               }
-              @if (m.staff && isOwner()) {
-                <button type="button" class="fx-menu-item" (click)="openRole(m.staff)">
+              @if (m.hasWeb) {
+                <span class="team-access"><i class="bi bi-window-desktop"></i> {{ "team.access_web" | translate }}</span>
+              }
+            </div>
+
+            @if (m.bio) {
+              <p class="fx-person-card-bio">{{ m.bio }}</p>
+            }
+
+            <div class="fx-person-card-actions">
+              @if (m.coach) {
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openEditCoach(m.coach)">
+                  <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
+                </button>
+              } @else if (m.staff && isOwner()) {
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openRole(m.staff)">
                   <i class="bi bi-shield-lock"></i> {{ "team.action_web_access" | translate }}
                 </button>
               }
-              @if (m.active && (m.coach || (m.staff && isOwner()))) {
-                <div class="fx-menu-divider"></div>
-                <button type="button" class="fx-menu-item is-danger" (click)="deactivate(m)">
-                  <i class="bi bi-slash-circle"></i> {{ "common.deactivate" | translate }}
-                </button>
-              }
-            </app-action-menu>
-          </div>
-        </div>
-      }
-    </div>
 
-    <app-pagination [meta]="meta()" (pageChange)="page.set($event)" />
-  }
+              <app-action-menu>
+                @if (m.coach) {
+                  <button type="button" class="fx-menu-item" (click)="openEditCoach(m.coach)">
+                    <i class="bi bi-pencil"></i> {{ "coaches.edit" | translate }}
+                  </button>
+                  <button type="button" class="fx-menu-item" (click)="openLogin(m.coach)">
+                    <i class="bi bi-phone"></i>
+                    {{ (m.hasMobile ? "coaches.reset_login" : "coaches.set_login") | translate }}
+                  </button>
+                }
+                @if (m.staff && isOwner()) {
+                  <button type="button" class="fx-menu-item" (click)="openRole(m.staff)">
+                    <i class="bi bi-shield-lock"></i> {{ "team.action_web_access" | translate }}
+                  </button>
+                }
+                @if (m.active && (m.coach || (m.staff && isOwner()))) {
+                  <div class="fx-menu-divider"></div>
+                  <button type="button" class="fx-menu-item is-danger" (click)="deactivate(m)">
+                    <i class="bi bi-slash-circle"></i> {{ "common.deactivate" | translate }}
+                  </button>
+                }
+              </app-action-menu>
+            </div>
+          </div>
+        }
+      </div>
+
+      <app-pagination [meta]="meta()" (pageChange)="page.set($event)" />
+    }
+  </div>
 </div>
+
 
 <!-- CREATE -->
 <app-drawer [open]="createOpen()" [title]="'team.new' | translate" [description]="'team.new_hint' | translate" (closed)="closeCreate()">

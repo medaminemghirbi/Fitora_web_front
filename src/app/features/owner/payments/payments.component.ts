@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from "@angular/core";
+import { Component, OnInit, computed, signal } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
@@ -23,6 +23,9 @@ import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
+import { BrandingService } from "../../../core/services/branding.service";
+import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
+import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 
 type PayableOption = { kind: "contract" | "booking"; id: string; label: string; amountDue: number };
@@ -47,6 +50,8 @@ type PayableOption = { kind: "contract" | "booking"; id: string; label: string; 
     HighlightPipe,
     SkeletonComponent,
     ErrorStateComponent,
+    FilterRailComponent,
+    StatusFilterComponent,
     ActionMenuComponent,
   ],
   templateUrl: "./payments.component.html",
@@ -61,11 +66,44 @@ export class OwnerPaymentsComponent implements OnInit {
   readonly search = signal("");
   private searchDebounce?: ReturnType<typeof setTimeout>;
 
-  readonly statusOptions: { value: string; labelKey: string }[] = [
-    { value: "", labelKey: "common.all" },
-    { value: "paid", labelKey: "payments.status_paid" },
-    { value: "refunded", labelKey: "payments.status_refunded" },
+  readonly statusOptions: { value: string; labelKey: string; color: string }[] = [
+    { value: "", labelKey: "common.all", color: "var(--color-primary)" },
+    { value: "paid", labelKey: "payments.status_paid", color: "var(--color-success)" },
+    { value: "refunded", labelKey: "payments.status_refunded", color: "var(--color-info)" },
+    { value: "cancelled", labelKey: "payments.status_cancelled", color: "var(--color-muted)" },
   ];
+
+  /**
+   * The method tabs above the grid. No card: Fitora takes nothing online, and
+   * the API refuses `card` — offering it here only produced a filter that
+   * matched nothing and a choice that failed on save.
+   */
+  readonly methodOptions: { value: string; labelKey: string; color: string }[] = [
+    { value: "cash", labelKey: "payments.method_cash", color: "var(--color-success)" },
+    { value: "bank_transfer", labelKey: "payments.method_bank_transfer", color: "var(--color-info)" },
+    { value: "other", labelKey: "payments.method_other", color: "var(--color-muted)" },
+  ];
+
+  readonly counts = signal<Record<string, number>>({});
+  readonly currency = computed(() => this.branding.branding()?.currency ?? "TND");
+  readonly methodCounts = signal<Record<string, number>>({});
+  readonly methodFilter = signal<string>("");
+  readonly totals = signal({
+    collected_this_month: 0,
+    collected_total: 0,
+    refunded_value: 0,
+    cancelled_value: 0,
+    average_payment: 0,
+  });
+
+  readonly railOptions = computed<StatusFilterOption[]>(() =>
+    this.statusOptions.map((opt) => ({
+      value: opt.value,
+      label: this.translate.instant(opt.labelKey),
+      count: this.counts()[opt.value || "all"] ?? 0,
+      color: opt.color,
+    }))
+  );
 
   readonly recordModalOpen = signal(false);
   readonly saving = signal(false);
@@ -86,6 +124,7 @@ export class OwnerPaymentsComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     private readonly paymentsService: PaymentsService,
+    private readonly branding: BrandingService,
     private readonly clientsService: ClientsService,
     private readonly toast: ToastService,
     private readonly confirm: ConfirmService,
@@ -104,6 +143,32 @@ export class OwnerPaymentsComponent implements OnInit {
     this.load();
   }
 
+  applyStatusFilter(status: string): void {
+    this.statusFilter.set(status);
+    this.applyFilters();
+  }
+
+  hasFilters(): boolean {
+    return this.search() !== "" || this.statusFilter() !== "";
+  }
+
+  resetFilters(): void {
+    this.search.set("");
+    this.statusFilter.set("");
+    this.applyFilters();
+  }
+
+  readonly filterChips = computed(() => {
+    const chips: { label: string; clear: () => void }[] = [];
+    if (this.search()) chips.push({ label: `« ${this.search()} »`, clear: () => this.onSearchChange("") });
+    const status = this.statusFilter();
+    if (status) {
+      const opt = this.statusOptions.find((o) => o.value === status);
+      if (opt) chips.push({ label: this.translate.instant(opt.labelKey), clear: () => this.applyStatusFilter("") });
+    }
+    return chips;
+  });
+
   onSearchChange(term: string): void {
     this.search.set(term);
     if (this.searchDebounce) clearTimeout(this.searchDebounce);
@@ -116,10 +181,20 @@ export class OwnerPaymentsComponent implements OnInit {
   load(): void {
     this.loading.set(true);
     this.error.set(false);
-    this.paymentsService.list({ status: this.statusFilter() || undefined, q: this.search() || undefined, page: this.page() }).subscribe({
+    this.paymentsService
+      .list({
+        status: this.statusFilter() || undefined,
+        payment_method: this.methodFilter() || undefined,
+        q: this.search() || undefined,
+        page: this.page(),
+      })
+      .subscribe({
       next: (res) => {
         this.payments.set(res.payments);
         this.meta.set(res.meta);
+        this.counts.set(res.counts ?? {});
+        this.methodCounts.set(res.method_counts ?? {});
+        if (res.totals) this.totals.set(res.totals);
         this.loading.set(false);
       },
       error: () => {
@@ -127,6 +202,23 @@ export class OwnerPaymentsComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  applyMethodFilter(method: string): void {
+    this.methodFilter.set(method);
+    this.page.set(1);
+    this.load();
+  }
+
+  methodCount(method: string): number {
+    return this.methodCounts()[method] ?? 0;
+  }
+
+  /** A receipt's strip: collected, refunded, or cancelled. */
+  rowColor(payment: Payment): string {
+    if (payment.status === "refunded") return "var(--color-info)";
+    if (payment.status === "cancelled") return "var(--color-muted)";
+    return "var(--color-success)";
   }
 
   async refund(payment: Payment): Promise<void> {

@@ -38,16 +38,32 @@ export interface ClientShowResponse {
   payments: Payment[];
 }
 
+/** `counts` feeds the filter rail: one entry per status plus "all". */
+export interface ClientListResponse {
+  clients: Client[];
+  meta: PageMeta;
+  counts: Record<string, number>;
+}
+
 @Injectable({ providedIn: "root" })
 export class ClientsService {
   constructor(private readonly http: HttpClient) {}
 
-  list(filters: ClientFilters = {}): Observable<{ clients: Client[]; meta: PageMeta }> {
+  list(filters: ClientFilters = {}): Observable<ClientListResponse> {
     const params: Record<string, string> = {};
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "") params[key] = String(value);
     });
-    return this.http.get<{ clients: Client[]; meta: PageMeta }>(`${API_BASE_URL}/clients`, { params });
+    return this.http.get<ClientListResponse>(`${API_BASE_URL}/clients`, { params });
+  }
+
+  /** The current list as CSV — same filters, no pagination (backend-side). */
+  exportCsv(filters: ClientFilters = {}): Observable<Blob> {
+    const params: Record<string, string> = { format: "csv" };
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") params[key] = String(value);
+    });
+    return this.http.get(`${API_BASE_URL}/clients`, { params, responseType: "blob" });
   }
 
   get(id: string): Observable<ClientShowResponse> {

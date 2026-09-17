@@ -1,0 +1,26 @@
+@if (booking(); as b) {
+  <div class="member-confirmation fx-page">
+    <div class="member-confirmation-icon">
+      <i class="bi bi-check-circle-fill"></i>
+    </div>
+    <h1>{{ "member.confirmation.title" | translate }}</h1>
+
+    <div class="app-card member-confirmation-card">
+      <div class="app-card-body">
+        <div class="member-confirmation-activity">
+          {{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}{{ b.session.activity_name }}
+        </div>
+        <div class="fx-muted">{{ b.session.starts_at | date: "EEEE d MMMM — HH:mm" }}</div>
+        <div class="fx-muted">{{ b.session.company_name }}@if (b.session.coach_name) { · {{ b.session.coach_name }} }</div>
+      </div>
+    </div>
+
+    <div class="member-confirmation-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="addToCalendar()">
+        <i class="bi bi-calendar-plus"></i> {{ "member.confirmation.add_to_calendar" | translate }}
+      </button>
+      <a routerLink="/member/bookings" class="btn btn-primary">{{ "member.confirmation.view_booking" | translate }}</a>
+      <a routerLink="/member/home" class="btn btn-link">{{ "member.confirmation.back_home" | translate }}</a>
+    </div>
+  </div>
+}

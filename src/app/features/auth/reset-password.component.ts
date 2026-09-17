@@ -1,12 +1,11 @@
 import { Component, OnInit, signal } from "@angular/core";
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { AuthProShellComponent } from "../../shared/ui/auth-pro-shell.component";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AccountRecoveryService } from "../../core/auth/account-recovery.service";
 import { extractErrorMessage, isErrorCode } from "../../core/services/error.util";
 import { SpinnerComponent } from "../../shared/components/spinner.component";
-import { LandingHeaderComponent } from "../../shared/components/landing-header.component";
-import { LandingFooterComponent } from "../../shared/components/landing-footer.component";
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get("password")?.value;
@@ -17,7 +16,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 @Component({
   selector: "app-reset-password",
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule, SpinnerComponent, LandingHeaderComponent, LandingFooterComponent],
+  imports: [AuthProShellComponent, ReactiveFormsModule, RouterLink, TranslateModule, SpinnerComponent],
   templateUrl: "./reset-password.component.html",
   styleUrl: "./auth.component.scss",
 })
@@ -61,7 +60,7 @@ export class ResetPasswordComponent implements OnInit {
       next: () => {
         this.loading.set(false);
         this.done.set(true);
-        setTimeout(() => this.router.navigateByUrl("/auth/login"), 2500);
+        setTimeout(() => this.router.navigateByUrl("/pro/connexion"), 2500);
       },
       error: (err) => {
         const fallback = this.translate.instant("auth.reset_password_invalid_link");

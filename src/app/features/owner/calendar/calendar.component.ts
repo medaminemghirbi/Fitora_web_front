@@ -4,7 +4,7 @@ import { DatePipe } from "@angular/common";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { FullCalendarComponent, FullCalendarModule } from "@fullcalendar/angular";
-import { CalendarOptions, EventClickArg, EventDropArg } from "@fullcalendar/core";
+import { CalendarOptions, EventClickArg, EventContentArg, EventDropArg, EventHoveringArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
@@ -24,7 +24,6 @@ import { ClientsService } from "../../../core/services/clients.service";
 import { CoachesService } from "../../../core/services/coaches.service";
 import { CompanyService } from "../../../core/services/company.service";
 import { LocaleService } from "../../../core/services/locale.service";
-import { LocationsService } from "../../../core/services/locations.service";
 import { SessionsService } from "../../../core/services/sessions.service";
 import { ThemeService } from "../../../core/services/theme.service";
 import { ConfirmService } from "../../../core/services/confirm.service";
@@ -36,6 +35,7 @@ import { ModalComponent } from "../../../shared/components/modal.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
 import { SearchableSelectComponent } from "../../../shared/ui/searchable-select.component";
+import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
 
 // Local calendar date, not UTC — toISOString() would roll a local midnight
 // back to the previous day for any timezone ahead of UTC (e.g. Africa/Tunis),
@@ -51,7 +51,7 @@ function toDateInputValue(date: Date): string {
 @Component({
   selector: "app-calendar",
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, DatePipe, TranslateModule, FullCalendarModule, ModalComponent, SpinnerComponent, StatusBadgeComponent, SearchableSelectComponent],
+  imports: [FormsModule, ReactiveFormsModule, DatePipe, TranslateModule, FullCalendarModule, ModalComponent, SpinnerComponent, StatusBadgeComponent, SearchableSelectComponent, FilterRailComponent],
   templateUrl: "./calendar.component.html",
   styleUrl: "./calendar.component.scss",
 })
@@ -67,6 +67,12 @@ export class CalendarComponent implements OnInit {
 
   readonly coachFilter = signal<string | null>(null);
   readonly activityFilter = signal<string | null>(null);
+  /** FullCalendar owns the title and the active view; mirrored here so the
+   *  page's own toolbar can show them (headerToolbar is off). */
+  readonly viewTitle = signal("");
+  readonly viewMode = signal<"dayGridMonth" | "timeGridWeek" | "timeGridDay">(
+    window.innerWidth < 992 ? "timeGridDay" : "timeGridWeek"
+  );
 
   // Tracks the currently visible view's start date so "print planning"
   // exports the week actually on screen, not always the current one.
@@ -140,19 +146,40 @@ export class CalendarComponent implements OnInit {
   readonly calendarOptions = signal<CalendarOptions>({
     plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
     locales: [frLocale, arLocale],
-    initialView: "timeGridWeek",
+    // A 6-7 day week grid has no room to breathe on a phone screen (each
+    // day column collapses to a sliver) — start on the single-day view
+    // there instead; "Semaine"/"Mois" are still one tap away.
+    initialView: window.innerWidth < 992 ? "timeGridDay" : "timeGridWeek",
     headerToolbar: false,
     height: "auto",
-    slotMinTime: "06:00:00",
-    slotMaxTime: "22:00:00",
+    slotMinTime: "06:00",
+    slotMaxTime: "22:00",
+    // A gym has no all-day sessions, so the strip above the grid was always
+    // empty; dropping it gives the hours back that vertical space.
+    allDaySlot: false,
+    // Half-hour rows, tall enough to hold the three lines an event renders.
+    slotDuration: "00:30:00",
+    slotLabelInterval: "01:00",
+    slotLabelFormat: { hour: "2-digit", minute: "2-digit", hour12: false },
+    expandRows: true,
+    // Two sessions at the same hour sit side by side instead of overlapping,
+    // so neither hides the other.
+    slotEventOverlap: false,
+    dayMaxEvents: 3,
     nowIndicator: true,
     selectable: false,
     editable: false,
+    eventContent: (arg: EventContentArg) => this.renderEvent(arg),
     eventClick: (arg: EventClickArg) => this.onEventClick(arg),
+    eventMouseEnter: (arg: EventHoveringArg) => this.showPreview(arg),
+    eventMouseLeave: () => this.hoverPreview.set(null),
     eventDrop: (arg: EventDropArg) => this.onEventDrop(arg),
     dateClick: (arg) => this.onDateClick(arg.date, arg.dayEl),
     datesSet: (arg) => this.onDatesSet(arg.start, arg.end),
   });
+
+  /** The session previewed on hover, and where to pin its card. */
+  readonly hoverPreview = signal<{ session: Session; top: number; left: number } | null>(null);
 
   constructor(
     private readonly fb: FormBuilder,
@@ -163,7 +190,6 @@ export class CalendarComponent implements OnInit {
     private readonly attendanceService: AttendanceService,
     private readonly bookingsService: BookingsService,
     private readonly clientsService: ClientsService,
-    private readonly locationsService: LocationsService,
     private readonly companyService: CompanyService,
     readonly locale: LocaleService,
     readonly theme: ThemeService,
@@ -246,13 +272,14 @@ export class CalendarComponent implements OnInit {
       locale: this.locale.locale(),
     }));
 
-    // Opening hours are edited in Settings (owner) but readable by anyone
-    // who can edit the schedule; a coach gets 403 here, so this is
-    // best-effort: any error keeps the hardcoded 06:00-22:00 fallback above.
-    this.locationsService.get().subscribe({
+    // Opening hours and working days both come from the company now — one
+    // read instead of two. Best-effort: a coach gets 403 here, and the
+    // 06:00-22:00 / every-day fallbacks above stand.
+    this.companyService.get().subscribe({
       next: (res) => {
-        this.businessStart = `${res.location.business_hours_start}:00`;
-        this.businessEnd = `${res.location.business_hours_end}:00`;
+        this.businessStart = res.company.business_hours_start;
+        this.businessEnd = res.company.business_hours_end;
+        this.workingDays = res.company.working_days;
         this.calendarOptions.update((opts) => ({
           ...opts,
           slotMinTime: this.businessStart,
@@ -260,23 +287,15 @@ export class CalendarComponent implements OnInit {
         }));
         this.applyBusinessHours();
       },
-      error: () => {},
-    });
-
-    // Working days (Settings → Gestion planification) — same best-effort
-    // read as above: only the owner's own company GET is reachable by
-    // every role that can view the calendar, so a coach/receptionist just
-    // keeps the "every day is a working day" fallback on failure.
-    this.companyService.get().subscribe({
-      next: (res) => {
-        this.workingDays = res.company.working_days;
-        this.applyBusinessHours();
-      },
-      error: () => {},
+      // The grid still has to be laid out on the fallbacks — when this was two
+      // calls one of them always applied them, and a single failing call left
+      // the calendar with no business hours at all.
+      error: () => this.applyBusinessHours(),
     });
   }
 
   setView(view: "dayGridMonth" | "timeGridWeek" | "timeGridDay"): void {
+    this.viewMode.set(view);
     this.calendarApi?.changeView(view);
   }
 
@@ -296,8 +315,24 @@ export class CalendarComponent implements OnInit {
     this.calendarApi?.refetchEvents();
   }
 
+  hasFilters(): boolean {
+    return this.coachFilter() !== null || this.activityFilter() !== null;
+  }
+
+  resetFilters(): void {
+    this.coachFilter.set(null);
+    this.activityFilter.set(null);
+    this.applyFilters();
+  }
+
   private onDatesSet(start: Date, end: Date): void {
+    this.hoverPreview.set(null);
     this.currentRangeStart = start;
+    const api = this.calendarApi;
+    if (api) {
+      this.viewTitle.set(api.view.title);
+      this.viewMode.set(api.view.type as "dayGridMonth" | "timeGridWeek" | "timeGridDay");
+    }
     this.calendarOptions.update((opts) => ({
       ...opts,
       events: (_info, successCallback, failureCallback) => {
@@ -322,12 +357,73 @@ export class CalendarComponent implements OnInit {
   private toFullCalendarEvent(event: CalendarEvent) {
     return {
       id: event.id,
-      title: `${event.session.activity_emoji ? event.session.activity_emoji + " " : ""}${event.session.activity_name}\n${event.session.coach_name ?? ""}`,
+      title: `${event.session.activity_emoji ? event.session.activity_emoji + " " : ""}${event.session.activity_name}`,
       start: event.start,
       end: event.end,
       extendedProps: { session: event.session },
       classNames: [`fc-status-${event.session.status}`, ...(this.isSessionEnded(event.session) ? ["fc-session-ended"] : [])],
     };
+  }
+
+  /**
+   * An event block, laid out rather than crammed into one string: start time,
+   * activity, coach, and how full it is. Built as DOM nodes (not an HTML
+   * string) so a coach or activity name can never be read as markup — the
+   * month view gets a single compact line, where there is no room for more.
+   */
+  private renderEvent(arg: EventContentArg): { domNodes: Node[] } {
+    const session = arg.event.extendedProps["session"] as Session;
+    const compact = arg.view.type === "dayGridMonth";
+
+    const root = document.createElement("div");
+    root.className = compact ? "fx-ev fx-ev--compact" : "fx-ev";
+
+    const time = document.createElement("span");
+    time.className = "fx-ev-time";
+    time.textContent = arg.timeText;
+    root.appendChild(time);
+
+    const title = document.createElement("span");
+    title.className = "fx-ev-title";
+    title.textContent = `${session.activity_emoji ? session.activity_emoji + " " : ""}${session.activity_name}`;
+    root.appendChild(title);
+
+    if (!compact && session.coach_name) {
+      const coach = document.createElement("span");
+      coach.className = "fx-ev-coach";
+      coach.textContent = session.coach_name;
+      root.appendChild(coach);
+    }
+
+    const count = document.createElement("span");
+    count.className = "fx-ev-count";
+    if (session.confirmed_count >= session.capacity) count.classList.add("is-full");
+    count.textContent = `${session.confirmed_count}/${session.capacity}`;
+    root.appendChild(count);
+
+    return { domNodes: [ root ] };
+  }
+
+  /**
+   * Hovering an event shows its card beside the block — a shortcut, never the
+   * only way in: clicking still opens the full detail modal, which is what
+   * touch and the keyboard use.
+   */
+  private showPreview(arg: EventHoveringArg): void {
+    const session = arg.event.extendedProps["session"] as Session;
+    const rect = arg.el.getBoundingClientRect();
+    const width = 268;
+    const height = 210;
+    // Sit to the right of the block, flipping to its left when the viewport
+    // runs out, and clamped so the card never leaves the screen.
+    const left = rect.right + width + 16 < window.innerWidth ? rect.right + 8 : Math.max(8, rect.left - width - 8);
+    const top = Math.min(Math.max(8, rect.top), Math.max(8, window.innerHeight - height - 8));
+    this.hoverPreview.set({ session, top, left });
+  }
+
+  previewFill(session: Session): number {
+    if (session.capacity <= 0) return 0;
+    return Math.min(100, Math.round((session.confirmed_count / session.capacity) * 100));
   }
 
   // A session nobody explicitly cancelled or marked completed, whose time
@@ -338,6 +434,7 @@ export class CalendarComponent implements OnInit {
   }
 
   private onEventClick(arg: EventClickArg): void {
+    this.hoverPreview.set(null);
     const session = arg.event.extendedProps["session"] as Session;
     this.openDetail(session);
   }

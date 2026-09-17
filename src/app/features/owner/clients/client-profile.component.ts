@@ -107,6 +107,7 @@ export class ClientProfileComponent implements OnInit {
   // No part payments: "Encaisser maintenant" records the full price.
   readonly contractForm = this.fb.nonNullable.group({
     contract_type_id: [null as string | null, Validators.required],
+    activity_id: [null as string | null, Validators.required],
     starts_on: [toDateInputValue(new Date()), Validators.required],
     discount: [0],
     collect_payment: [false],
@@ -218,11 +219,23 @@ export class ClientProfileComponent implements OnInit {
     return this.contractTypes().find((p) => p.id === id) ?? null;
   }
 
-  // Price after the discount typed in the create form, clamped at 0.
-  contractFormTotal(): number {
+  // What the chosen activity costs under the chosen plan. null means the gym
+  // doesn't sell that plan for that activity — the backend refuses it too, so
+  // the form blocks instead of inventing a price.
+  selectedActivityPrice(): number | null {
     const plan = this.selectedPlan();
-    if (!plan) return 0;
-    return Math.max(0, Number(plan.price) - (this.contractForm.controls.discount.value || 0));
+    const activityId = this.contractForm.controls.activity_id.value;
+    if (!plan || !activityId) return null;
+    const row = plan.activity_prices.find((p) => p.activity_id === activityId);
+    return row ? Number(row.price) : null;
+  }
+
+  // Price after the discount typed in the create form, clamped at 0. Indicative
+  // only: the API re-reads the tariff and decides what is actually billed.
+  contractFormTotal(): number {
+    const price = this.selectedActivityPrice();
+    if (price === null) return 0;
+    return Math.max(0, price - (this.contractForm.controls.discount.value || 0));
   }
 
   openContractModal(): void {
@@ -241,7 +254,7 @@ export class ClientProfileComponent implements OnInit {
       return;
     }
 
-    const { contract_type_id, starts_on, discount, collect_payment } = this.contractForm.getRawValue();
+    const { contract_type_id, activity_id, starts_on, discount, collect_payment } = this.contractForm.getRawValue();
     this.saving.set(true);
     this.formError.set(null);
 
@@ -249,6 +262,7 @@ export class ClientProfileComponent implements OnInit {
       .create({
         client_id: this.clientId,
         contract_type_id: contract_type_id!,
+        activity_id: activity_id!,
         starts_on,
         discount: discount || 0,
         collect_payment: collect_payment || undefined,

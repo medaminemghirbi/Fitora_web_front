@@ -1095,3 +1095,33 @@
   .lp-overview-grid { grid-template-columns: 1fr; }
   .lp-overview-card--grad { grid-column: span 1; }
 }
+
+/* The member door — the C2B half of the landing. Visually separated from the
+   gym CTAs above so a visitor never has to work out which of the four buttons
+   is meant for them. */
+.lp-member-door {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.lp-member-door-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.lp-member-door-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 575.98px) {
+  .lp-member-door-actions { width: 100%; }
+  .lp-member-door-actions .lp-btn { flex: 1; justify-content: center; }
+}

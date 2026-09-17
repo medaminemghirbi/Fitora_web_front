@@ -1,0 +1,55 @@
+<div class="member-progress fx-page">
+  <h1 class="member-progress-title">{{ "member.progress.title" | translate }}</h1>
+
+  @if (loading()) {
+    <app-skeleton variant="cards" [count]="3" />
+  } @else if (error()) {
+    <app-error-state (retry)="load()" />
+  } @else if (completedBookings().length === 0) {
+    <app-empty-state [title]="'member.progress.no_data_title' | translate" [body]="'member.progress.no_data_body' | translate" icon="bi-graph-up-arrow" />
+  } @else {
+    <div class="fx-kpi-grid mb-4">
+      <div class="fx-kpi">
+        <span class="fx-muted">{{ "member.progress.this_week_title" | translate }}</span>
+        <strong>{{ "member.progress.workouts_count" | translate: { count: thisWeekCount() } }}</strong>
+      </div>
+      <div class="fx-kpi">
+        <span class="fx-muted">{{ "member.progress.streak_title" | translate }}</span>
+        <strong>🔥 {{ "member.progress.streak_weeks" | translate: { count: streakWeeks() } }}</strong>
+      </div>
+    </div>
+
+    <section class="app-card member-progress-section">
+      <div class="app-card-header">
+        <h2>{{ "member.progress.by_activity_title" | translate }}</h2>
+      </div>
+      <div class="app-card-body">
+        <div class="member-progress-activity-list">
+          @for (activity of byActivity(); track activity.name) {
+            <div class="member-progress-activity-row">
+              <span>{{ activity.emoji ? activity.emoji + " " : "" }}{{ activity.name }}</span>
+              <strong>{{ activity.count }}</strong>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="app-card member-progress-section">
+      <div class="app-card-header">
+        <h2>{{ "member.progress.monthly_title" | translate }}</h2>
+      </div>
+      <div class="app-card-body">
+        <p class="fx-muted">{{ "member.progress.workouts_count" | translate: { count: monthlyTotal() } }}</p>
+        <div class="member-progress-activity-list">
+          @for (activity of monthlyByActivity(); track activity.name) {
+            <div class="member-progress-activity-row">
+              <span>{{ activity.emoji ? activity.emoji + " " : "" }}{{ activity.name }}</span>
+              <strong>{{ activity.count }}</strong>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>

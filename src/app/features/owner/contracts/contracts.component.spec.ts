@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { Contract } from "../../../core/models/contract.model";
@@ -20,7 +22,6 @@ describe("ContractsComponent", () => {
     company_id: "1",
     name: "Basic",
     description: null,
-    price: 100,
     currency: "TND",
     billing_period: "monthly",
     duration_days: 30,
@@ -30,8 +31,8 @@ describe("ContractsComponent", () => {
     priority_booking: false,
     color: "#000",
     active: true,
-    location_ids: [],
     activity_ids: [],
+    activity_prices: [{ activity_id: "a1", activity_name: "Yoga", activity_emoji: "🧘", price: 100 }],
   };
   const contract: Contract = {
     id: "m1",
@@ -42,22 +43,26 @@ describe("ContractsComponent", () => {
     remaining_bookings: null,
     auto_renew: true,
     discount: "0",
+    base_price: "100.00",
     final_price: "100",
     payment_status: "paid",
     amount_due: "0",
     plan: contractType,
+    activity: { id: "a1", name: "Yoga", emoji: "\u{1F9D8}" },
     client: { id: "cl1", full_name: "Amy Client", phone: null },
   };
 
   beforeEach(async () => {
     contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["list"]);
     contractTypesService = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list"]);
-    contractsService.list.and.returnValue(of({ contracts: [contract], meta }));
+    contractsService.list.and.returnValue(of({ contracts: [contract], meta , counts: {}, plan_counts: {}, totals: { portfolio_value: 0, average_basket: 0, unpaid_value: 0, expiring_soon: 0 } }));
     contractTypesService.list.and.returnValue(of({ plans: [contractType] }));
 
     await TestBed.configureTestingModule({
       imports: [ContractsComponent, TranslateModule.forRoot()],
       providers: [
+        provideHttpClientTesting(),
+        provideHttpClient(),
         provideRouter([]),
         { provide: ContractsService, useValue: contractsService },
         { provide: ContractTypesService, useValue: contractTypesService },
@@ -120,7 +125,37 @@ describe("ContractsComponent", () => {
     expect(component.hasFilters()).toBe(false);
   });
 
-  it("lists the 4 status filter options", () => {
-    expect(component.statusOptions.map((o) => o.value)).toEqual(["", "active", "expired", "cancelled"]);
+  it("lists every contract status in the rail", () => {
+    expect(component.statusOptions.map((o) => o.value)).toEqual(["", "active", "pending", "expired", "cancelled"]);
+  });
+
+  it("filterChips is empty with no active filters", () => {
+    expect(component.filterChips()).toEqual([]);
+  });
+
+  it("filterChips reflects search, status, and plan filters", () => {
+    component.onSearchChange("amy");
+    component.applyContractFilter("active");
+    component.applyContractTypeFilter("ct1");
+    const chips = component.filterChips();
+    expect(chips.length).toBe(3);
+    expect(chips[0].label).toContain("amy");
+    expect(chips[2].label).toBe("Basic");
+  });
+
+  it("a filter chip's clear() removes only that filter", fakeAsync(() => {
+    component.onSearchChange("amy");
+    component.applyContractFilter("active");
+    tick(1000);
+    const chips = component.filterChips();
+    chips[1].clear();
+    expect(component.contractStatusFilter()).toBe("");
+    expect(component.search()).toBe("amy");
+  }));
+
+  it("omits a status/plan chip once its filter list hasn't loaded a matching option", () => {
+    component.plans.set([]);
+    component.applyContractTypeFilter("unknown");
+    expect(component.filterChips()).toEqual([]);
   });
 });

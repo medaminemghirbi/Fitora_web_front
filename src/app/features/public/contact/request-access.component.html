@@ -1,0 +1,77 @@
+<app-auth-pro-shell
+  [wide]="true"
+  [asideText]="'auth.have_account' | translate"
+  [asideLinkText]="'auth.sign_in' | translate"
+  asideLink="/pro/connexion"
+>
+@if (sent()) {
+  <div class="text-center">
+    <span class="auth-request-mark"><i class="bi bi-check-lg"></i></span>
+    <h1 class="auth-title">{{ "public.request.sent_title" | translate }}</h1>
+    <p class="auth-subtitle">{{ "public.request.sent_body" | translate }}</p>
+    <a routerLink="/" class="btn btn-primary">{{ "public.request.back_home" | translate }}</a>
+  </div>
+} @else {
+  <h1 class="auth-title">{{ (kind() === "quote" ? "public.request.quote_title" : "public.request.demo_title") | translate }}</h1>
+  <p class="auth-subtitle">{{ (kind() === "quote" ? "public.request.quote_hint" : "public.request.demo_hint") | translate }}</p>
+
+  <div class="fx-segmented mb-3" role="group" [attr.aria-label]="'public.request.kind' | translate">
+    <button type="button" [class.is-active]="kind() === 'demo'" (click)="setKind('demo')">
+      {{ "public.request.kind_demo" | translate }}
+    </button>
+    <button type="button" [class.is-active]="kind() === 'quote'" (click)="setKind('quote')">
+      {{ "public.request.kind_quote" | translate }}
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger">{{ error() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="lead-contact">{{ "public.request.contact_name" | translate }} *</label>
+        <input id="lead-contact" class="form-control" formControlName="contact_name" autocomplete="name" />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="lead-gym">{{ "public.request.gym_name" | translate }} *</label>
+        <input id="lead-gym" class="form-control" formControlName="gym_name" autocomplete="organization" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="lead-email">{{ "auth.email" | translate }} *</label>
+        <input id="lead-email" type="email" class="form-control" formControlName="email" autocomplete="email" />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="lead-phone">{{ "auth.phone" | translate }}</label>
+        <input id="lead-phone" class="form-control" formControlName="phone" autocomplete="tel" dir="ltr" />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="lead-city">{{ "settings.company_city" | translate }}</label>
+      <input id="lead-city" class="form-control" formControlName="city" autocomplete="address-level2" />
+    </div>
+
+    <div class="mb-3">
+      <label for="lead-message">{{ "public.request.message" | translate }}</label>
+      <textarea id="lead-message" class="form-control" rows="3" formControlName="message"
+                [placeholder]="'public.request.message_placeholder' | translate"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+      @if (loading()) { <app-spinner [size]="18" /> }
+      {{ "public.request.submit" | translate }}
+    </button>
+  </form>
+
+  <p class="auth-switch">
+    {{ "public.request.member_instead" | translate }}
+    <a routerLink="/inscription">{{ "auth.member_signup_cta" | translate }}</a>
+  </p>
+}
+</app-auth-pro-shell
+>

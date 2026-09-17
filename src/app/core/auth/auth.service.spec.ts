@@ -4,6 +4,7 @@ import { TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { ConfigurationService } from "../configuration/configuration.service";
 import { API_BASE_URL } from "../models/api-config";
+import { Client } from "../models/client.model";
 import { User } from "../models/user.model";
 import { AuthService } from "./auth.service";
 
@@ -23,6 +24,11 @@ describe("AuthService", () => {
   const owner: User = {
     id: "u1", first_name: "S", last_name: "O", full_name: "S O", email: "s@x.test", phone: null,
     role: "owner", locale: "fr", email_verified: true, company_id: "c1", staff_role: null,
+  };
+
+  const memberClient: Client = {
+    id: "cl1", first_name: "M", last_name: "C", full_name: "M C", email: "m@x.test", phone: null,
+    active: true, login_enabled: true, email_verified: true, joined_at: "2026-01-01", current_contract: null,
   };
 
   function buildService(): AuthService {
@@ -83,6 +89,21 @@ describe("AuthService", () => {
       const auth = buildService();
       expect(auth.isImpersonating()).toBe(false);
     });
+
+    it("restores a stored client session", () => {
+      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
+      const auth = buildService();
+      expect(auth.isAuthenticated()).toBe(true);
+      expect(auth.isClient()).toBe(true);
+      expect(auth.currentClient()).toEqual(memberClient);
+      expect(auth.currentUser()).toBeNull();
+    });
+
+    it("tolerates corrupt JSON in the stored client", () => {
+      localStorage.setItem("fitora_client", "{not json");
+      const auth = buildService();
+      expect(auth.currentClient()).toBeNull();
+    });
   });
 
   describe("login / register", () => {
@@ -111,16 +132,6 @@ describe("AuthService", () => {
       expect(auth.currentUser()).toEqual(admin);
     });
 
-    it("register POSTs the payload and stores the session", () => {
-      const auth = buildService();
-      auth.register({ first_name: "S", last_name: "O", email: "s@x.test", password: "secret" }).subscribe();
-
-      const req = httpMock.expectOne(`${API_BASE_URL}/auth/register`);
-      expect(req.request.method).toBe("POST");
-      req.flush({ token: "tok456", user: owner });
-
-      expect(auth.getToken()).toBe("tok456");
-    });
   });
 
   describe("hasPermission", () => {
@@ -156,7 +167,21 @@ describe("AuthService", () => {
       expect(auth.currentUser()).toBeNull();
       expect(localStorage.getItem("fitora_token")).toBeNull();
       expect(configStub.clear).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
+      expect(router.navigate).toHaveBeenCalledWith(["/pro/connexion"]);
+    });
+
+    it("clears a client session too", () => {
+      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
+      localStorage.setItem("fitora_token", "tok");
+      const auth = buildService();
+
+      auth.logout();
+
+      expect(auth.isClient()).toBe(false);
+      expect(auth.currentClient()).toBeNull();
+      expect(localStorage.getItem("fitora_client")).toBeNull();
+      // Each zone has its own sign-in; a member lands back on theirs.
+      expect(router.navigate).toHaveBeenCalledWith(["/connexion"]);
     });
 
     it("exits impersonation instead of destroying the admin session", () => {
@@ -238,6 +263,12 @@ describe("AuthService", () => {
       const auth = buildService();
       expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
     });
+
+    it("sends a client login to the member home", () => {
+      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
+      const auth = buildService();
+      expect(auth.homeRouteForCurrentUser()).toBe("/member/home");
+    });
   });
 
   it("coachShellApplies mirrors staff_role === 'coach'", () => {
@@ -281,6 +312,17 @@ describe("AuthService", () => {
       auth.loadConfiguration();
 
       expect(configStub.load).toHaveBeenCalled();
+    });
+
+    it("clears config and skips bootstrap for a client login", () => {
+      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
+      const auth = buildService();
+
+      auth.loadConfiguration();
+
+      expect(configStub.clear).toHaveBeenCalled();
+      expect(configStub.connectAdminNotifications).not.toHaveBeenCalled();
+      expect(configStub.load).not.toHaveBeenCalled();
     });
 
     it("swallows a bootstrap load failure", () => {

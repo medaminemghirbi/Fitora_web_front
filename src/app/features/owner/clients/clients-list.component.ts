@@ -8,6 +8,7 @@ import { ClientsService, ClientStatusFilter } from "../../../core/services/clien
 import { PageMeta } from "../../../core/services/sessions.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
+import { downloadBlob } from "../../../core/services/download.util";
 import { AvatarComponent } from "../../../shared/components/avatar.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
 import { ModalComponent } from "../../../shared/components/modal.component";
@@ -18,8 +19,9 @@ import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
-import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
+import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
+import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
 
 @Component({
   selector: "app-clients-list",
@@ -40,6 +42,7 @@ import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
     SkeletonComponent,
     ErrorStateComponent,
     FilterRailComponent,
+    StatusFilterComponent,
   ],
   templateUrl: "./clients-list.component.html",
 })
@@ -53,14 +56,27 @@ export class ClientsListComponent implements OnInit {
   readonly statusFilter = signal<ClientStatusFilter | "">("");
   readonly page = signal(1);
 
-  readonly statusOptions: { value: ClientStatusFilter | ""; labelKey: string }[] = [
-    { value: "", labelKey: "clients.filter_all" },
-    { value: "active", labelKey: "common.active" },
-    { value: "inactive", labelKey: "common.inactive" },
-    { value: "contract_active", labelKey: "clients.filter_contract_active" },
-    { value: "contract_expired", labelKey: "clients.filter_contract_expired" },
-    { value: "no_contract", labelKey: "clients.filter_no_contract" },
+  /** value "" is "all"; the colour is the strip the matching rows carry. */
+  readonly statusOptions: { value: ClientStatusFilter | ""; labelKey: string; countKey: string; color: string }[] = [
+    { value: "", labelKey: "clients.filter_all", countKey: "all", color: "var(--color-primary)" },
+    { value: "active", labelKey: "common.active", countKey: "active", color: "var(--color-success)" },
+    { value: "inactive", labelKey: "common.inactive", countKey: "inactive", color: "var(--color-muted)" },
+    { value: "contract_active", labelKey: "clients.filter_contract_active", countKey: "contract_active", color: "var(--color-info)" },
+    { value: "contract_expired", labelKey: "clients.filter_contract_expired", countKey: "contract_expired", color: "var(--color-danger)" },
+    { value: "no_contract", labelKey: "clients.filter_no_contract", countKey: "no_contract", color: "var(--color-warning)" },
   ];
+
+  /** Per-status totals from the API, keyed as the options' countKey. */
+  readonly counts = signal<Record<string, number>>({});
+
+  readonly railOptions = computed<StatusFilterOption[]>(() =>
+    this.statusOptions.map((opt) => ({
+      value: opt.value,
+      label: this.translate.instant(opt.labelKey),
+      count: this.counts()[opt.countKey] ?? 0,
+      color: opt.color,
+    }))
+  );
 
   readonly createModalOpen = signal(false);
   readonly formError = signal<string | null>(null);
@@ -102,6 +118,7 @@ export class ClientsListComponent implements OnInit {
         next: (res) => {
           this.clients.set(res.clients);
           this.meta.set(res.meta);
+          this.counts.set(res.counts ?? {});
           this.loading.set(false);
         },
         error: () => {
@@ -151,6 +168,25 @@ export class ClientsListComponent implements OnInit {
   onPageChange(page: number): void {
     this.page.set(page);
     this.load();
+  }
+
+  /** The colour of a row's left strip — its contract state at a glance. */
+  rowColor(client: Client): string {
+    if (!client.active) return "var(--color-muted)";
+    const contract = client.current_contract;
+    if (!contract) return "var(--color-warning)";
+    if (contract.status === "expired") return "var(--color-danger)";
+    if (contract.payment_status === "unpaid") return "var(--color-info)";
+    return "var(--color-success)";
+  }
+
+  exportCsv(): void {
+    this.clientsService
+      .exportCsv({ search: this.search() || undefined, status: (this.statusFilter() as ClientStatusFilter) || undefined })
+      .subscribe({
+        next: (blob) => downloadBlob(blob, `adherents-${new Date().toISOString().slice(0, 10)}.csv`),
+        error: () => this.toast.error(this.translate.instant("common.error_generic")),
+      });
   }
 
   openClient(client: Client): void {

@@ -41,6 +41,7 @@
               <th>{{ "activities.format" | translate }}</th>
               <th>{{ "activities.duration" | translate }}</th>
               <th>{{ "activities.capacity" | translate }}</th>
+              <th>{{ "activities.prices" | translate }}</th>
               <th>{{ "common.status" | translate }}</th>
               <th class="text-end">{{ "common.actions" | translate }}</th>
             </tr>
@@ -54,7 +55,20 @@
                 </td>
                 <td>{{ ("activities.format_" + activity.session_format) | translate }}</td>
                 <td>{{ activity.duration }} min</td>
-                <td>{{ activity.capacity }}</td>
+                <td>
+                  @if (activity.prices.length === 0) {
+                    <a class="small" routerLink="/owner/settings/contract-types">{{ "activities.no_price" | translate }}</a>
+                  } @else {
+                    <ul class="fx-tariff-list">
+                      @for (tariff of activity.prices; track tariff.contract_type_id) {
+                        <li>
+                          <span class="text-muted-token">{{ tariff.contract_type_name }}</span>
+                          <span class="fx-strong">{{ tariff.price | money: activity.currency }}</span>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </td>
                 <td>
                   <app-status-badge [status]="activity.active ? 'active' : 'inactive'">
                     {{ (activity.active ? "common.active" : "common.inactive") | translate }}

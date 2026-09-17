@@ -1,5 +1,35 @@
+// This screen is NOT one of the split account screens — an owner is already
+// signed in here — so it carries the card the shared auth stylesheet used to
+// provide.
+.setup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-7) var(--space-4) var(--space-8);
+  background: var(--color-bg);
+}
+
 .setup-card {
+  width: 100%;
   max-width: 720px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2.5rem 2.25rem;
+
+  label { display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.35rem; }
+  .form-control, .form-select { height: 46px; }
+}
+
+.setup-brand {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+  margin-bottom: var(--space-4);
 }
 
 /* ---------------------------------------------------------------------------

@@ -35,10 +35,22 @@
                   <app-status-badge [status]="plan.active ? 'active' : 'inactive'">{{ (plan.active ? "common.active" : "common.inactive") | translate }}</app-status-badge>
                 </div>
                 <p class="small text-muted-token">{{ plan.description }}</p>
-                <p class="fw-semibold">
-                  {{ plan.price | money: plan.currency }}
-                  <span class="small text-muted-token">/ {{ ("contract_types.period_" + plan.billing_period) | translate }}</span>
+                <p class="small text-muted-token mb-1">
+                  {{ "contract_types.activity_prices" | translate }}
+                  <span class="text-muted-token">/ {{ ("contract_types.period_" + plan.billing_period) | translate }}</span>
                 </p>
+                @if (plan.activity_prices.length === 0) {
+                  <p class="small text-warning-token mb-2"><i class="bi bi-exclamation-triangle"></i> {{ "contract_types.no_prices_yet" | translate }}</p>
+                } @else {
+                  <ul class="list-unstyled mb-2">
+                    @for (row of plan.activity_prices; track row.activity_id) {
+                      <li class="d-flex justify-content-between gap-2 small">
+                        <span>{{ row.activity_emoji }} {{ row.activity_name }}</span>
+                        <span class="fw-semibold">{{ row.price | money: plan.currency }}</span>
+                      </li>
+                    }
+                  </ul>
+                }
                 @if (plan.session_count) {
                   <p class="small text-muted-token"><i class="bi bi-ticket-perforated"></i> {{ plan.session_count }} {{ "contract_types.sessions" | translate }}</p>
                 }
@@ -67,20 +79,35 @@
       <label for="mp-desc">{{ "activities.description" | translate }}</label>
       <textarea id="mp-desc" class="form-control" rows="2" formControlName="description"></textarea>
     </div>
-    <div class="row">
-      <div class="col-6 mb-3">
-        <label for="mp-price">{{ "activities.price" | translate }} *</label>
-        <input id="mp-price" type="number" min="0" step="0.01" class="form-control" formControlName="price" />
-      </div>
-      <div class="col-6 mb-3">
-        <label for="mp-period">{{ "contract_types.billing_period" | translate }} *</label>
-        <select id="mp-period" class="form-select" formControlName="billing_period">
-          @for (period of billingPeriods; track period) {
-            <option [value]="period">{{ ("contract_types.period_" + period) | translate }}</option>
-          }
-        </select>
-      </div>
+    <div class="mb-3">
+      <label for="mp-period">{{ "contract_types.billing_period" | translate }} *</label>
+      <select id="mp-period" class="form-select" formControlName="billing_period">
+        @for (period of billingPeriods; track period) {
+          <option [value]="period">{{ ("contract_types.period_" + period) | translate }}</option>
+        }
+      </select>
     </div>
+
+    <fieldset class="mb-3">
+      <legend class="form-label mb-1">{{ "contract_types.activity_prices" | translate }} *</legend>
+      <p class="small text-muted-token">{{ "contract_types.activity_prices_hint" | translate }}</p>
+      @if (activities().length === 0) {
+        <p class="small text-muted-token mb-0">{{ "contract_types.no_activities" | translate }}</p>
+      } @else {
+        <div class="fx-price-grid">
+          @for (activity of activities(); track activity.id) {
+            <div class="fx-price-grid-row">
+              <label class="mb-0" [for]="'mp-price-' + activity.id">{{ activity.emoji }} {{ activity.name }}</label>
+              <div class="input-group input-group-sm">
+                <input [id]="'mp-price-' + activity.id" type="number" min="0" step="0.01" class="form-control"
+                       [value]="priceFor(activity.id) ?? ''" (input)="setPrice(activity.id, $event)"
+                       [placeholder]="'contract_types.not_offered' | translate" />
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </fieldset>
     <div class="mb-3">
       <label for="mp-sessions">{{ "contract_types.session_count" | translate }} ({{ "common.optional" | translate }})</label>
       <input id="mp-sessions" type="number" min="1" class="form-control" formControlName="session_count" />

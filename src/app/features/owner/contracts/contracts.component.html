@@ -1,104 +1,185 @@
-<div class="fx-page">
-  <app-page-header [title]="'nav.contracts' | translate" [description]="'contracts.subtitle' | translate"></app-page-header>
-
-  <div class="fx-toolbar">
-    <div class="fx-input-icon">
-      <i class="bi bi-search"></i>
-      <input
-        type="search"
-        class="form-control form-control-sm"
-        [ngModel]="search()"
-        (ngModelChange)="onSearchChange($event)"
-        [placeholder]="'contracts.search_placeholder' | translate"
-      />
+<div class="fx-listpage">
+  <app-filter-rail [activeCount]="filterChips().length">
+    <div class="fx-rail-block">
+      <div class="fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+          [placeholder]="'contracts.search_placeholder' | translate"
+          [attr.aria-label]="'contracts.search_placeholder' | translate"
+        />
+      </div>
     </div>
 
-    <div class="fx-segmented" role="group" [attr.aria-label]="'common.status' | translate">
-      @for (opt of statusOptions; track opt.value) {
-        <button type="button" [class.is-active]="contractStatusFilter() === opt.value" (click)="applyContractFilter(opt.value)">
-          {{ opt.labelKey | translate }}
-        </button>
-      }
-    </div>
+    <app-status-filter
+      name="contract-status"
+      [legend]="'clients.filter_status' | translate"
+      [value]="contractStatusFilter()"
+      [options]="railOptions()"
+      (valueChange)="applyContractFilter($any($event))"
+    />
 
-    <select
-      class="form-select form-select-sm"
-      [attr.aria-label]="'contract_types.plan' | translate"
-      [ngModel]="contractTypeFilter()"
-      (ngModelChange)="applyContractTypeFilter($event)"
-    >
-      <option value="">{{ "contracts.filter_all_plans" | translate }}</option>
-      @for (plan of plans(); track plan.id) {
-        <option [value]="plan.id">{{ plan.name }}</option>
-      }
-    </select>
+    <div class="fx-rail-block">
+      <label class="fx-rail-label" for="contract-plan-filter">{{ "contract_types.plan" | translate }}</label>
+      <select
+        id="contract-plan-filter"
+        class="form-select form-select-sm"
+        [ngModel]="contractTypeFilter()"
+        (ngModelChange)="applyContractTypeFilter($event)"
+      >
+        <option value="">{{ "contracts.filter_all_plans" | translate }}</option>
+        @for (plan of plans(); track plan.id) {
+          <option [value]="plan.id">{{ plan.name }}</option>
+        }
+      </select>
+    </div>
 
     @if (hasFilters()) {
-      <button type="button" class="btn btn-sm btn-ghost" (click)="resetFilters()">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
         <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
       </button>
     }
-  </div>
+  </app-filter-rail>
 
-  <div class="app-card">
-    @if (loading()) {
-      <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="7" /></div>
-    } @else if (error()) {
-      <div class="app-card-body"><app-error-state (retry)="loadContracts()" /></div>
-    } @else if (contracts().length === 0) {
-      <div class="app-card-body">
-        <app-empty-state [title]="'clients.no_contract' | translate" [body]="'contracts.empty_body' | translate" icon="bi-file-earmark-text" />
-      </div>
-    } @else {
-      <div class="fx-table-scroll">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>{{ "bookings.client" | translate }}</th>
-              <th>{{ "contract_types.plan" | translate }}</th>
-              <th>{{ "schedule.starts_on" | translate }}</th>
-              <th>{{ "schedule.ends_on" | translate }}</th>
-              <th>{{ "common.status" | translate }}</th>
-              <th>{{ "payments.status_paid" | translate }}</th>
-              <th class="text-end">{{ "common.actions" | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (m of contracts(); track m.id) {
+  <div class="fx-listpage-main">
+    <app-page-header [title]="'nav.contracts' | translate" [description]="'contracts.subtitle' | translate"></app-page-header>
+
+    <!-- One tab per plan, with how many contracts it holds for the current search. -->
+    <nav class="fx-cat-tabs" [attr.aria-label]="'contract_types.plan' | translate">
+      <button type="button" class="fx-cat-tab" [class.is-active]="contractTypeFilter() === ''"
+              [style.--fx-tab-color]="'var(--color-primary)'" (click)="applyContractTypeFilter('')">
+        {{ "clients.filter_all" | translate }} ({{ counts()["all"] ?? 0 }})
+      </button>
+      @for (plan of plans(); track plan.id) {
+        <button type="button" class="fx-cat-tab" [class.is-active]="contractTypeFilter() === plan.id"
+                [style.--fx-tab-color]="plan.color" (click)="applyContractTypeFilter(plan.id)">
+          {{ plan.name }} ({{ planCount(plan.id) }})
+        </button>
+      }
+    </nav>
+
+    <div class="fx-stats-bar">
+      <dl class="fx-stats">
+        <div>
+          <dt>{{ "contract.status_active" | translate }}</dt>
+          <dd>{{ counts()["active"] ?? 0 }}</dd>
+        </div>
+        <div>
+          <dt>{{ "contracts.portfolio_value" | translate }}</dt>
+          <dd>{{ totals().portfolio_value | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "payments.status_unpaid" | translate }}</dt>
+          <dd class="text-danger-token">{{ counts()["unpaid"] ?? 0 }}</dd>
+        </div>
+        <div>
+          <dt>{{ "contracts.average_basket" | translate }}</dt>
+          <dd>{{ totals().average_basket | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "contracts.unpaid_value" | translate }}</dt>
+          <dd>{{ totals().unpaid_value | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "contracts.expiring_soon" | translate }}</dt>
+          <dd class="text-warning-token">{{ totals().expiring_soon }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="app-card">
+      @if (filterChips().length > 0) {
+        <div class="fx-active-filters p-3 pb-0">
+          @for (chip of filterChips(); track chip.label) {
+            <span class="fx-active-chip">
+              {{ chip.label }}
+              <button type="button" (click)="chip.clear()" [attr.aria-label]="'common.reset' | translate">
+                <i class="bi bi-x"></i>
+              </button>
+            </span>
+          }
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="7" /></div>
+      } @else if (error()) {
+        <div class="app-card-body"><app-error-state (retry)="loadContracts()" /></div>
+      } @else if (contracts().length === 0) {
+        <div class="app-card-body">
+          <app-empty-state [title]="'clients.no_contract' | translate" [body]="'contracts.empty_body' | translate" icon="bi-file-earmark-text" />
+        </div>
+      } @else {
+        <div class="fx-table-scroll">
+          <table class="table table-hover fx-grid">
+            <thead>
               <tr>
-                <td>
-                  <div class="fx-cell-lead">
-                    <app-avatar [name]="m.client.full_name" [size]="34" />
-                    <div class="fx-cell-lead-text">
-                      <div class="fx-cell-lead-title" [innerHTML]="m.client.full_name | highlight: search()"></div>
-                      @if (m.client.phone) { <div class="fx-cell-lead-sub" dir="ltr">{{ m.client.phone }}</div> }
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <span class="fx-plan-tag">
-                    <span class="fx-dot" [style.background]="m.plan.color"></span>
-                    <span [innerHTML]="m.plan.name | highlight: search()"></span>
-                  </span>
-                </td>
-                <td>{{ (m.starts_at | date: "mediumDate") || "—" }}</td>
-                <td>{{ (m.expires_at | date: "mediumDate") || "—" }}</td>
-                <td><app-status-badge [status]="m.status">{{ ("contract.status_" + m.status) | translate }}</app-status-badge></td>
-                <td><app-status-badge [status]="m.payment_status">{{ ("payments.status_" + m.payment_status) | translate }}</app-status-badge></td>
-                <td class="text-end">
-                  <app-action-menu>
-                    <a class="fx-menu-item" [routerLink]="['/owner/clients', m.client.id]">
-                      <i class="bi bi-person"></i> {{ "contracts.view_client" | translate }}
-                    </a>
-                  </app-action-menu>
-                </td>
+                <th>{{ "bookings.client" | translate }}</th>
+                <th>{{ "contract_types.plan" | translate }}</th>
+                <th class="text-end">{{ "clients.abo_price" | translate }}</th>
+                <th class="text-end">{{ "clients.abo_discount" | translate }}</th>
+                <th class="text-end">{{ "clients.abo_total" | translate }}</th>
+                <th>{{ "schedule.starts_on" | translate }}</th>
+                <th>{{ "schedule.ends_on" | translate }}</th>
+                <th>{{ "common.status" | translate }}</th>
+                <th>{{ "payments.status_paid" | translate }}</th>
+                <th class="text-end">{{ "common.actions" | translate }}</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (m of contracts(); track m.id) {
+                <tr [style.--fx-row-color]="rowColor(m)">
+                  <td>
+                    <div class="fx-cell-lead">
+                      <app-avatar [name]="m.client.full_name" [size]="34" />
+                      <div class="fx-cell-lead-text">
+                        <div class="fx-cell-lead-title" [innerHTML]="m.client.full_name | highlight: search()"></div>
+                        @if (m.client.phone) { <div class="fx-cell-lead-sub" dir="ltr">{{ m.client.phone }}</div> }
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="fx-plan-tag">
+                      <span class="fx-dot" [style.background]="m.plan.color"></span>
+                      <span [innerHTML]="m.plan.name | highlight: search()"></span>
+                    </span>
+                    <div class="fx-muted" style="font-size: var(--font-size-xs)">
+                      {{ m.activity.emoji ? m.activity.emoji + " " : "" }}{{ m.activity.name }}
+                    </div>
+                  </td>
+                  <td class="text-end fx-num">
+                    @if (m.base_price !== null && m.base_price !== undefined) {
+                      {{ m.base_price | money: m.plan.currency }}
+                    } @else { <span class="fx-muted">—</span> }
+                  </td>
+                  <td class="text-end fx-num">
+                    @if (m.discount) {
+                      <span class="text-warning-token">− {{ m.discount | money: m.plan.currency }}</span>
+                    } @else { <span class="fx-muted">—</span> }
+                  </td>
+                  <td class="text-end fx-num fw-semibold">{{ m.final_price | money: m.plan.currency }}</td>
+                  <td class="fx-num">{{ (m.starts_at | date: "mediumDate") || "—" }}</td>
+                  <td class="fx-num">{{ (m.expires_at | date: "mediumDate") || "—" }}</td>
+                  <td><app-status-badge [status]="m.status">{{ ("contract.status_" + m.status) | translate }}</app-status-badge></td>
+                  <td><app-status-badge [status]="m.payment_status">{{ ("payments.status_" + m.payment_status) | translate }}</app-status-badge></td>
+                  <td class="text-end">
+                    <app-action-menu>
+                      <a class="fx-menu-item" [routerLink]="['/owner/clients', m.client.id]">
+                        <i class="bi bi-person"></i> {{ "contracts.view_client" | translate }}
+                      </a>
+                    </app-action-menu>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
 
-      <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
-    }
+        <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
+      }
+    </div>
   </div>
 </div>

@@ -95,6 +95,16 @@ export class NavbarComponent {
       });
   }
 
+  /**
+   * A group left with a single visible entry is shown as a plain link, not a
+   * menu: "Équipe" (and "Finances", once permissions trim it) opened a
+   * dropdown holding exactly one row, which was a click for nothing. Returns
+   * that lone entry, or null when the group really needs a menu.
+   */
+  soloItem(group: NavGroup): NavLeaf | null {
+    return group.items.length === 1 ? group.items[0] : null;
+  }
+
   toggleGroup(id: string): void {
     this.openGroup.update((v) => (v === id ? null : id));
     this.userMenuOpen.set(false);

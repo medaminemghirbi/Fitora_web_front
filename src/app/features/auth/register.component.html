@@ -1,63 +1,55 @@
-<div class="auth-shell">
-  <app-landing-header />
+<app-auth-member-shell [wide]="true" [pitch]="'auth.member_pitch_signup' | translate">
+  <h1 class="auth-title">{{ "auth.member_signup_title" | translate }}</h1>
+  <p class="auth-subtitle">{{ "auth.member_signup_hint" | translate }}</p>
 
-  <div class="auth-page">
-    <div class="auth-card">
-      <div class="auth-brand">FITORA</div>
-      <p class="auth-tagline">{{ "app.tagline" | translate }}</p>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (error()) {
+      <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
 
-      <h1>{{ "auth.create_account" | translate }}</h1>
-      <p class="auth-subtitle">{{ "auth.owner_signup_hint" | translate }}</p>
-
-      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-        @if (error()) {
-          <div class="alert alert-danger" role="alert">{{ error() }}</div>
-        }
-
-        <div class="row">
-          <div class="col-6 mb-3">
-            <label for="first_name">{{ "auth.first_name" | translate }} *</label>
-            <input id="first_name" class="form-control" formControlName="first_name" />
-          </div>
-          <div class="col-6 mb-3">
-            <label for="last_name">{{ "auth.last_name" | translate }} *</label>
-            <input id="last_name" class="form-control" formControlName="last_name" />
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label for="email">{{ "auth.email" | translate }} *</label>
-          <input id="email" type="email" class="form-control" formControlName="email" autocomplete="email" />
-        </div>
-
-        <div class="mb-3">
-          <label for="phone">{{ "auth.phone" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="phone" class="form-control" formControlName="phone" />
-        </div>
-
-        <div class="mb-3">
-          <label for="password">{{ "auth.password" | translate }} *</label>
-          <input id="password" type="password" class="form-control" formControlName="password" autocomplete="new-password" />
-          @if (form.controls.password.invalid && form.controls.password.touched) {
-            <div class="invalid-feedback d-block">{{ "common.required" | translate }} (min. 8)</div>
-          }
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
-          @if (loading()) {
-            <app-spinner [size]="16" />
-          } @else {
-            {{ "auth.sign_up" | translate }}
-          }
-        </button>
-      </form>
-
-      <p class="auth-switch">
-        {{ "auth.have_account" | translate }}
-        <a routerLink="/auth/login">{{ "auth.sign_in" | translate }}</a>
-      </p>
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="first_name">{{ "auth.first_name" | translate }} *</label>
+        <input id="first_name" class="form-control" formControlName="first_name" />
+      </div>
+      <div class="col-6 mb-3">
+        <label for="last_name">{{ "auth.last_name" | translate }} *</label>
+        <input id="last_name" class="form-control" formControlName="last_name" />
+      </div>
     </div>
-  </div>
 
-  <app-landing-footer />
-</div>
+    <div class="mb-3">
+      <label for="email">{{ "auth.email" | translate }} *</label>
+      <input id="email" type="email" class="form-control" formControlName="email" autocomplete="email" />
+    </div>
+
+    <div class="mb-3">
+      <label for="phone">{{ "auth.phone" | translate }} ({{ "common.optional" | translate }})</label>
+      <input id="phone" class="form-control" formControlName="phone" />
+    </div>
+
+    <div class="mb-3">
+      <label for="password">{{ "auth.password" | translate }} *</label>
+      <input id="password" type="password" class="form-control" formControlName="password" autocomplete="new-password" />
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <div class="invalid-feedback d-block">{{ "common.required" | translate }} (min. 8)</div>
+      }
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+      @if (loading()) {
+        <app-spinner [size]="16" />
+      } @else {
+        {{ "auth.sign_up" | translate }}
+      }
+    </button>
+  </form>
+
+  <p class="auth-switch">
+    {{ "auth.have_account" | translate }}
+    <a routerLink="/pro/connexion">{{ "auth.sign_in" | translate }}</a>
+  </p>
+  <p class="auth-switch">
+    <a routerLink="/pro/demo">{{ "auth.owner_signup_cta" | translate }}</a>
+  </p>
+</app-auth-member-shell>

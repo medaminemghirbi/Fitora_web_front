@@ -50,13 +50,8 @@ export class CompanyService {
     return this.http.patch<{ company: Company }>(`${API_BASE_URL}/company`, formData);
   }
 
-  // The owner can only roll a fresh random key — setting a specific value
-  // is admin-only (PATCH /api/v1/admin/companies/:id/mobile_key).
-  regenerateMobileKey(): Observable<{ company: Company }> {
-    return this.http.post<{ company: Company }>(`${API_BASE_URL}/company/regenerate_mobile_key`, {});
-  }
-
-  getMobileKeyQr(): Observable<Blob> {
-    return this.http.get(`${API_BASE_URL}/company/mobile_key_qr`, { responseType: "blob" });
+  /** Puts the gym in (or out of) the public directory. */
+  publish(listed: boolean): Observable<{ company: Company }> {
+    return this.http.post<{ company: Company }>(`${API_BASE_URL}/company/publish`, { listed });
   }
 }

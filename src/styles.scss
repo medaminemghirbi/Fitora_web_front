@@ -32,6 +32,9 @@ ng-progress {
 
 .text-primary { color: var(--color-primary) !important; }
 .text-muted-token { color: var(--color-text-secondary) !important; }
+.text-warning-token { color: var(--color-warning) !important; }
+.text-danger-token { color: var(--color-danger) !important; }
+.text-success-token { color: var(--color-success) !important; }
 .cursor-pointer { cursor: pointer; }
 
 // Global visible focus ring for keyboard users

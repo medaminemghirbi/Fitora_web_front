@@ -14,7 +14,6 @@
       <p class="ac-meta">
         {{ c.owner.full_name }} · <span dir="ltr">{{ c.owner.email }}</span>
         @if (c.city) { · {{ c.city }} }
-        · {{ c.locations_count }} {{ "admin.locations_used" | translate }}
         · {{ "admin.created_on" | translate }} {{ c.created_at | date: "dd/MM/yyyy" }}
       </p>
     </div>

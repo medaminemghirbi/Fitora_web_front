@@ -1,17 +1,16 @@
 import { Component, signal } from "@angular/core";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { RouterLink } from "@angular/router";
+import { AuthProShellComponent } from "../../shared/ui/auth-pro-shell.component";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AccountRecoveryService } from "../../core/auth/account-recovery.service";
 import { extractErrorMessage, isErrorCode } from "../../core/services/error.util";
 import { SpinnerComponent } from "../../shared/components/spinner.component";
-import { LandingHeaderComponent } from "../../shared/components/landing-header.component";
-import { LandingFooterComponent } from "../../shared/components/landing-footer.component";
 
 @Component({
   selector: "app-forgot-password",
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslateModule, SpinnerComponent, LandingHeaderComponent, LandingFooterComponent],
+  imports: [AuthProShellComponent, ReactiveFormsModule, RouterLink, TranslateModule, SpinnerComponent],
   templateUrl: "./forgot-password.component.html",
   styleUrl: "./auth.component.scss",
 })

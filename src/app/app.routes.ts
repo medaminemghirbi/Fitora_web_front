@@ -1,98 +1,46 @@
 import { Routes } from "@angular/router";
-import { authGuard } from "./core/guards/auth.guard";
-import { guestGuard } from "./core/guards/guest.guard";
-import { noCompanyGuard, companyGuard } from "./core/guards/company.guard";
-import { roleGuard } from "./core/guards/role.guard";
-import { capabilityGuard, ownerAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
+import { b2bRoutes } from "./b2b.routes";
+import { b2cRoutes } from "./b2c.routes";
 
+/**
+ * Two zones that never mix.
+ *
+ * - b2c.routes.ts — Fitora and the person who trains: the directory at the
+ *   root, their sign-in, their sign-up, and /member.
+ * - b2b.routes.ts — a gym and the people who run it: everything under /pro,
+ *   then /owner, /coach and /admin.
+ *
+ * Only the two routes below are shared, and only because a link in an email
+ * points at them: a password reset and an address confirmation reach the same
+ * page whichever kind of account asked for it.
+ */
 export const routes: Routes = [
+  ...b2cRoutes,
+  ...b2bRoutes,
+
   {
-    path: "",
-    pathMatch: "full",
-    canActivate: [guestGuard],
-    loadComponent: () => import("./features/landing/landing.component").then((m) => m.LandingComponent),
-  },
-  {
-    path: "auth",
-    canActivate: [guestGuard],
-    children: [
-      { path: "login", loadComponent: () => import("./features/auth/login.component").then((m) => m.LoginComponent) },
-      { path: "register", loadComponent: () => import("./features/auth/register.component").then((m) => m.RegisterComponent) },
-      { path: "forgot-password", loadComponent: () => import("./features/auth/forgot-password.component").then((m) => m.ForgotPasswordComponent) },
-      { path: "reset-password", loadComponent: () => import("./features/auth/reset-password.component").then((m) => m.ResetPasswordComponent) },
-      { path: "", pathMatch: "full", redirectTo: "login" },
-    ],
-  },
-  {
-    // Not under /auth (guest-only) — someone already signed in on this
-    // device should still land here from the emailed link and see it
-    // succeed, not get bounced by guestGuard.
+    // Not guest-only: someone already signed in on this device should still
+    // land here from the emailed link and see it succeed.
     path: "verify-email",
     loadComponent: () => import("./features/auth/verify-email.component").then((m) => m.VerifyEmailComponent),
   },
   {
-    path: "trial-expired",
-    canActivate: [authGuard],
-    loadComponent: () => import("./features/trial-expired/trial-expired.component").then((m) => m.TrialExpiredComponent),
+    path: "auth/reset-password",
+    loadComponent: () => import("./features/auth/reset-password.component").then((m) => m.ResetPasswordComponent),
   },
-  {
-    path: "owner/setup-company",
-    canActivate: [authGuard, roleGuard("owner"), noCompanyGuard],
-    loadComponent: () =>
-      import("./features/owner/onboarding/company-setup.component").then((m) => m.CompanySetupComponent),
-  },
-  {
-    path: "owner",
-    canActivate: [authGuard, ownerAreaGuard, companyGuard],
-    loadComponent: () => import("./layout/owner-shell/owner-shell.component").then((m) => m.OwnerShellComponent),
-    children: [
-      { path: "dashboard", canActivate: [capabilityGuard("reports")], loadComponent: () => import("./features/owner/dashboard/dashboard.component").then((m) => m.DashboardComponent) },
-      { path: "getting-started", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/getting-started/getting-started.component").then((m) => m.GettingStartedComponent) },
-      { path: "clients", canActivate: [capabilityGuard("clients")], loadComponent: () => import("./features/owner/clients/clients-list.component").then((m) => m.ClientsListComponent) },
-      { path: "clients/:id", canActivate: [capabilityGuard("clients")], loadComponent: () => import("./features/owner/clients/client-profile.component").then((m) => m.ClientProfileComponent) },
-      { path: "calendar", loadComponent: () => import("./features/owner/calendar/calendar.component").then((m) => m.CalendarComponent) },
-      { path: "bookings", canActivate: [capabilityGuard("bookings")], loadComponent: () => import("./features/owner/bookings/bookings.component").then((m) => m.OwnerBookingsComponent) },
-      { path: "contracts", canActivate: [capabilityGuard("contracts")], loadComponent: () => import("./features/owner/contracts/contracts.component").then((m) => m.ContractsComponent) },
-      { path: "payments", canActivate: [capabilityGuard("payments")], loadComponent: () => import("./features/owner/payments/payments.component").then((m) => m.OwnerPaymentsComponent) },
-      { path: "data-exchange", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/data-exchange/data-exchange.component").then((m) => m.DataExchangeComponent) },
-      { path: "team", canActivate: [capabilityGuard("coaches")], loadComponent: () => import("./features/owner/team/team.component").then((m) => m.TeamComponent) },
-      // Coaches + Staff were merged into one Team page — keep the old paths working.
-      { path: "coaches", pathMatch: "full", redirectTo: "team" },
-      { path: "staff", pathMatch: "full", redirectTo: "team" },
-      { path: "subscription", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/subscription/subscription.component").then((m) => m.SubscriptionComponent) },
-      { path: "notifications", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/notifications/notifications-inbox.component").then((m) => m.NotificationsInboxComponent) },
-      { path: "notifications/:id", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/notifications/notification-detail.component").then((m) => m.NotificationDetailComponent) },
-      // Settings — persistent left rail + detail panel (Direction A).
-      // Bare `/owner/settings` redirects to the first section; `:section` selects one.
-      { path: "settings", canActivate: [settingsAccessGuard], loadComponent: () => import("./features/owner/settings/settings-shell.component").then((m) => m.SettingsShellComponent) },
-      { path: "settings/:section", canActivate: [settingsAccessGuard], loadComponent: () => import("./features/owner/settings/settings-shell.component").then((m) => m.SettingsShellComponent) },
-      // The marketplace is gone — every feature is included in the subscription.
-      { path: "modules", pathMatch: "full", redirectTo: "subscription" },
-      { path: "updates", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/updates/updates.component").then((m) => m.OwnerUpdatesComponent) },
-      { path: "", pathMatch: "full", redirectTo: "dashboard" },
-    ],
-  },
-  {
-    path: "coach",
-    canActivate: [authGuard, staffRoleGuard("coach")],
-    loadComponent: () => import("./layout/coach-shell/coach-shell.component").then((m) => m.CoachShellComponent),
-    children: [
-      { path: "today", loadComponent: () => import("./features/coach/today/today.component").then((m) => m.CoachTodayComponent) },
-      { path: "", pathMatch: "full", redirectTo: "today" },
-    ],
-  },
-  {
-    path: "admin",
-    canActivate: [authGuard, roleGuard("admin")],
-    loadComponent: () => import("./layout/admin-shell/admin-shell.component").then((m) => m.AdminShellComponent),
-    children: [
-      { path: "companies", loadComponent: () => import("./features/admin/companies/companies.component").then((m) => m.AdminCompaniesComponent) },
-      { path: "companies/:id", loadComponent: () => import("./features/admin/company-detail/company-detail.component").then((m) => m.AdminCompanyDetailComponent) },
-      { path: "pricing", loadComponent: () => import("./features/admin/pricing/pricing.component").then((m) => m.AdminPricingComponent) }, { path: "modules", pathMatch: "full", redirectTo: "pricing" },
-      { path: "support", loadComponent: () => import("./features/admin/support/support-tickets.component").then((m) => m.AdminSupportTicketsComponent) },
-      { path: "updates", loadComponent: () => import("./features/admin/updates/updates.component").then((m) => m.AdminUpdatesComponent) },
-      { path: "", pathMatch: "full", redirectTo: "companies" },
-    ],
-  },
-  { path: "**", redirectTo: "auth/login" },
+
+  // ---- where the old single-tree paths went -------------------------------
+  { path: "auth/login", pathMatch: "full", redirectTo: "/pro/connexion" },
+  { path: "auth/register", pathMatch: "full", redirectTo: "/pro/demo" },
+  { path: "auth/register/member", pathMatch: "full", redirectTo: "/inscription" },
+  { path: "auth/forgot-password", pathMatch: "full", redirectTo: "/pro/mot-de-passe-oublie" },
+  { path: "auth/demo", pathMatch: "full", redirectTo: "/pro/demo" },
+  { path: "auth/devis", pathMatch: "full", redirectTo: "/pro/devis" },
+  { path: "auth/gyms", pathMatch: "full", redirectTo: "/gyms" },
+  { path: "demo", pathMatch: "full", redirectTo: "/pro/demo" },
+  { path: "devis", pathMatch: "full", redirectTo: "/pro/devis" },
+
+  // A stranger who mistypes a URL is far more likely to be looking for a gym
+  // than for a gym's back office.
+  { path: "**", redirectTo: "" },
 ];

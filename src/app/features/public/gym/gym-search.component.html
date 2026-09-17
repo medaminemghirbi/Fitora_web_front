@@ -1,0 +1,96 @@
+<app-public-header />
+
+<main class="gx">
+  <header class="gx-head">
+    <h1>{{ "public.search.title" | translate }}</h1>
+    <p>{{ "public.search.subtitle" | translate }}</p>
+  </header>
+
+  <form class="gx-search" (ngSubmit)="search()">
+    <div class="gx-search-field">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <label for="search-q" class="visually-hidden">{{ "public.search.placeholder" | translate }}</label>
+      <input id="search-q" type="search" class="form-control" name="q"
+             [ngModel]="query()" (ngModelChange)="query.set($event)"
+             [placeholder]="'public.search.placeholder' | translate" />
+    </div>
+    <label for="search-city" class="visually-hidden">{{ "settings.company_city" | translate }}</label>
+    <input id="search-city" type="search" class="form-control gx-search-city" name="city"
+           [ngModel]="city()" (ngModelChange)="city.set($event)"
+           [placeholder]="'settings.company_city' | translate" />
+    <button type="submit" class="btn btn-primary">{{ "common.search" | translate }}</button>
+  </form>
+
+  <div class="gx-filters">
+    @if (geo.coords()) {
+      <span class="gx-near-on"><i class="bi bi-geo-alt-fill"></i> {{ "public.search.sorted_by_distance" | translate }}</span>
+      <button type="button" class="gx-link" (click)="clearLocation()">{{ "public.search.clear_location" | translate }}</button>
+    } @else {
+      <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="geo.state() === 'asking'" (click)="locateAndSort()">
+        <i class="bi bi-geo-alt"></i> {{ "public.search.near_me" | translate }}
+      </button>
+      @if (geo.state() === "denied") {
+        <span class="fx-muted small">{{ "public.search.location_denied" | translate }}</span>
+      } @else if (geo.state() === "unavailable") {
+        <span class="fx-muted small">{{ "public.search.location_unavailable" | translate }}</span>
+      }
+    }
+
+    @if (activityOptions().length > 0) {
+      <nav class="gx-chips" [attr.aria-label]="'activities.title' | translate">
+        <button type="button" class="gx-chip" [class.is-on]="activityFilter() === ''" (click)="activityFilter.set('')">
+          {{ "common.all" | translate }}
+        </button>
+        @for (activity of activityOptions(); track activity) {
+          <button type="button" class="gx-chip" [class.is-on]="activityFilter() === activity" (click)="activityFilter.set(activity)">
+            {{ activity }}
+          </button>
+        }
+      </nav>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center py-5"><app-spinner [size]="30" /></div>
+  } @else if (visibleGyms().length === 0) {
+    <app-empty-state [title]="'common.no_results' | translate" [body]="'public.search.empty_body' | translate" icon="bi-compass" />
+  } @else {
+    <p class="gx-count">{{ "public.search.count" | translate: { count: visibleGyms().length } }}</p>
+
+    <ul class="gx-grid">
+      @for (gym of visibleGyms(); track gym.id) {
+        <li class="gx-card">
+          <div class="gx-card-banner" [style.background]="bannerColor(gym)">
+            <span class="gx-card-mark" aria-hidden="true">{{ gym.name.charAt(0) }}</span>
+            @if (gym.distance_km !== null) {
+              <span class="gx-card-distance"><i class="bi bi-geo-alt-fill"></i> {{ "public.search.km_away" | translate: { km: gym.distance_km } }}</span>
+            }
+          </div>
+
+          <div class="gx-card-body">
+            <h2>{{ gym.name }}</h2>
+            @if (gym.city) {
+              <p class="gx-card-city">{{ gym.city }}</p>
+            } @else {
+              <p class="gx-card-city gx-card-city--none">{{ "public.search.no_address" | translate }}</p>
+            }
+
+            @if (gym.activity_names.length > 0) {
+              <div class="gx-card-tags">
+                @for (activity of gym.activity_names; track activity) {
+                  <span>{{ activity }}</span>
+                }
+              </div>
+            }
+
+            <a [routerLink]="['/gyms', gym.id]" class="gx-card-cta" [class.gx-card-cta--quiet]="gym.distance_km === null">
+              {{ "public.search.view" | translate }}
+            </a>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</main>
+
+<app-landing-footer />

@@ -38,12 +38,12 @@ export class SettingsSectionsService {
   private readonly all: SettingsSection[] = [
     { path: "company", icon: "bi-building", labelKey: "settings.nav_company", descKey: "settings.desc_company", group: "establishment", ownerOnly: true },
     { path: "branding", icon: "bi-palette", labelKey: "settings.nav_branding", descKey: "settings.desc_branding", group: "establishment", ownerOnly: true },
-    { path: "mobile", icon: "bi-phone", labelKey: "settings.nav_mobile", descKey: "settings.desc_mobile", group: "establishment", ownerOnly: true },
+    { path: "directory", icon: "bi-compass", labelKey: "settings.nav_directory", descKey: "settings.desc_directory", group: "establishment", ownerOnly: true },
     { path: "planning", icon: "bi-calendar3", labelKey: "settings.nav_planning", descKey: "settings.desc_planning", group: "planning", ownerOnly: true },
     { path: "activities", icon: "bi-lightning-charge", labelKey: "settings.nav_activities", descKey: "settings.desc_activities", group: "planning", permission: "activities" },
-    { path: "salles", icon: "bi-door-open", labelKey: "settings.nav_salles", descKey: "settings.desc_salles", group: "planning", permission: "locations" },
     { path: "contract-types", icon: "bi-award", labelKey: "settings.nav_contract_types", descKey: "settings.desc_contract_types", group: "planning", permission: "contracts" },
     { path: "roles", icon: "bi-shield-lock", labelKey: "settings.nav_roles", descKey: "settings.desc_roles", group: "hr", ownerOnly: true },
+    { path: "data-exchange", icon: "bi-arrow-down-up", labelKey: "nav.data_exchange", descKey: "settings.desc_data_exchange", group: "establishment", ownerOnly: true },
   ];
 
   readonly sections = computed(() => this.all.filter((s) => this.isVisible(s)));

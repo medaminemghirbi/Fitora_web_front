@@ -1,91 +1,169 @@
-<div class="fx-page">
-  <app-page-header [title]="'nav.payments' | translate" [description]="'payments.subtitle' | translate">
-    <button type="button" class="btn btn-primary" (click)="openRecordModal()">
-      <i class="bi bi-plus-lg"></i> {{ "payments.record" | translate }}
-    </button>
-  </app-page-header>
-
-  <div class="fx-toolbar">
-    <div class="fx-input-icon">
-      <i class="bi bi-search"></i>
-      <input
-        type="search"
-        class="form-control form-control-sm"
-        [ngModel]="search()"
-        (ngModelChange)="onSearchChange($event)"
-        [placeholder]="'payments.search_placeholder' | translate"
-      />
+<div class="fx-listpage">
+  <app-filter-rail [activeCount]="filterChips().length">
+    <div class="fx-rail-block">
+      <div class="fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+          [placeholder]="'payments.search_placeholder' | translate"
+          [attr.aria-label]="'payments.search_placeholder' | translate"
+        />
+      </div>
     </div>
 
-    <div class="fx-segmented" role="group" [attr.aria-label]="'common.status' | translate">
-      @for (opt of statusOptions; track opt.value) {
-        <button type="button" [class.is-active]="statusFilter() === opt.value" (click)="statusFilter.set(opt.value); applyFilters()">
-          {{ opt.labelKey | translate }}
+    <app-status-filter
+      name="payment-status"
+      [legend]="'clients.filter_status' | translate"
+      [value]="statusFilter()"
+      [options]="railOptions()"
+      (valueChange)="applyStatusFilter($event)"
+    />
+
+    <div class="fx-rail-block">
+      <label class="fx-rail-label" for="payment-method-filter">{{ "payments.method" | translate }}</label>
+      <select id="payment-method-filter" class="form-select form-select-sm"
+              [ngModel]="methodFilter()" (ngModelChange)="applyMethodFilter($event)">
+        <option value="">{{ "common.all" | translate }}</option>
+        @for (opt of methodOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.labelKey | translate }}</option>
+        }
+      </select>
+    </div>
+
+    @if (hasFilters()) {
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+        <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+      </button>
+    }
+  </app-filter-rail>
+
+  <div class="fx-listpage-main">
+    <app-page-header [title]="'nav.payments' | translate" [description]="'payments.subtitle' | translate">
+      <button type="button" class="btn btn-primary" (click)="openRecordModal()">
+        <i class="bi bi-plus-lg"></i> {{ "payments.record" | translate }}
+      </button>
+    </app-page-header>
+
+    <!-- One tab per payment method, with how many receipts it holds. -->
+    <nav class="fx-cat-tabs" [attr.aria-label]="'payments.method' | translate">
+      <button type="button" class="fx-cat-tab" [class.is-active]="methodFilter() === ''"
+              [style.--fx-tab-color]="'var(--color-primary)'" (click)="applyMethodFilter('')">
+        {{ "common.all" | translate }} ({{ counts()["all"] ?? 0 }})
+      </button>
+      @for (opt of methodOptions; track opt.value) {
+        <button type="button" class="fx-cat-tab" [class.is-active]="methodFilter() === opt.value"
+                [style.--fx-tab-color]="opt.color" (click)="applyMethodFilter(opt.value)">
+          {{ opt.labelKey | translate }} ({{ methodCount(opt.value) }})
         </button>
       }
+    </nav>
+
+    <div class="fx-stats-bar">
+      <dl class="fx-stats">
+        <div>
+          <dt>{{ "payments.collected_this_month" | translate }}</dt>
+          <dd class="text-success-token">{{ totals().collected_this_month | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "payments.collected_total" | translate }}</dt>
+          <dd>{{ totals().collected_total | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "payments.average_payment" | translate }}</dt>
+          <dd>{{ totals().average_payment | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "payments.receipts" | translate }}</dt>
+          <dd>{{ counts()["all"] ?? 0 }}</dd>
+        </div>
+        <div>
+          <dt>{{ "payments.status_refunded" | translate }}</dt>
+          <dd>{{ totals().refunded_value | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "payments.status_cancelled" | translate }}</dt>
+          <dd class="fx-muted">{{ counts()["cancelled"] ?? 0 }}</dd>
+        </div>
+      </dl>
     </div>
-  </div>
 
-  <div class="app-card">
-    @if (loading()) {
-      <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="6" /></div>
-    } @else if (error()) {
-      <div class="app-card-body"><app-error-state (retry)="load()" /></div>
-    } @else if (payments().length === 0) {
-      <div class="app-card-body">
-        <app-empty-state [title]="'payments.empty_title' | translate" [body]="'payments.empty_body' | translate" icon="bi-credit-card" />
-      </div>
-    } @else {
-      <div class="fx-table-scroll">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>{{ "bookings.client" | translate }}</th>
-              <th>{{ "payments.product" | translate }}</th>
-              <th>{{ "payments.amount" | translate }}</th>
-              <th>{{ "payments.method" | translate }}</th>
-              <th>{{ "common.status" | translate }}</th>
-              <th>{{ "payments.date" | translate }}</th>
-              <th class="text-end">{{ "common.actions" | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of payments(); track p.id) {
+    <div class="app-card">
+      @if (filterChips().length > 0) {
+        <div class="fx-active-filters p-3 pb-0">
+          @for (chip of filterChips(); track chip.label) {
+            <span class="fx-active-chip">
+              {{ chip.label }}
+              <button type="button" (click)="chip.clear()" [attr.aria-label]="'common.reset' | translate">
+                <i class="bi bi-x"></i>
+              </button>
+            </span>
+          }
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="6" /></div>
+      } @else if (error()) {
+        <div class="app-card-body"><app-error-state (retry)="load()" /></div>
+      } @else if (payments().length === 0) {
+        <div class="app-card-body">
+          <app-empty-state [title]="'payments.empty_title' | translate" [body]="'payments.empty_body' | translate" icon="bi-credit-card" />
+        </div>
+      } @else {
+        <div class="fx-table-scroll">
+          <table class="table table-hover fx-grid">
+            <thead>
               <tr>
-                <td>
-                  <div class="fx-cell-lead">
-                    <app-avatar [name]="p.client.full_name" [size]="34" />
-                    <div class="fx-cell-lead-text">
-                      <div class="fx-cell-lead-title" [innerHTML]="p.client.full_name | highlight: search()"></div>
-                    </div>
-                  </div>
-                </td>
-                <td>{{ p.product_name || "—" }}</td>
-                <td class="fx-strong">{{ p.amount | money: p.currency }}</td>
-                <td>{{ ("payments.method_" + p.payment_method) | translate }}</td>
-                <td><app-status-badge [status]="p.status">{{ ("payments.status_" + p.status) | translate }}</app-status-badge></td>
-                <td class="fx-muted">{{ p.created_at | date: "medium" }}</td>
-                <td class="text-end">
-                  <app-action-menu>
-                    <a class="fx-menu-item" [routerLink]="['/owner/clients', p.client.id]">
-                      <i class="bi bi-person"></i> {{ "payments.view_client" | translate }}
-                    </a>
-                    @if (p.status === "paid") {
-                      <div class="fx-menu-divider"></div>
-                      <button type="button" class="fx-menu-item is-danger" (click)="refund(p)">
-                        <i class="bi bi-arrow-counterclockwise"></i> {{ "payments.refund" | translate }}
-                      </button>
-                    }
-                  </app-action-menu>
-                </td>
+                <th>{{ "bookings.client" | translate }}</th>
+                <th>{{ "payments.product" | translate }}</th>
+                <th class="text-end">{{ "payments.amount" | translate }}</th>
+                <th>{{ "payments.method" | translate }}</th>
+                <th>{{ "common.status" | translate }}</th>
+                <th>{{ "payments.date" | translate }}</th>
+                <th class="text-end">{{ "common.actions" | translate }}</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (p of payments(); track p.id) {
+                <tr [style.--fx-row-color]="rowColor(p)">
+                  <td>
+                    <div class="fx-cell-lead">
+                      <app-avatar [name]="p.client.full_name" [size]="34" />
+                      <div class="fx-cell-lead-text">
+                        <div class="fx-cell-lead-title" [innerHTML]="p.client.full_name | highlight: search()"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ p.product_name || "—" }}</td>
+                  <td class="fx-strong fx-num text-end">{{ p.amount | money: p.currency }}</td>
+                  <td>{{ ("payments.method_" + p.payment_method) | translate }}</td>
+                  <td><app-status-badge [status]="p.status">{{ ("payments.status_" + p.status) | translate }}</app-status-badge></td>
+                  <td class="fx-muted fx-num">{{ p.created_at | date: "medium" }}</td>
+                  <td class="text-end">
+                    <app-action-menu>
+                      <a class="fx-menu-item" [routerLink]="['/owner/clients', p.client.id]">
+                        <i class="bi bi-person"></i> {{ "payments.view_client" | translate }}
+                      </a>
+                      @if (p.status === "paid") {
+                        <div class="fx-menu-divider"></div>
+                        <button type="button" class="fx-menu-item is-danger" (click)="refund(p)">
+                          <i class="bi bi-arrow-counterclockwise"></i> {{ "payments.refund" | translate }}
+                        </button>
+                      }
+                    </app-action-menu>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
 
-      <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
-    }
+        <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
+      }
+    </div>
   </div>
 </div>
 

@@ -3,10 +3,9 @@ import { RouterLink } from "@angular/router";
 import { ActivatedRoute } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AccountRecoveryService } from "../../core/auth/account-recovery.service";
+import { AuthProShellComponent } from "../../shared/ui/auth-pro-shell.component";
 import { AuthService } from "../../core/auth/auth.service";
 import { SpinnerComponent } from "../../shared/components/spinner.component";
-import { LandingHeaderComponent } from "../../shared/components/landing-header.component";
-import { LandingFooterComponent } from "../../shared/components/landing-footer.component";
 
 type Status = "verifying" | "success" | "error";
 
@@ -16,7 +15,7 @@ type Status = "verifying" | "success" | "error";
 @Component({
   selector: "app-verify-email",
   standalone: true,
-  imports: [RouterLink, TranslateModule, SpinnerComponent, LandingHeaderComponent, LandingFooterComponent],
+  imports: [AuthProShellComponent, RouterLink, TranslateModule, SpinnerComponent],
   templateUrl: "./verify-email.component.html",
   styleUrl: "./auth.component.scss",
 })
@@ -63,6 +62,6 @@ export class VerifyEmailComponent implements OnInit {
   }
 
   continueUrl(): string {
-    return this.isAuthenticated() ? this.auth.homeRouteForCurrentUser() : "/auth/login";
+    return this.isAuthenticated() ? this.auth.homeRouteForCurrentUser() : "/pro/connexion";
   }
 }

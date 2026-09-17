@@ -4,6 +4,8 @@ import { ActivatedRoute } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { ContractType, ContractBillingPeriod } from "../../../core/models/contract-type.model";
 import { ContractTypesService, ContractTypePayload } from "../../../core/services/contract-types.service";
+import { ActivitiesService } from "../../../core/services/activities.service";
+import { Activity } from "../../../core/models/activity.model";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
@@ -29,6 +31,10 @@ export class SettingsContractTypesComponent implements OnInit {
   readonly billingPeriods: ContractBillingPeriod[] = ["monthly", "quarterly", "semi_annual", "yearly"];
 
   readonly plans = signal<ContractType[]>([]);
+  /** Every activity of the gym — the rows of the plan's pricing grid. */
+  readonly activities = signal<Activity[]>([]);
+  /** activity_id → price typed in the modal; absent means "not sold for it". */
+  readonly activityPrices = signal<Record<string, number | null>>({});
   readonly planModalOpen = signal(false);
   readonly editingPlan = signal<ContractType | null>(null);
 
@@ -40,8 +46,6 @@ export class SettingsContractTypesComponent implements OnInit {
   readonly planForm = this.fb.nonNullable.group({
     name: ["", Validators.required],
     description: [""],
-    price: [0, [Validators.required, Validators.min(0)]],
-    currency: ["TND", Validators.required],
     billing_period: ["monthly" as ContractBillingPeriod, Validators.required],
     session_count: [null as number | null],
     unlimited_bookings: [true],
@@ -54,6 +58,7 @@ export class SettingsContractTypesComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     private readonly contractTypesService: ContractTypesService,
+    private readonly activitiesService: ActivitiesService,
     private readonly toast: ToastService,
     private readonly route: ActivatedRoute,
     private readonly translate: TranslateService
@@ -72,6 +77,10 @@ export class SettingsContractTypesComponent implements OnInit {
 
   private load(): void {
     this.loading.set(true);
+    this.activitiesService.list().subscribe({
+      next: (res) => this.activities.set(res.activities.filter((a) => a.active)),
+      error: () => this.activities.set([]),
+    });
     this.contractTypesService.list().subscribe({
       next: (res) => {
         this.plans.set(res.plans);
@@ -83,7 +92,8 @@ export class SettingsContractTypesComponent implements OnInit {
 
   openCreatePlan(): void {
     this.editingPlan.set(null);
-    this.planForm.reset({ currency: "TND", billing_period: "monthly", unlimited_bookings: true, priority_booking: false, color: "#4a2a8f", active: true, price: 0 });
+    this.planForm.reset({ billing_period: "monthly", unlimited_bookings: true, priority_booking: false, color: "#4a2a8f", active: true });
+    this.activityPrices.set({});
     this.formError.set(null);
     this.planModalOpen.set(true);
   }
@@ -93,8 +103,6 @@ export class SettingsContractTypesComponent implements OnInit {
     this.planForm.setValue({
       name: plan.name,
       description: plan.description || "",
-      price: plan.price,
-      currency: plan.currency,
       billing_period: plan.billing_period,
       session_count: plan.session_count,
       unlimited_bookings: plan.unlimited_bookings,
@@ -103,8 +111,29 @@ export class SettingsContractTypesComponent implements OnInit {
       color: plan.color,
       active: plan.active,
     });
+    this.activityPrices.set(Object.fromEntries(plan.activity_prices.map((row) => [row.activity_id, Number(row.price)])));
     this.formError.set(null);
     this.planModalOpen.set(true);
+  }
+
+  priceFor(activityId: string): number | null {
+    return this.activityPrices()[activityId] ?? null;
+  }
+
+  setPrice(activityId: string, event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    const next = { ...this.activityPrices() };
+    // An empty field is not "free" — it means the plan isn't offered for that
+    // activity, so the row is dropped rather than priced at 0.
+    if (raw === "") delete next[activityId];
+    else next[activityId] = Number(raw);
+    this.activityPrices.set(next);
+  }
+
+  private pricedRows(): { activity_id: string; price: number }[] {
+    return Object.entries(this.activityPrices())
+      .filter(([, price]) => price !== null && !Number.isNaN(price) && Number(price) >= 0)
+      .map(([activity_id, price]) => ({ activity_id, price: Number(price) }));
   }
 
   closePlanModal(): void {
@@ -117,9 +146,17 @@ export class SettingsContractTypesComponent implements OnInit {
       return;
     }
 
+    const activity_prices = this.pricedRows();
+    if (activity_prices.length === 0) {
+      this.formError.set(this.translate.instant("contract_types.needs_a_price"));
+      return;
+    }
+
     this.saving.set(true);
     this.formError.set(null);
-    const payload: ContractTypePayload = this.planForm.getRawValue();
+    // The prices go up as a proposal: the API decides what a subscription
+    // actually costs, this form never sends a total.
+    const payload: ContractTypePayload = { ...this.planForm.getRawValue(), activity_prices };
     const editing = this.editingPlan();
     const request = editing ? this.contractTypesService.update(editing.id, payload) : this.contractTypesService.create(payload);
 

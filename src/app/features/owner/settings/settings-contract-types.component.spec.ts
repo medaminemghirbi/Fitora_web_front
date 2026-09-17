@@ -4,6 +4,8 @@ import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { ContractType } from "../../../core/models/contract-type.model";
 import { ContractTypesService } from "../../../core/services/contract-types.service";
+import { ActivitiesService } from "../../../core/services/activities.service";
+import { Activity } from "../../../core/models/activity.model";
 import { ToastService } from "../../../core/services/toast.service";
 import { SettingsContractTypesComponent } from "./settings-contract-types.component";
 
@@ -11,23 +13,33 @@ describe("SettingsContractTypesComponent", () => {
   let fixture: ComponentFixture<SettingsContractTypesComponent>;
   let component: SettingsContractTypesComponent;
   let service: jasmine.SpyObj<ContractTypesService>;
+  let activitiesService: jasmine.SpyObj<ActivitiesService>;
   let toast: ToastService;
 
   const plan: ContractType = {
-    id: "ct1", company_id: "1", name: "Basic", description: null, price: 100, currency: "TND",
+    id: "ct1", company_id: "1", name: "Basic", description: null, currency: "TND",
     billing_period: "monthly", duration_days: 30, session_count: null, unlimited_bookings: true,
-    booking_limit: null, priority_booking: false, color: "#000", active: true, location_ids: [], activity_ids: [],
+    booking_limit: null, priority_booking: false, color: "#000", active: true, activity_ids: [],
+    activity_prices: [{ activity_id: "a1", activity_name: "Yoga", activity_emoji: "🧘", price: 100 }],
+  };
+
+  const activity: Activity = {
+    id: "a1", name: "Yoga", emoji: "🧘", description: null,
+    session_format: "collective", duration: 60, capacity: 15, active: true, currency: "TND", prices: [],
   };
 
   function build(queryParams: Record<string, string> = {}, listError = false): void {
     TestBed.resetTestingModule();
     service = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list", "create", "update"]);
     service.list.and.returnValue(listError ? throwError(() => new Error("nope")) : of({ plans: [plan] }));
+    activitiesService = jasmine.createSpyObj<ActivitiesService>("ActivitiesService", ["list"]);
+    activitiesService.list.and.returnValue(of({ activities: [activity] }));
 
     TestBed.configureTestingModule({
       imports: [SettingsContractTypesComponent, TranslateModule.forRoot()],
       providers: [
         { provide: ContractTypesService, useValue: service },
+        { provide: ActivitiesService, useValue: activitiesService },
         { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(queryParams) } } },
       ],
     });
@@ -71,10 +83,28 @@ describe("SettingsContractTypesComponent", () => {
     expect(component.planModalOpen()).toBe(true);
   });
 
-  it("openEditPlan hydrates the form", () => {
+  it("openEditPlan hydrates the form and the pricing grid", () => {
     component.openEditPlan(plan);
     expect(component.editingPlan()).toBe(plan);
     expect(component.planForm.value.name).toBe("Basic");
+    expect(component.priceFor("a1")).toBe(100);
+  });
+
+  it("setPrice stores a typed price and drops the row when the field is cleared", () => {
+    component.openCreatePlan();
+    component.setPrice("a1", { target: { value: "70" } } as unknown as Event);
+    expect(component.priceFor("a1")).toBe(70);
+
+    component.setPrice("a1", { target: { value: "" } } as unknown as Event);
+    expect(component.priceFor("a1")).toBeNull();
+  });
+
+  it("submitPlan refuses a plan with no priced activity", () => {
+    component.openCreatePlan();
+    component.planForm.patchValue({ name: "Premium" });
+    component.submitPlan();
+    expect(service.create).not.toHaveBeenCalled();
+    expect(component.formError()).toBeTruthy();
   });
 
   it("closePlanModal closes it", () => {
@@ -89,11 +119,13 @@ describe("SettingsContractTypesComponent", () => {
     expect(service.create).not.toHaveBeenCalled();
   });
 
-  it("submitPlan creates a new plan", () => {
+  it("submitPlan creates a new plan with its pricing grid", () => {
     component.openCreatePlan();
     component.planForm.patchValue({ name: "Premium" });
+    component.setPrice("a1", { target: { value: "70" } } as unknown as Event);
     service.create.and.returnValue(of({ plan }));
     component.submitPlan();
+    expect(service.create).toHaveBeenCalledWith(jasmine.objectContaining({ activity_prices: [{ activity_id: "a1", price: 70 }] }));
     expect(component.planModalOpen()).toBe(false);
     expect(toast.toasts()[0].kind).toBe("success");
   });
@@ -108,6 +140,7 @@ describe("SettingsContractTypesComponent", () => {
   it("submitPlan shows the backend error on failure", () => {
     component.openCreatePlan();
     component.planForm.patchValue({ name: "Premium" });
+    component.setPrice("a1", { target: { value: "70" } } as unknown as Event);
     service.create.and.returnValue(throwError(() => new Error("nope")));
     component.submitPlan();
     expect(component.formError()).toBeTruthy();

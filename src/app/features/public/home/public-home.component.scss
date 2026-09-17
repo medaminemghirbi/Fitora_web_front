@@ -1,0 +1,202 @@
+:host { display: block; background: var(--color-surface); }
+
+.ph {
+  max-width: 1160px;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-5) var(--space-7);
+}
+
+// ---- hero ----------------------------------------------------------------
+.ph-hero { text-align: center; }
+
+.ph-eyebrow {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.ph-title {
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.9rem);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+
+// The gradient carries the brand without a background wash behind the text.
+.ph-title-grad {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ph-lede {
+  margin: var(--space-5) auto 0;
+  max-width: 60ch;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+// ---- the two doors -------------------------------------------------------
+.ph-doors {
+  margin-top: var(--space-7);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.ph-door {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+
+  // The light source that keeps a flat fill from reading as a rectangle.
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: -18%;
+    top: -26%;
+    width: 62%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  > * { position: relative; z-index: 1; }
+
+  h2 { margin: var(--space-4) 0 0.5rem; font-family: var(--font-display); font-size: 1.85rem; font-weight: 700; letter-spacing: -0.02em; }
+  p { margin: 0 0 var(--space-5); font-size: 0.97rem; line-height: 1.6; color: rgba(255, 255, 255, 0.86); }
+
+  ul { list-style: none; margin: 0 0 var(--space-6); padding: 0; display: flex; flex-direction: column; gap: 0.7rem; }
+  li { display: flex; gap: 0.6rem; font-size: 0.9rem; color: rgba(255, 255, 255, 0.92); }
+  li i { flex-shrink: 0; font-weight: 700; }
+
+  // Aubergine for a gym, raspberry for a member — the same colour each one's
+  // sign-in wears, so the choice made here stays legible all the way in.
+  &--gym {
+    background: var(--sidebar-bg);
+    &::after { background: radial-gradient(circle, rgba(105, 70, 170, 0.62), transparent 70%); }
+    li i { color: #ffbc00; }
+  }
+
+  &--member {
+    background: linear-gradient(150deg, #e8005f 0%, #ff5c95 58%, #ffbc00 135%);
+    &::after { background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%); }
+    li i { color: #ffffff; }
+  }
+}
+
+.ph-door-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.ph-door-actions { margin-top: auto; display: flex; gap: var(--space-3); flex-wrap: wrap; }
+
+.ph-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding-inline: var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { text-decoration: none; }
+
+  &--light { flex: 1; background: #ffffff; color: var(--sidebar-bg); &:hover { color: var(--sidebar-bg); } }
+  &--member { color: #b0004a; &:hover { color: #b0004a; } }
+  &--ghost {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    color: #ffffff;
+    &:hover { background: rgba(255, 255, 255, 0.12); color: #ffffff; }
+  }
+}
+
+// ---- how it works --------------------------------------------------------
+.ph-steps {
+  margin-top: var(--space-8);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--color-border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+
+  ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+  li { display: flex; gap: var(--space-3); font-size: 0.92rem; color: var(--color-text-secondary); }
+  li strong { color: var(--color-text); }
+}
+
+.ph-steps-title {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+
+  &--gym { color: var(--color-primary); }
+  &--member { color: var(--color-accent); }
+}
+
+.ph-step-n {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &--gym { background: var(--color-primary-soft); color: var(--color-primary); }
+  &--member { background: var(--color-accent-soft); color: #b0004a; }
+}
+
+// ---- final call ----------------------------------------------------------
+.ph-final {
+  margin-top: var(--space-8);
+  border-radius: var(--radius-xl);
+  padding: var(--space-7) var(--space-6);
+  background: var(--brand-gradient);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+
+  h2 { margin: 0 0 0.5rem; font-family: var(--font-display); font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+  p { margin: 0; font-size: 0.97rem; color: rgba(255, 255, 255, 0.88); }
+}
+
+.ph-final-copy { flex: 1; min-width: 300px; }
+.ph-final-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.ph-final .ph-btn--light { flex: 0 0 auto; color: var(--color-primary); &:hover { color: var(--color-primary); } }
+
+@media (max-width: 767.98px) {
+  .ph { padding: var(--space-6) var(--space-4) var(--space-7); }
+  .ph-doors, .ph-steps { grid-template-columns: 1fr; }
+  .ph-door-actions .ph-btn, .ph-final-actions .ph-btn { flex: 1; }
+}

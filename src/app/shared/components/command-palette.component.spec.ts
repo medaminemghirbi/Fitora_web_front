@@ -28,9 +28,9 @@ describe("CommandPaletteComponent", () => {
     clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["list"]);
     contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["list"]);
     paymentsService = jasmine.createSpyObj<PaymentsService>("PaymentsService", ["list"]);
-    clientsService.list.and.returnValue(of({ clients: [], meta: { page: 1, per_page: 10, total: 0, total_pages: 1 } }));
-    contractsService.list.and.returnValue(of({ contracts: [], meta: { page: 1, per_page: 10, total: 0, total_pages: 1 } }));
-    paymentsService.list.and.returnValue(of({ payments: [], meta: { page: 1, per_page: 10, total: 0, total_pages: 1 } }));
+    clientsService.list.and.returnValue(of({ clients: [], meta: { page: 1, per_page: 10, total: 0, total_pages: 1 } , counts: {} }));
+    contractsService.list.and.returnValue(of({ contracts: [], meta: { page: 1, per_page: 10, total: 0, total_pages: 1 } , counts: {}, plan_counts: {}, totals: { portfolio_value: 0, average_basket: 0, unpaid_value: 0, expiring_soon: 0 } }));
+    paymentsService.list.and.returnValue(of({ payments: [], meta: { page: 1, per_page: 10, total: 0, total_pages: 1 } , counts: {}, method_counts: {}, totals: { collected_this_month: 0, collected_total: 0, refunded_value: 0, cancelled_value: 0, average_payment: 0 } }));
 
     TestBed.configureTestingModule({
       imports: [CommandPaletteComponent, TranslateModule.forRoot()],
@@ -161,7 +161,7 @@ describe("CommandPaletteComponent", () => {
 
   it("remote results are mapped into their own section", fakeAsync(() => {
     clientsService.list.and.returnValue(
-      of({ clients: [{ id: "c1", full_name: "Amy Client", phone: "123" } as never], meta: { page: 1, per_page: 10, total: 1, total_pages: 1 } })
+      of({ clients: [{ id: "c1", full_name: "Amy Client", phone: "123" } as never], meta: { page: 1, per_page: 10, total: 1, total_pages: 1 }, counts: {} })
     );
     palette.open();
     fixture.detectChanges();
@@ -175,7 +175,7 @@ describe("CommandPaletteComponent", () => {
 
   it("running a remote client command closes the palette and navigates", fakeAsync(() => {
     clientsService.list.and.returnValue(
-      of({ clients: [{ id: "c1", full_name: "Amy Client" } as never], meta: { page: 1, per_page: 10, total: 1, total_pages: 1 } })
+      of({ clients: [{ id: "c1", full_name: "Amy Client" } as never], meta: { page: 1, per_page: 10, total: 1, total_pages: 1 }, counts: {} })
     );
     palette.open();
     fixture.detectChanges();
@@ -194,6 +194,9 @@ describe("CommandPaletteComponent", () => {
       of({
         contracts: [{ id: "m1", client: { id: "cl9", full_name: "Amy" }, plan: { name: "Basic" } } as never],
         meta: { page: 1, per_page: 10, total: 1, total_pages: 1 },
+        counts: {},
+        plan_counts: {},
+        totals: { portfolio_value: 0, average_basket: 0, unpaid_value: 0, expiring_soon: 0 },
       })
     );
     palette.open();
@@ -212,6 +215,7 @@ describe("CommandPaletteComponent", () => {
       of({
         payments: [{ id: "p1", client: { full_name: "Amy" }, amount: 20, currency: "TND" } as never],
         meta: { page: 1, per_page: 10, total: 1, total_pages: 1 },
+        counts: {}, method_counts: {}, totals: { collected_this_month: 0, collected_total: 0, refunded_value: 0, cancelled_value: 0, average_payment: 0 },
       })
     );
     palette.open();

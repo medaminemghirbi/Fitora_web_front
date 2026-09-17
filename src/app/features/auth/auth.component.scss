@@ -1,110 +1,65 @@
-.auth-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--color-bg);
-}
+// The form itself, shared by every account screen. The frame around it is
+// NOT shared: a gym gets <app-auth-pro-shell> (flat white, narrow column) and
+// a member gets <app-auth-member-shell> (gradient, floating card), because
+// the two audiences should be able to tell them apart at a glance.
 
-.auth-page {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 1.5rem;
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 24px 60px -34px rgba(21, 19, 41, 0.24), 0 2px 8px rgba(21, 19, 41, 0.04);
-  padding: 2.5rem 2.25rem;
-}
-
-/* Brand lockup at the top of the card */
-.auth-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
+.auth-title {
   font-family: var(--font-display);
+  font-size: 1.75rem;
   font-weight: 700;
-  font-size: 1.125rem;
-  letter-spacing: -0.01em;
-  color: var(--color-text);
-
-  &::before {
-    content: "";
-    width: 30px;
-    height: 30px;
-    border-radius: 9px;
-    background: var(--color-primary)
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 1 2 9h5l-1 6 7-8H8z'/%3E%3C/svg%3E")
-      center / 16px no-repeat;
-  }
-}
-
-.auth-tagline {
-  color: var(--color-text-secondary);
-  font-size: 0.8125rem;
-  margin: 0.5rem 0 1.75rem;
-}
-
-.auth-card h1 {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 600;
   letter-spacing: -0.02em;
-  margin: 0 0 1.5rem;
-  color: var(--color-text);
+  margin: 0 0 0.35rem;
 }
 
-.auth-card label {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--color-text);
-  margin-bottom: 0.4rem;
-  display: block;
-}
-
-.auth-card .form-control {
-  padding: 0.65rem 0.85rem;
-  border-radius: var(--radius-sm);
-}
-
-.auth-card .btn-primary {
-  padding: 0.7rem 1rem;
-  border-radius: var(--radius-sm);
+.auth-subtitle {
+  color: var(--color-text-secondary);
   font-size: 0.9375rem;
+  margin: 0 0 var(--space-5);
+}
+
+label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.form-control,
+.form-select {
+  height: 46px;
+}
+
+textarea.form-control { height: auto; resize: vertical; }
+
+.btn-primary {
+  height: 46px;
+  font-weight: 600;
 }
 
 .auth-switch {
-  text-align: center;
-  margin: 1.5rem 0 0;
+  margin: var(--space-4) 0 0;
   font-size: 0.875rem;
   color: var(--color-text-secondary);
+  text-align: center;
 
-  a {
-    font-weight: 600;
-    color: var(--color-primary);
-    text-decoration: none;
-    margin-inline-start: 0.25rem;
-
-    &:hover { text-decoration: underline; }
-  }
+  a { font-weight: 600; }
 }
 
-.auth-forgot-link {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-primary);
-  text-decoration: none;
+.auth-forgot-link { font-size: 0.8125rem; font-weight: 600; }
 
-  &:hover { text-decoration: underline; }
+.auth-request-mark {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Kept for register/company-setup which still use the option toggle */
 .role-toggle {
   display: flex;
   gap: 0.5rem;
@@ -138,3 +93,5 @@
     i { color: var(--color-primary); }
   }
 }
+
+

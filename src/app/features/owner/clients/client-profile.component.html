@@ -70,7 +70,7 @@
           @if (c.current_contract; as contract) {
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
               <div>
-                <p class="fx-strong mb-1">{{ contract.plan.name }}</p>
+                <p class="fx-strong mb-1">{{ contract.plan.name }} · {{ contract.activity.emoji ? contract.activity.emoji + " " : "" }}{{ contract.activity.name }}</p>
                 <p class="fx-muted mb-0" style="font-size: 0.8125rem">
                   {{ contract.starts_at | date: "mediumDate" }} → {{ contract.expires_at | date: "mediumDate" }}
                   @if (contractProgress(); as progress) { · {{ progress.percent | number: "1.0-0" }}% {{ "clients.elapsed" | translate }} }
@@ -123,7 +123,7 @@
               <div class="abo-body">
                 <div class="abo-top">
                   <div>
-                    <div class="abo-name">{{ m.plan.name }}</div>
+                    <div class="abo-name">{{ m.plan.name }} · {{ m.activity.emoji ? m.activity.emoji + " " : "" }}{{ m.activity.name }}</div>
                     <div class="abo-dates">
                       {{ m.starts_at | date: "mediumDate" }} → {{ m.expires_at | date: "mediumDate" }}
                       · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}
@@ -214,7 +214,7 @@
               @for (b of bookings(); track b.id) {
                 <tr>
                   <td>{{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}{{ b.session.activity_name }}</td>
-                  <td>{{ b.session.location_name }}</td>
+                  <td>{{ b.session.company_name }}</td>
                   <td>{{ b.session.starts_at | date: "medium" }}</td>
                   <td><app-status-badge [status]="b.status">{{ ("bookings.status_" + b.status) | translate }}</app-status-badge></td>
                   <td class="text-end">
@@ -319,7 +319,16 @@
       <select id="ms-plan" class="form-select" formControlName="contract_type_id">
         <option [ngValue]="null" disabled>—</option>
         @for (plan of contractTypes(); track plan.id) {
-          <option [ngValue]="plan.id">{{ plan.name }} — {{ plan.price | money: plan.currency }} / {{ ("contract_types.period_" + plan.billing_period) | translate }}</option>
+          <option [ngValue]="plan.id">{{ plan.name }} — {{ ("contract_types.period_" + plan.billing_period) | translate }}</option>
+        }
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="ms-activity">{{ "clients.abo_activity" | translate }} *</label>
+      <select id="ms-activity" class="form-select" formControlName="activity_id">
+        <option [ngValue]="null" disabled>—</option>
+        @for (a of activities(); track a.id) {
+          <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
         }
       </select>
     </div>
@@ -335,26 +344,33 @@
     </div>
 
     @if (selectedPlan(); as plan) {
-      <div class="abo-total-line mb-3">
-        <span>{{ "clients.abo_total" | translate }}</span>
-        <strong>{{ contractFormTotal() | money: plan.currency }}</strong>
-      </div>
-      <div class="abo-collect mb-3">
-        <label class="form-check">
-          <input type="checkbox" class="form-check-input" formControlName="collect_payment" />
-          <span class="form-check-label">{{ "clients.abo_collect_now" | translate }}</span>
-        </label>
-        @if (contractForm.controls.collect_payment.value) {
-          <p class="fx-muted mb-0" style="font-size: 0.8125rem">
-            {{ "clients.abo_collect_hint" | translate: { amount: (contractFormTotal() | money: plan.currency) } }}
-          </p>
-        }
-      </div>
+      @if (selectedActivityPrice() === null) {
+        <div class="alert alert-warning">
+          {{ "clients.abo_no_price" | translate }}
+          <a routerLink="/owner/settings/contract-types">{{ "clients.abo_no_price_link" | translate }}</a>
+        </div>
+      } @else {
+        <div class="abo-total-line mb-3">
+          <span>{{ "clients.abo_total" | translate }}</span>
+          <strong>{{ contractFormTotal() | money: plan.currency }}</strong>
+        </div>
+        <div class="abo-collect mb-3">
+          <label class="form-check">
+            <input type="checkbox" class="form-check-input" formControlName="collect_payment" />
+            <span class="form-check-label">{{ "clients.abo_collect_now" | translate }}</span>
+          </label>
+          @if (contractForm.controls.collect_payment.value) {
+            <p class="fx-muted mb-0" style="font-size: 0.8125rem">
+              {{ "clients.abo_collect_hint" | translate: { amount: (contractFormTotal() | money: plan.currency) } }}
+            </p>
+          }
+        </div>
+      }
     }
 
     <div class="d-flex justify-content-end gap-2 mt-4">
       <button type="button" class="btn btn-outline-secondary" (click)="closeContractModal()">{{ "common.cancel" | translate }}</button>
-      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ (saving() ? "common.saving" : "clients.abo_create") | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving() || selectedActivityPrice() === null">{{ (saving() ? "common.saving" : "clients.abo_create") | translate }}</button>
     </div>
   </form>
 </app-modal>
@@ -364,7 +380,7 @@
     <div class="alert alert-danger">{{ formError() }}</div>
   }
   @if (editingContract(); as m) {
-    <p class="fx-muted" style="font-size: 0.875rem">{{ m.plan.name }} · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}</p>
+    <p class="fx-muted" style="font-size: 0.875rem">{{ m.plan.name }} · {{ m.activity.emoji ? m.activity.emoji + " " : "" }}{{ m.activity.name }} · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}</p>
     <form [formGroup]="editForm" (ngSubmit)="submitEdit()" novalidate>
       <div class="row">
         <div class="col-6 mb-3">

@@ -1,22 +1,22 @@
 :host { display: contents; }
 
+// The bar is a fixed dark-aubergine "skin" (the --sidebar-* tokens), like the
+// old sidebar was: it stays dark in both themes so the brand reads the same
+// whatever the user picked.
 .app-navbar {
   position: sticky;
   top: 0;
   z-index: var(--z-topbar);
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
-  backdrop-filter: saturate(180%) blur(8px);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--sidebar-bg);
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .app-navbar-inner {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  height: 56px;
-  padding: 0 var(--space-5);
-  max-width: var(--content-max-width);
-  margin-inline: auto;
+  height: var(--topbar-height);
+  padding: 0 var(--space-4);
 }
 
 .app-navbar-brand {
@@ -25,14 +25,15 @@
   gap: 0.5rem;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--color-text);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: var(--sidebar-text-active);
   text-decoration: none;
-  margin-inline-end: 0.6rem;
+  padding-inline: var(--space-2) var(--space-5);
   white-space: nowrap;
 
-  &:hover { text-decoration: none; color: var(--color-text); }
-  small { font-weight: 500; color: var(--color-text-secondary); font-size: 0.7rem; margin-inline-start: 0.15rem; }
+  &:hover { text-decoration: none; color: var(--sidebar-text-active); }
+  small { font-weight: 500; color: var(--sidebar-text); font-size: 0.7rem; margin-inline-start: 0.15rem; }
 }
 
 .app-navbar-mark {
@@ -40,8 +41,8 @@
   height: 26px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-accent);
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -64,22 +65,26 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.42rem 0.65rem;
+  gap: 0.45rem;
+  padding: 0 0.85rem;
+  height: 38px;
   border: 0;
   background: transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--sidebar-text);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
   transition: background var(--transition-fast), color var(--transition-fast);
 
-  i { font-size: 0.7rem; }
-  &:hover { background: var(--color-surface-hover); color: var(--color-text); text-decoration: none; }
-  &.is-active { background: var(--color-primary-soft); color: var(--color-primary); font-weight: 600; }
+  .app-navbar-item-icon { font-size: 0.95rem; }
+  .bi-chevron-down { font-size: 0.65rem; opacity: 0.85; }
+  &:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text-strong); text-decoration: none; }
+  // The accent is the "you are here" marker — the one place it appears in the bar.
+  &.is-active { background: var(--sidebar-active-bg); color: var(--sidebar-text-active); font-weight: 600; }
 }
 
 .app-navbar-dropdown {
@@ -132,38 +137,38 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid var(--color-border-strong);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--sidebar-border);
+  background: var(--sidebar-hover-bg);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.7rem;
   font: inherit;
   font-size: 0.8125rem;
-  color: var(--color-muted);
+  color: var(--sidebar-text);
   cursor: pointer;
   margin-inline-end: 0.3rem;
 
-  &:hover { border-color: var(--color-primary-border); color: var(--color-text-secondary); }
-  kbd { font: inherit; font-size: 0.68rem; background: var(--color-surface-sunken); border-radius: var(--radius-xs); padding: 0.05rem 0.3rem; color: var(--color-text-secondary); }
+  &:hover { background: var(--sidebar-bg-elevated); color: var(--sidebar-text-strong); }
+  kbd { font: inherit; font-size: 0.68rem; background: rgba(255, 255, 255, 0.12); border-radius: var(--radius-xs); padding: 0.05rem 0.3rem; color: var(--sidebar-text-strong); }
 }
 
 .app-navbar-support {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1px solid var(--color-primary-border);
-  background: var(--color-primary-soft);
-  border-radius: var(--radius-sm);
-  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--sidebar-border);
+  background: transparent;
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--sidebar-text);
   text-decoration: none;
   margin-inline-end: 0.3rem;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
 
   i { font-size: 0.9rem; }
-  &:hover { background: var(--color-primary-border); text-decoration: none; }
-  &.is-active { background: var(--color-primary); color: var(--color-on-primary); }
+  &:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text-strong); text-decoration: none; }
+  &.is-active { background: var(--sidebar-active-bg); color: var(--sidebar-text-active); border-color: transparent; }
 }
 
 // ---- mobile ---------------------------------------------------------------
@@ -172,27 +177,29 @@
   height: 36px;
   border: 0;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--sidebar-text);
   border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
   cursor: pointer;
-  &:hover { background: var(--color-surface-hover); }
+  &:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text-strong); }
 }
 
 .app-navbar-mobile-title {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--sidebar-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .app-navbar-mobile {
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--sidebar-border);
   background: var(--color-surface);
   padding: var(--space-2) var(--space-3) var(--space-3);
   max-height: calc(100vh - 56px);
@@ -231,21 +238,21 @@
   height: 36px;
   padding: 0 0.65rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--sidebar-border);
   background: transparent;
-  color: var(--color-text);
+  color: var(--sidebar-text-strong);
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   max-width: 12rem;
   transition: background var(--transition-fast), border-color var(--transition-fast);
 
-  &:hover { background: var(--color-surface-hover); }
-  &[aria-expanded="true"] { border-color: var(--color-primary); }
+  &:hover { background: var(--sidebar-hover-bg); }
+  &[aria-expanded="true"] { border-color: var(--color-accent); }
   &:disabled { opacity: 0.6; cursor: wait; }
 
-  i.bi-building { color: var(--color-muted); font-size: 0.95rem; }
-  i.bi-chevron-down { font-size: 0.7rem; color: var(--color-muted); }
+  i.bi-building { color: var(--sidebar-text); font-size: 0.95rem; }
+  i.bi-chevron-down { font-size: 0.7rem; color: var(--sidebar-text); }
 }
 
 .app-company-switcher-name {

@@ -14,16 +14,23 @@ export interface BookingFilters {
   page?: number;
 }
 
+/** `counts` feeds the filter rail, one entry per booking status plus "all". */
+export interface BookingListResponse {
+  bookings: Booking[];
+  meta: PageMeta;
+  counts: Record<string, number>;
+}
+
 @Injectable({ providedIn: "root" })
 export class BookingsService {
   constructor(private readonly http: HttpClient) {}
 
-  list(filters: BookingFilters = {}): Observable<{ bookings: Booking[]; meta: PageMeta }> {
+  list(filters: BookingFilters = {}): Observable<BookingListResponse> {
     const params: Record<string, string> = {};
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "") params[key] = String(value);
     });
-    return this.http.get<{ bookings: Booking[]; meta: PageMeta }>(`${API_BASE_URL}/bookings`, { params });
+    return this.http.get<BookingListResponse>(`${API_BASE_URL}/bookings`, { params });
   }
 
   create(clientId: string, sessionId: string): Observable<{ booking: Booking }> {

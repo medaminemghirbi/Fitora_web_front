@@ -9,13 +9,13 @@ import { RegisterComponent } from "./register.component";
 describe("RegisterComponent", () => {
   let fixture: ComponentFixture<RegisterComponent>;
   let component: RegisterComponent;
-  let authStub: { register: jasmine.Spy; homeRouteForCurrentUser: jasmine.Spy };
+  let authStub: { registerClient: jasmine.Spy; homeRouteForCurrentUser: jasmine.Spy; register?: jasmine.Spy };
   let router: Router;
 
   beforeEach(async () => {
     authStub = {
-      register: jasmine.createSpy(),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/getting-started"),
+      registerClient: jasmine.createSpy("registerClient"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/member/gyms"),
     };
 
     await TestBed.configureTestingModule({
@@ -40,27 +40,37 @@ describe("RegisterComponent", () => {
 
   it("does not submit an invalid form", () => {
     component.submit();
-    expect(authStub.register).not.toHaveBeenCalled();
+    expect(authStub.registerClient).not.toHaveBeenCalled();
     expect(component.form.get("first_name")!.touched).toBe(true);
   });
 
   it("registers and navigates to the user's home route on success", () => {
-    authStub.register.and.returnValue(of({ token: "t", user: {} }));
+    authStub.registerClient.and.returnValue(of({ token: "t", user: {} }));
     component.form.setValue(valid);
 
     component.submit();
 
-    expect(authStub.register).toHaveBeenCalledWith(valid);
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/getting-started");
+    expect(authStub.registerClient).toHaveBeenCalledWith(valid);
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/member/gyms");
   });
 
   it("shows the backend's error message on failure", () => {
-    authStub.register.and.returnValue(throwError(() => new HttpErrorResponse({ error: { error: "Email already taken" } })));
+    authStub.registerClient.and.returnValue(throwError(() => new HttpErrorResponse({ error: { error: "Email already taken" } })));
     component.form.setValue(valid);
 
     component.submit();
 
     expect(component.error()).toBe("Email already taken");
     expect(component.loading()).toBe(false);
+  });
+
+  it("only ever signs someone up as a member — a gym asks for a demo instead", () => {
+    authStub.registerClient.and.returnValue(of({ token: "t", client: {} }));
+    component.form.setValue({ first_name: "Rania", last_name: "F", email: "r@example.com", phone: "", password: "password123" });
+
+    component.submit();
+
+    expect(authStub.registerClient).toHaveBeenCalled();
+    expect((authStub as { register?: jasmine.Spy }).register).toBeUndefined();
   });
 });

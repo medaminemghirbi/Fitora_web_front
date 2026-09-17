@@ -10,7 +10,6 @@ export interface Coach {
   photo_url: string | null;
   birthdate: string | null;
   active: boolean;
-  location_ids: string[];
   has_login: boolean;
   login_email: string | null;
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, effect, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Activity, CAPACITY_BOUNDS, SessionFormat } from "../../../core/models/activity.model";
 import { clientPageMeta, filterBySearch, pageSlice } from "../../../shared/utils/client-list";
@@ -18,6 +18,7 @@ import { PaginationComponent } from "../../../shared/components/pagination.compo
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
+import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 
 @Component({
   selector: "app-activities",
@@ -25,6 +26,8 @@ import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
   imports: [
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
+    MoneyPipe,
     TranslateModule,
     EmptyStateComponent,
     ModalComponent,

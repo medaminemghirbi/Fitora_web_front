@@ -73,7 +73,7 @@ describe("VerifyEmailComponent", () => {
     build("tok123");
     recovery.verifyEmail.and.returnValue(of(undefined));
     fixture.detectChanges();
-    expect(component.continueUrl()).toBe("/auth/login");
+    expect(component.continueUrl()).toBe("/pro/connexion");
   });
 
   it("refreshes the cached current user after verifying, when already signed in", () => {

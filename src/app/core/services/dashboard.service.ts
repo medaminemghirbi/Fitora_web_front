@@ -10,7 +10,7 @@ export interface TodaysScheduleItem {
   activity_name: string;
   activity_emoji: string | null;
   coach_name: string | null;
-  location_name: string;
+  company_name: string;
   confirmed_count: number;
   capacity: number;
   status: string;

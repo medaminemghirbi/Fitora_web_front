@@ -1,30 +1,19 @@
-<div class="auth-shell">
-  <app-landing-header />
-
-  <div class="auth-page">
-    <div class="auth-card">
-      <div class="auth-brand">FITORA</div>
-      <p class="auth-tagline">{{ "app.tagline" | translate }}</p>
-
-      @switch (status()) {
-        @case ("verifying") {
-          <div class="d-flex justify-content-center py-4">
-            <app-spinner [size]="28" />
-          </div>
-        }
-        @case ("success") {
-          <h1>{{ "auth.verify_email_success_title" | translate }}</h1>
-          <p class="auth-tagline" style="margin-bottom: 1.5rem;">{{ "auth.verify_email_success_body" | translate }}</p>
-          <a [routerLink]="continueUrl()" class="btn btn-primary w-100">{{ "auth.continue" | translate }}</a>
-        }
-        @case ("error") {
-          <h1>{{ "auth.verify_email_error_title" | translate }}</h1>
-          <div class="alert alert-danger" role="alert">{{ error() }}</div>
-          <a [routerLink]="continueUrl()" class="btn btn-outline-secondary w-100">{{ "auth.continue" | translate }}</a>
-        }
-      }
-    </div>
-  </div>
-
-  <app-landing-footer />
-</div>
+<app-auth-pro-shell>
+  @switch (status()) {
+    @case ("verifying") {
+      <div class="d-flex justify-content-center py-4">
+        <app-spinner [size]="28" />
+      </div>
+    }
+    @case ("success") {
+      <h1 class="auth-title">{{ "auth.verify_email_success_title" | translate }}</h1>
+      <p class="auth-subtitle">{{ "auth.verify_email_success_body" | translate }}</p>
+      <a [routerLink]="continueUrl()" class="btn btn-primary w-100">{{ "auth.continue" | translate }}</a>
+    }
+    @case ("error") {
+      <h1 class="auth-title">{{ "auth.verify_email_error_title" | translate }}</h1>
+      <div class="alert alert-danger" role="alert">{{ error() }}</div>
+      <a [routerLink]="continueUrl()" class="btn btn-outline-secondary w-100">{{ "auth.continue" | translate }}</a>
+    }
+  }
+</app-auth-pro-shell>>

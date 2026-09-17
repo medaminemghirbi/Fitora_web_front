@@ -51,4 +51,13 @@ describe("SettingsSectionsService", () => {
     const isVisible = (service as unknown as { isVisible(s: SettingsSection): boolean }).isVisible.bind(service);
     expect(isVisible(bare)).toBe(true);
   });
+
+  it("offers import/export as a settings section, for the owner only", () => {
+    build("owner");
+    expect(service.sections().some((s) => s.path === "data-exchange")).toBe(true);
+
+    build("staff");
+    authStub.hasPermission.and.returnValue(true);
+    expect(service.sections().some((s) => s.path === "data-exchange")).toBe(false);
+  });
 });

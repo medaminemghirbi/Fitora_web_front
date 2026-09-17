@@ -1,95 +1,127 @@
-<div class="fx-page">
-  <app-page-header [title]="'bookings.title' | translate" [description]="'bookings.subtitle' | translate"></app-page-header>
-
-  <div class="fx-toolbar">
-    <div class="fx-input-icon">
-      <i class="bi bi-search"></i>
-      <input
-        type="search"
-        class="form-control form-control-sm"
-        [ngModel]="search()"
-        (ngModelChange)="onSearchChange($event)"
-        [placeholder]="'bookings.search_placeholder' | translate"
-      />
+<div class="fx-listpage">
+  <app-filter-rail [activeCount]="filterChips().length">
+    <div class="fx-rail-block">
+      <div class="fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+          [placeholder]="'bookings.search_placeholder' | translate"
+          [attr.aria-label]="'bookings.search_placeholder' | translate"
+        />
+      </div>
     </div>
 
-    <select class="form-select form-select-sm" [(ngModel)]="statusFilter" (ngModelChange)="applyFilters()"
-            [attr.aria-label]="'common.status' | translate">
-      <option value="">{{ "common.status" | translate }}</option>
-      <option value="confirmed">{{ "bookings.status_confirmed" | translate }}</option>
-      <option value="cancelled">{{ "bookings.status_cancelled" | translate }}</option>
-      <option value="completed">{{ "bookings.status_completed" | translate }}</option>
-    </select>
-    <input type="date" class="form-control form-control-sm" [(ngModel)]="dateFilter" (ngModelChange)="applyFilters()"
-           [attr.aria-label]="'bookings.date' | translate" />
+    <app-status-filter
+      name="booking-status"
+      [legend]="'clients.filter_status' | translate"
+      [value]="statusFilter()"
+      [options]="railOptions()"
+      (valueChange)="applyStatusFilter($event)"
+    />
+
+    <div class="fx-rail-block">
+      <label class="fx-rail-label" for="booking-date-filter">{{ "bookings.date" | translate }}</label>
+      <input id="booking-date-filter" type="date" class="form-control form-control-sm"
+             [ngModel]="dateFilter()" (ngModelChange)="applyDateFilter($event)" />
+    </div>
+
     @if (hasFilters()) {
-      <button type="button" class="btn btn-sm btn-ghost" (click)="resetFilters()">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
         <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
       </button>
     }
-  </div>
+  </app-filter-rail>
 
-  <div class="app-card">
-    @if (loading()) {
-      <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="7" /></div>
-    } @else if (error()) {
-      <div class="app-card-body"><app-error-state (retry)="load()" /></div>
-    } @else if (bookings().length === 0) {
-      <div class="app-card-body">
-        <app-empty-state [title]="'bookings.empty_title' | translate" [body]="'bookings.empty_body' | translate" icon="bi-journal-check" />
-      </div>
-    } @else {
-      <div class="fx-table-scroll">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>{{ "bookings.client" | translate }}</th>
-              <th>{{ "bookings.activity" | translate }}</th>
-              <th>{{ "bookings.location" | translate }}</th>
-              <th>{{ "bookings.coach" | translate }}</th>
-              <th>{{ "bookings.date" | translate }}</th>
-              <th>{{ "bookings.time" | translate }}</th>
-              <th>{{ "common.status" | translate }}</th>
-              <th class="text-end">{{ "common.actions" | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (b of bookings(); track b.id) {
+  <div class="fx-listpage-main">
+    <app-page-header [title]="'bookings.title' | translate" [description]="'bookings.subtitle' | translate"></app-page-header>
+
+    <nav class="fx-cat-tabs" [attr.aria-label]="'common.status' | translate">
+      @for (opt of statusOptions; track opt.value) {
+        <button type="button" class="fx-cat-tab" [class.is-active]="statusFilter() === opt.value"
+                [style.--fx-tab-color]="opt.color" (click)="applyStatusFilter(opt.value)">
+          {{ opt.labelKey | translate }} ({{ counts()[opt.value || "all"] ?? 0 }})
+        </button>
+      }
+    </nav>
+
+    <div class="app-card">
+      @if (filterChips().length > 0) {
+        <div class="fx-active-filters p-3 pb-0">
+          @for (chip of filterChips(); track chip.label) {
+            <span class="fx-active-chip">
+              {{ chip.label }}
+              <button type="button" (click)="chip.clear()" [attr.aria-label]="'common.reset' | translate">
+                <i class="bi bi-x"></i>
+              </button>
+            </span>
+          }
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="7" /></div>
+      } @else if (error()) {
+        <div class="app-card-body"><app-error-state (retry)="load()" /></div>
+      } @else if (bookings().length === 0) {
+        <div class="app-card-body">
+          <app-empty-state [title]="'bookings.empty_title' | translate" [body]="'bookings.empty_body' | translate" icon="bi-journal-check" />
+        </div>
+      } @else {
+        <div class="fx-table-scroll">
+          <table class="table table-hover fx-grid">
+            <thead>
               <tr>
-                <td>
-                  <div class="fx-cell-lead">
-                    <app-avatar [name]="b.client.full_name" [size]="34" />
-                    <div class="fx-cell-lead-text"><div class="fx-cell-lead-title" [innerHTML]="b.client.full_name | highlight: search()"></div></div>
-                  </div>
-                </td>
-                <td>{{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}<span [innerHTML]="b.session.activity_name | highlight: search()"></span></td>
-                <td>{{ b.session.location_name }}</td>
-                <td>{{ b.session.coach_name || "—" }}</td>
-                <td>{{ b.session.starts_at | date: "mediumDate" }}</td>
-                <td>{{ b.session.starts_at | date: "HH:mm" }}</td>
-                <td><app-status-badge [status]="b.status">{{ ("bookings.status_" + b.status) | translate }}</app-status-badge></td>
-                <td class="text-end">
-                  @if (b.status === "confirmed") {
-                    <app-action-menu>
-                      <button type="button" class="fx-menu-item" [disabled]="remindingId() === b.id" (click)="remind(b)">
-                        <i class="bi bi-bell"></i> {{ "bookings.remind_client" | translate }}
-                      </button>
-                      <div class="fx-menu-divider"></div>
-                      <button type="button" class="fx-menu-item is-danger" (click)="cancel(b)">
-                        <i class="bi bi-x-circle"></i> {{ "bookings.status_cancelled" | translate }}
-                      </button>
-                    </app-action-menu>
-                  } @else {
-                    <span class="fx-muted">—</span>
-                  }
-                </td>
+                <th>{{ "bookings.client" | translate }}</th>
+                <th>{{ "bookings.activity" | translate }}</th>
+                <th>{{ "bookings.location" | translate }}</th>
+                <th>{{ "bookings.coach" | translate }}</th>
+                <th>{{ "bookings.date" | translate }}</th>
+                <th>{{ "bookings.time" | translate }}</th>
+                <th>{{ "common.status" | translate }}</th>
+                <th class="text-end">{{ "common.actions" | translate }}</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (b of bookings(); track b.id) {
+                <tr>
+                  <td>
+                    <div class="fx-cell-lead">
+                      <app-avatar [name]="b.client.full_name" [size]="34" />
+                      <div class="fx-cell-lead-text"><div class="fx-cell-lead-title" [innerHTML]="b.client.full_name | highlight: search()"></div></div>
+                    </div>
+                  </td>
+                  <td>{{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}<span [innerHTML]="b.session.activity_name | highlight: search()"></span></td>
+                  <td>{{ b.session.company_name }}</td>
+                  <td>{{ b.session.coach_name || "—" }}</td>
+                  <td>{{ b.session.starts_at | date: "mediumDate" }}</td>
+                  <td>{{ b.session.starts_at | date: "HH:mm" }}</td>
+                  <td><app-status-badge [status]="b.status">{{ ("bookings.status_" + b.status) | translate }}</app-status-badge></td>
+                  <td class="text-end">
+                    @if (b.status === "confirmed") {
+                      <app-action-menu>
+                        <button type="button" class="fx-menu-item" [disabled]="remindingId() === b.id" (click)="remind(b)">
+                          <i class="bi bi-bell"></i> {{ "bookings.remind_client" | translate }}
+                        </button>
+                        <div class="fx-menu-divider"></div>
+                        <button type="button" class="fx-menu-item is-danger" (click)="cancel(b)">
+                          <i class="bi bi-x-circle"></i> {{ "bookings.status_cancelled" | translate }}
+                        </button>
+                      </app-action-menu>
+                    } @else {
+                      <span class="fx-muted">—</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
 
-      <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
-    }
+        <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
+      }
+    </div>
   </div>
 </div>

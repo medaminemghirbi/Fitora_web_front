@@ -1,8 +1,8 @@
-import { Component, OnInit, signal } from "@angular/core";
+import { Component, OnInit, computed, signal } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Contract, ContractStatus } from "../../../core/models/contract.model";
 import { ContractType } from "../../../core/models/contract-type.model";
 import { ContractTypesService } from "../../../core/services/contract-types.service";
@@ -18,6 +18,10 @@ import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
+import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
+import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
+import { MoneyPipe } from "../../../shared/pipes/money.pipe";
+import { BrandingService } from "../../../core/services/branding.service";
 
 @Component({
   selector: "app-contracts",
@@ -36,6 +40,9 @@ import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
     SkeletonComponent,
     ErrorStateComponent,
     ActionMenuComponent,
+    FilterRailComponent,
+    StatusFilterComponent,
+    MoneyPipe,
   ],
   templateUrl: "./contracts.component.html",
 })
@@ -55,16 +62,34 @@ export class ContractsComponent implements OnInit {
   // themselves now lives at Settings > Types de contrat.
   readonly plans = signal<ContractType[]>([]);
 
-  readonly statusOptions: { value: ContractStatus | ""; labelKey: string }[] = [
-    { value: "", labelKey: "clients.filter_all" },
-    { value: "active", labelKey: "contract.status_active" },
-    { value: "expired", labelKey: "contract.status_expired" },
-    { value: "cancelled", labelKey: "contract.status_cancelled" },
+  readonly statusOptions: { value: ContractStatus | ""; labelKey: string; countKey: string; color: string }[] = [
+    { value: "", labelKey: "clients.filter_all", countKey: "all", color: "var(--color-primary)" },
+    { value: "active", labelKey: "contract.status_active", countKey: "active", color: "var(--color-success)" },
+    { value: "pending", labelKey: "contract.status_pending", countKey: "pending", color: "var(--color-info)" },
+    { value: "expired", labelKey: "contract.status_expired", countKey: "expired", color: "var(--color-danger)" },
+    { value: "cancelled", labelKey: "contract.status_cancelled", countKey: "cancelled", color: "var(--color-muted)" },
   ];
+
+  /** Rail counts, per-plan tab counts and the portfolio strip — all from the API. */
+  readonly counts = signal<Record<string, number>>({});
+  readonly planCounts = signal<Record<string, number>>({});
+  readonly totals = signal({ portfolio_value: 0, average_basket: 0, unpaid_value: 0, expiring_soon: 0 });
+  readonly currency = computed(() => this.branding.branding()?.currency ?? "TND");
+
+  readonly railOptions = computed<StatusFilterOption[]>(() =>
+    this.statusOptions.map((opt) => ({
+      value: opt.value,
+      label: this.translate.instant(opt.labelKey),
+      count: this.counts()[opt.countKey] ?? 0,
+      color: opt.color,
+    }))
+  );
 
   constructor(
     private readonly contractsService: ContractsService,
-    private readonly contractTypesService: ContractTypesService
+    private readonly contractTypesService: ContractTypesService,
+    private readonly branding: BrandingService,
+    private readonly translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -86,6 +111,9 @@ export class ContractsComponent implements OnInit {
         next: (res) => {
           this.contracts.set(res.contracts);
           this.meta.set(res.meta);
+          this.counts.set(res.counts ?? {});
+          this.planCounts.set(res.plan_counts ?? {});
+          if (res.totals) this.totals.set(res.totals);
           this.loading.set(false);
         },
         error: () => {
@@ -116,6 +144,18 @@ export class ContractsComponent implements OnInit {
     this.loadContracts();
   }
 
+  /** A row's strip: what needs attention (unpaid, expiring, expired) shows. */
+  rowColor(contract: Contract): string {
+    if (contract.status === "expired") return "var(--color-danger)";
+    if (contract.status === "cancelled") return "var(--color-muted)";
+    if (contract.payment_status === "unpaid") return "var(--color-info)";
+    return "var(--color-success)";
+  }
+
+  planCount(planId: string): number {
+    return this.planCounts()[planId] ?? 0;
+  }
+
   onPageChange(page: number): void {
     this.page.set(page);
     this.loadContracts();
@@ -132,4 +172,20 @@ export class ContractsComponent implements OnInit {
   hasFilters(): boolean {
     return this.contractStatusFilter() !== "" || this.contractTypeFilter() !== "" || this.search() !== "";
   }
+
+  readonly filterChips = computed(() => {
+    const chips: { label: string; clear: () => void }[] = [];
+    if (this.search()) chips.push({ label: `« ${this.search()} »`, clear: () => this.onSearchChange("") });
+    const status = this.contractStatusFilter();
+    if (status) {
+      const opt = this.statusOptions.find((o) => o.value === status);
+      if (opt) chips.push({ label: this.translate.instant(opt.labelKey), clear: () => this.applyContractFilter("") });
+    }
+    const planId = this.contractTypeFilter();
+    if (planId) {
+      const plan = this.plans().find((p) => p.id === planId);
+      if (plan) chips.push({ label: plan.name, clear: () => this.applyContractTypeFilter("") });
+    }
+    return chips;
+  });
 }

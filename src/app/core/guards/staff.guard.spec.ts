@@ -55,7 +55,7 @@ describe("staff.guard", () => {
     it("redirects to login with no user", async () => {
       authStub.currentUser.and.returnValue(null);
       expect(await resolve(run())).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/auth/login"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/pro/connexion"]);
     });
 
     it("redirects a platform admin to /admin/companies", async () => {

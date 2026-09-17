@@ -22,7 +22,11 @@ export interface Company {
   slug: string | null;
   primary_color: string | null;
   logo_url: string | null;
-  mobile_auth_key: string;
+  // Opening hours — on the company since the site was merged into it.
+  business_hours_start: string;
+  business_hours_end: string;
+  // Set once the owner publishes the gym in the public directory.
+  listed_at: string | null;
   // Every feature is included — the key list the subscription page renders
   // as "what's included".
   included_modules: string[];

@@ -63,7 +63,7 @@ describe("ResetPasswordComponent", () => {
     expect(router.navigateByUrl).not.toHaveBeenCalled();
 
     tick(2500);
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/auth/login");
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/pro/connexion");
   }));
 
   it("shows the invalid-link fallback for an expired token", () => {

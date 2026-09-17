@@ -56,10 +56,10 @@
                     {{ item.activity_emoji ? item.activity_emoji + " " : "" }}{{ item.activity_name }}
                     <span class="fx-muted">· {{ item.coach_name || "—" }}</span>
                   </span>
-                  <span class="dashboard-schedule-bar" [attr.aria-label]="item.confirmed_count + '/' + item.capacity">
+                  <span class="dashboard-schedule-bar d-none d-sm-inline-block" [attr.aria-label]="item.confirmed_count + '/' + item.capacity">
                     <span class="dashboard-schedule-bar-fill" [class.is-full]="fillPct(item) >= 100" [style.width.%]="fillPct(item)"></span>
                   </span>
-                  <span class="fx-muted dashboard-schedule-count" dir="ltr">{{ item.confirmed_count }}/{{ item.capacity }}</span>
+                  <span class="fx-muted dashboard-schedule-count d-none d-sm-inline" dir="ltr">{{ item.confirmed_count }}/{{ item.capacity }}</span>
                   <app-status-badge [status]="item.status">{{ ("bookings.status_" + item.status) | translate }}</app-status-badge>
                 </li>
               }

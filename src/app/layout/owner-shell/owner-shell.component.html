@@ -31,15 +31,6 @@
   }
 
   <div class="owner-shell-body">
-    <app-sidebar
-      [dashboardItem]="dashboardNavItem()"
-      [groups]="navGroups()"
-      [secondaryItems]="showOwnerOnlySections() ? secondaryNavItems() : []"
-      [brandName]="'Fitora'"
-      [brandLogoUrl]="branding.logoUrl()"
-      [brandHome]="nav.homePath()"
-    />
-
     <div class="owner-shell-main">
       <app-navbar
         [dashboardItem]="dashboardNavItem()"
@@ -49,8 +40,8 @@
         [brandLogoUrl]="branding.logoUrl()"
         [brandHome]="nav.homePath()"
         [brandSuffix]="versionSuffix()"
-        [showBrand]="false"
-        [showDesktopNav]="false"
+        [showBrand]="true"
+        [showDesktopNav]="true"
         [showNotifications]="true"
         [showSupport]="showOwnerOnlySections()"
       />

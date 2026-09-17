@@ -13,7 +13,7 @@ import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 
 // Permission keys the roles editor groups the checkbox list by. Anything the
 // backend catalogue adds that isn't listed here falls into "daily".
-const CONFIG_PERMISSIONS = ["activities", "contract_types", "coaches", "locations"];
+const CONFIG_PERMISSIONS = ["activities", "contract_types", "coaches"];
 
 @Component({
   selector: "app-settings-roles",

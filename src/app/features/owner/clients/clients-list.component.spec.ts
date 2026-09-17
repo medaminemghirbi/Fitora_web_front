@@ -32,7 +32,7 @@ describe("ClientsListComponent", () => {
   function build(queryParams: Record<string, string> = {}): void {
     TestBed.resetTestingModule();
     service = jasmine.createSpyObj<ClientsService>("ClientsService", ["list", "create"]);
-    service.list.and.returnValue(of({ clients: [client], meta }));
+    service.list.and.returnValue(of({ clients: [client], meta, counts: {} }));
 
     TestBed.configureTestingModule({
       imports: [ClientsListComponent, TranslateModule.forRoot()],

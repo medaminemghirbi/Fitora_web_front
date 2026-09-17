@@ -1,0 +1,80 @@
+<app-public-header />
+
+<main class="ph">
+  <!-- ---------- hero ---------- -->
+  <section class="ph-hero">
+    <span class="ph-eyebrow">{{ "public.home.eyebrow" | translate }}</span>
+    <h1 class="ph-title">
+      {{ "public.home.title_1" | translate }}<br />
+      <span class="ph-title-grad">{{ "public.home.title_2" | translate }}</span>
+    </h1>
+    <p class="ph-lede">{{ "public.home.lede" | translate }}</p>
+  </section>
+
+  <!-- ---------- the two doors ---------- -->
+  <section class="ph-doors">
+    <article class="ph-door ph-door--gym">
+      <span class="ph-door-icon" aria-hidden="true"><i class="bi bi-building"></i></span>
+      <h2>{{ "public.home.gym_title" | translate }}</h2>
+      <p>{{ "public.home.gym_body" | translate }}</p>
+      <ul>
+        @for (point of gymPoints; track point) {
+          <li><i class="bi bi-check-lg"></i> {{ point | translate }}</li>
+        }
+      </ul>
+      <div class="ph-door-actions">
+        <a routerLink="/pro/devis" class="ph-btn ph-btn--light">{{ "public.home.gym_cta" | translate }}</a>
+        <a routerLink="/pro/demo" class="ph-btn ph-btn--ghost">{{ "public.home.gym_cta2" | translate }}</a>
+      </div>
+    </article>
+
+    <article class="ph-door ph-door--member">
+      <span class="ph-door-icon" aria-hidden="true"><i class="bi bi-person"></i></span>
+      <h2>{{ "public.home.member_title" | translate }}</h2>
+      <p>{{ "public.home.member_body" | translate }}</p>
+      <ul>
+        @for (point of memberPoints; track point) {
+          <li><i class="bi bi-check-lg"></i> {{ point | translate }}</li>
+        }
+      </ul>
+      <div class="ph-door-actions">
+        <a routerLink="/inscription" class="ph-btn ph-btn--light ph-btn--member">{{ "public.home.member_cta" | translate }}</a>
+        <a routerLink="/gyms" class="ph-btn ph-btn--ghost">{{ "public.home.member_cta2" | translate }}</a>
+      </div>
+    </article>
+  </section>
+
+  <!-- ---------- how it works, one column per audience ---------- -->
+  <section class="ph-steps">
+    <div>
+      <h3 class="ph-steps-title ph-steps-title--gym">{{ "public.home.gym_steps_title" | translate }}</h3>
+      <ol>
+        @for (step of gymSteps; track step; let i = $index) {
+          <li><span class="ph-step-n ph-step-n--gym">{{ i + 1 }}</span><span [innerHTML]="step | translate"></span></li>
+        }
+      </ol>
+    </div>
+    <div>
+      <h3 class="ph-steps-title ph-steps-title--member">{{ "public.home.member_steps_title" | translate }}</h3>
+      <ol>
+        @for (step of memberSteps; track step; let i = $index) {
+          <li><span class="ph-step-n ph-step-n--member">{{ i + 1 }}</span><span [innerHTML]="step | translate"></span></li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ---------- final call ---------- -->
+  <section class="ph-final">
+    <div class="ph-final-copy">
+      <h2>{{ "public.home.final_title" | translate }}</h2>
+      <p>{{ "public.home.final_body" | translate }}</p>
+    </div>
+    <div class="ph-final-actions">
+      <a routerLink="/pro/devis" class="ph-btn ph-btn--light">{{ "public.home.gym_cta" | translate }}</a>
+      <a routerLink="/inscription" class="ph-btn ph-btn--ghost">{{ "public.home.member_cta" | translate }}</a>
+    </div>
+  </section>
+</main>
+
+<app-landing-footer />

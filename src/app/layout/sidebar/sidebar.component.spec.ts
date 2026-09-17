@@ -19,6 +19,7 @@ describe("SidebarComponent", () => {
     {
       id: "management",
       labelKey: "nav.management",
+      icon: "bi-people",
       items: [
         { path: "/owner/clients", icon: "bi-people", labelKey: "nav.clients" },
         { path: "/owner/contracts", icon: "bi-file-earmark-text", labelKey: "nav.contracts", comingSoon: true },

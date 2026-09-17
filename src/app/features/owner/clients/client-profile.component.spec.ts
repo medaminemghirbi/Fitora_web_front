@@ -36,27 +36,30 @@ describe("ClientProfileComponent", () => {
   let toast: ToastService;
 
   const contractType: ContractType = {
-    id: "ct1", company_id: "1", name: "Basic", description: null, price: 100, currency: "TND",
+    id: "ct1", company_id: "1", name: "Basic", description: null, currency: "TND",
     billing_period: "monthly", duration_days: 30, session_count: 8, unlimited_bookings: false,
-    booking_limit: null, priority_booking: false, color: "#000", active: true, location_ids: [], activity_ids: [],
-  };
-  const contract: Contract = {
-    id: "m1", current_period_id: "p1", status: "active",
-    starts_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
-    expires_at: new Date(Date.now() + 25 * 86_400_000).toISOString(),
-    remaining_bookings: 5, auto_renew: true, discount: "0", final_price: "100",
-    payment_status: "paid", amount_due: "0", plan: contractType, client: { id: "cl1", full_name: "Amy", phone: null },
+    booking_limit: null, priority_booking: false, color: "#000", active: true, activity_ids: [],
+    activity_prices: [{ activity_id: "a1", activity_name: "Yoga", activity_emoji: "🧘", price: 100 }],
   };
   const activity: Activity = {
     id: "a1", company_id: "1", name: "Yoga", emoji: "🧘", description: null,
     session_format: "collective", duration: 60, capacity: 20, active: true,
   } as never;
+  const contract: Contract = {
+    id: "m1", current_period_id: "p1", status: "active",
+    starts_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
+    expires_at: new Date(Date.now() + 25 * 86_400_000).toISOString(),
+    remaining_bookings: 5, auto_renew: true, discount: "0", base_price: "100", final_price: "100",
+    payment_status: "paid", amount_due: "0", plan: contractType,
+    activity: { id: activity.id, name: activity.name, emoji: activity.emoji },
+    client: { id: "cl1", full_name: "Amy", phone: null },
+  };
   const session: Session = { id: "s1", starts_at: "2026-01-05T10:00:00Z", ends_at: "2026-01-05T11:00:00Z" } as never;
   const booking: Booking = {
     id: "b1", status: "confirmed", amount: 20, currency: "TND", payment_status: "unpaid",
     created_at: "2026-01-01T00:00:00Z", covered_by: null,
     client: { id: "cl1", full_name: "Amy Client", email: null, phone: null },
-    session: { id: "s1", starts_at: new Date().toISOString(), ends_at: "2026-01-01T11:00:00Z", status: "scheduled", activity_name: "Yoga", activity_emoji: "🧘", location_name: "Main", coach_name: null },
+    session: { id: "s1", starts_at: new Date().toISOString(), ends_at: "2026-01-01T11:00:00Z", status: "scheduled", activity_name: "Yoga", activity_emoji: "🧘", company_name: "Main", company_id: "g1",  coach_name: null },
   };
   const payment: Payment = {
     id: "pay1", amount: 20, currency: "TND", payment_method: "cash", status: "paid", notes: null,
@@ -186,16 +189,30 @@ describe("ClientProfileComponent", () => {
     expect(component.contractProgress()?.percent).toBe(100);
   });
 
-  it("selectedPlan / contractFormTotal reflect the chosen plan and discount", () => {
+  it("selectedPlan / contractFormTotal reflect the chosen plan, activity and discount", () => {
     expect(component.selectedPlan()).toBeNull();
     expect(component.contractFormTotal()).toBe(0);
-    component.contractForm.patchValue({ contract_type_id: "ct1", discount: 20 });
+    component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1", discount: 20 });
     expect(component.selectedPlan()).toEqual(contractType);
     expect(component.contractFormTotal()).toBe(80);
   });
 
   it("contractFormTotal clamps at 0", () => {
-    component.contractForm.patchValue({ contract_type_id: "ct1", discount: 500 });
+    component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1", discount: 500 });
+    expect(component.contractFormTotal()).toBe(0);
+  });
+
+  it("selectedActivityPrice is null until both the plan and the activity are chosen", () => {
+    component.contractForm.patchValue({ contract_type_id: "ct1" });
+    expect(component.selectedActivityPrice()).toBeNull();
+
+    component.contractForm.patchValue({ activity_id: "a1" });
+    expect(component.selectedActivityPrice()).toBe(100);
+  });
+
+  it("selectedActivityPrice is null for an activity the plan has no tariff for", () => {
+    component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a-unpriced" });
+    expect(component.selectedActivityPrice()).toBeNull();
     expect(component.contractFormTotal()).toBe(0);
   });
 
@@ -216,30 +233,37 @@ describe("ClientProfileComponent", () => {
       expect(contractsService.create).not.toHaveBeenCalled();
     });
 
-    it("submitContract creates the contract and reloads", () => {
+    it("submitContract does nothing when a plan is chosen but no activity is", () => {
       component.contractForm.patchValue({ contract_type_id: "ct1" });
+      component.submitContract();
+      expect(contractsService.create).not.toHaveBeenCalled();
+    });
+
+    it("submitContract creates the contract and reloads", () => {
+      component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1" });
       contractsService.create.and.returnValue(of({ contract, payment: null }));
       component.submitContract();
+      expect(contractsService.create).toHaveBeenCalledWith(jasmine.objectContaining({ contract_type_id: "ct1", activity_id: "a1" }));
       expect(component.contractModalOpen()).toBe(false);
       expect(toast.toasts()[0].kind).toBe("success");
     });
 
     it("submitContract shows the backend error on failure", () => {
-      component.contractForm.patchValue({ contract_type_id: "ct1" });
+      component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1" });
       contractsService.create.and.returnValue(throwError(() => new Error("nope")));
       component.submitContract();
       expect(component.formError()).toBeTruthy();
     });
 
     it("submitContract collects payment immediately when collect_payment is checked", () => {
-      component.contractForm.patchValue({ contract_type_id: "ct1", collect_payment: true });
+      component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1", collect_payment: true });
       contractsService.create.and.returnValue(of({ contract, payment: null }));
       component.submitContract();
       expect(contractsService.create).toHaveBeenCalledWith(jasmine.objectContaining({ collect_payment: true, payment_method: "cash" }));
     });
 
-    it("contractFormTotal uses the plan's full price when no discount is entered", () => {
-      component.contractForm.patchValue({ contract_type_id: "ct1" });
+    it("contractFormTotal uses the activity's full tariff when no discount is entered", () => {
+      component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1" });
       expect(component.contractFormTotal()).toBe(100);
     });
 

@@ -15,9 +15,7 @@ export interface AdminCompany {
   currency_symbol: string;
   locale: string;
   active: boolean;
-  mobile_auth_key: string;
   created_at: string;
-  locations_count: number;
   owner: { id: string; full_name: string; email: string; phone: string | null };
   subscription: Subscription | null;
   trial_locked: boolean;

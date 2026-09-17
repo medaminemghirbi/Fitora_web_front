@@ -34,7 +34,7 @@ describe("DashboardComponent", () => {
       todays_attendance: 2,
       outstanding_payments: "65",
       todays_schedule: [
-        { id: "1", starts_at: new Date().toISOString(), activity_name: "EMS", activity_emoji: "⚡", coach_name: "Amine", location_name: "Sousse", confirmed_count: 1, capacity: 1, status: "scheduled" },
+        { id: "1", starts_at: new Date().toISOString(), activity_name: "EMS", activity_emoji: "⚡", coach_name: "Amine", company_name: "Sousse", confirmed_count: 1, capacity: 1, status: "scheduled" },
       ],
       contracts_expiring: [],
       recent_payments: [],

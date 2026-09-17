@@ -24,6 +24,7 @@ describe("NavbarComponent", () => {
     {
       id: "sales",
       labelKey: "nav.sales",
+      icon: "bi-people",
       items: [
         { path: "/owner/clients", icon: "bi-people", labelKey: "nav.clients" },
         { path: "/owner/payments", icon: "bi-cash", labelKey: "nav.payments" },
@@ -246,5 +247,21 @@ describe("NavbarComponent", () => {
 
       expect(companyServiceStub.switchTo).not.toHaveBeenCalled();
     });
+  });
+
+  it("shows a group holding a single entry as a direct link, not a dropdown", () => {
+    component.groups = [
+      { id: "team", labelKey: "nav.team", icon: "bi-person-vcard", items: [{ path: "/owner/team", icon: "bi-person-vcard", labelKey: "nav.team" }] },
+    ];
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('a[href="/owner/team"]')).toBeTruthy();
+    expect(el.querySelector(".app-navbar-group")).toBeNull();
+  });
+
+  it("keeps the dropdown for a group with more than one entry", () => {
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector(".app-navbar-group")).toBeTruthy();
   });
 });

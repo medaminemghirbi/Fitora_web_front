@@ -7,9 +7,13 @@ import { ContractType } from "../models/contract-type.model";
 export type ContractTypePayload = Partial<
   Pick<
     ContractType,
-    "name" | "description" | "price" | "currency" | "billing_period" | "session_count" | "unlimited_bookings" | "booking_limit" | "priority_booking" | "color" | "active"
+    "name" | "description" | "billing_period" | "session_count" | "unlimited_bookings" | "booking_limit" | "priority_booking" | "color" | "active"
   >
-> & { activity_ids?: string[] };
+> & {
+  /** The plan's pricing grid. The backend re-reads it as the source of truth —
+   * a price sent from here is a proposal the API validates, never the total. */
+  activity_prices?: { activity_id: string; price: number }[];
+};
 
 @Injectable({ providedIn: "root" })
 export class ContractTypesService {
@@ -24,18 +28,18 @@ export class ContractTypesService {
   }
 
   create(payload: ContractTypePayload): Observable<{ plan: ContractType }> {
-    const { activity_ids, ...planFields } = payload;
+    const { activity_prices, ...planFields } = payload;
     return this.http.post<{ plan: ContractType }>(`${API_BASE_URL}/contract_types`, {
       contract_type: planFields,
-      activity_ids,
+      activity_prices,
     });
   }
 
   update(id: string, payload: ContractTypePayload): Observable<{ plan: ContractType }> {
-    const { activity_ids, ...planFields } = payload;
+    const { activity_prices, ...planFields } = payload;
     return this.http.patch<{ plan: ContractType }>(`${API_BASE_URL}/contract_types/${id}`, {
       contract_type: planFields,
-      activity_ids,
+      activity_prices,
     });
   }
 }

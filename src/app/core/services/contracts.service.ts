@@ -9,6 +9,7 @@ import { PageMeta } from "./sessions.service";
 export interface CreateContractPayload {
   client_id: string;
   contract_type_id: string;
+  activity_id: string;
   starts_on?: string;
   discount?: number;
   collect_payment?: boolean;
@@ -21,16 +22,31 @@ export interface UpdateContractPayload {
   discount?: number;
 }
 
+/** The extras the list screen shows beside the rows: rail counts, plan tabs
+ *  and the portfolio strip. All computed on the searched set, backend-side. */
+export interface ContractListResponse {
+  contracts: Contract[];
+  meta: PageMeta;
+  counts: Record<string, number>;
+  plan_counts: Record<string, number>;
+  totals: {
+    portfolio_value: number;
+    average_basket: number;
+    unpaid_value: number;
+    expiring_soon: number;
+  };
+}
+
 @Injectable({ providedIn: "root" })
 export class ContractsService {
   constructor(private readonly http: HttpClient) {}
 
-  list(filters: { status?: ContractStatus; contract_type_id?: string; q?: string; page?: number } = {}): Observable<{ contracts: Contract[]; meta: PageMeta }> {
+  list(filters: { status?: ContractStatus; contract_type_id?: string; q?: string; page?: number } = {}): Observable<ContractListResponse> {
     const params: Record<string, string> = { page: String(filters.page ?? 1) };
     if (filters.status) params["status"] = filters.status;
     if (filters.contract_type_id) params["contract_type_id"] = filters.contract_type_id;
     if (filters.q) params["q"] = filters.q;
-    return this.http.get<{ contracts: Contract[]; meta: PageMeta }>(`${API_BASE_URL}/contracts`, { params });
+    return this.http.get<ContractListResponse>(`${API_BASE_URL}/contracts`, { params });
   }
 
   create(payload: CreateContractPayload): Observable<{ contract: Contract; payment: Payment | null }> {

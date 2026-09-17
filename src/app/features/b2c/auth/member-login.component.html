@@ -1,0 +1,49 @@
+<app-auth-member-shell [pitch]="'auth.member_pitch_login' | translate">
+  <h1 class="auth-title">{{ "auth.member_login_title" | translate }}</h1>
+  <p class="auth-subtitle">{{ "auth.member_login_subtitle" | translate }}</p>
+
+  @if (wrongZone()) {
+    <div class="alert alert-warning" role="alert">
+      {{ "auth.wrong_zone_pro" | translate }}
+      <a routerLink="/pro/connexion">{{ "auth.wrong_zone_pro_link" | translate }}</a>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (error()) {
+      <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
+
+    <div class="mb-3">
+      <label for="email">{{ "auth.email" | translate }} *</label>
+      <input id="email" type="email" class="form-control" formControlName="email" autocomplete="email" />
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <div class="invalid-feedback d-block">{{ "common.required" | translate }}</div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <div class="d-flex justify-content-between align-items-baseline">
+        <label for="password">{{ "auth.password" | translate }} *</label>
+        <a routerLink="/mot-de-passe-oublie" class="auth-forgot-link">{{ "auth.forgot_password" | translate }}</a>
+      </div>
+      <input id="password" type="password" class="form-control" formControlName="password" autocomplete="current-password" />
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <div class="invalid-feedback d-block">{{ "common.required" | translate }}</div>
+      }
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+      @if (loading()) {
+        <app-spinner [size]="16" />
+      } @else {
+        {{ "auth.sign_in" | translate }}
+      }
+    </button>
+  </form>
+
+  <p class="auth-switch">
+    {{ "auth.no_account" | translate }}
+    <a routerLink="/inscription">{{ "auth.sign_up" | translate }}</a>
+  </p>
+</app-auth-member-shell>

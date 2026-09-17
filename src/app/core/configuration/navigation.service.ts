@@ -13,6 +13,7 @@ export type NavLeaf = NavLeafBlueprint;
 export interface NavGroup {
   id: string;
   labelKey: string;
+  icon: string;
   items: NavLeaf[];
 }
 
@@ -34,6 +35,7 @@ export class NavigationService {
       .map((group) => ({
         id: group.id,
         labelKey: group.labelKey,
+        icon: group.icon,
         items: group.items.filter((item) => this.visible(item)),
       }))
       .filter((group) => group.items.length > 0)
