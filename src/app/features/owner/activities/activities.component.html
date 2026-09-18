@@ -1,4 +1,6 @@
 <div class="fx-stack">
+  <app-page-header [title]="'nav.activities' | translate" [description]="'activities.subtitle' | translate"></app-page-header>
+
   @if (!loading() && !error() && activities().length > 0) {
     <div class="fx-toolbar">
       <div class="fx-input-icon">

@@ -39,7 +39,7 @@ describe("roleGuard", () => {
   it("redirects to login when not authenticated at all", () => {
     authStub.isAuthenticated.and.returnValue(false);
     expect(run("admin")).toBe(tree);
-    expect(router.createUrlTree).toHaveBeenCalledWith(["/pro/connexion"]);
+    expect(router.createUrlTree).toHaveBeenCalledWith(["/connexion"]);
   });
 
   it("redirects an authenticated user with the wrong role to their home route", () => {

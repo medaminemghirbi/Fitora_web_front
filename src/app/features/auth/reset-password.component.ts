@@ -60,7 +60,7 @@ export class ResetPasswordComponent implements OnInit {
       next: () => {
         this.loading.set(false);
         this.done.set(true);
-        setTimeout(() => this.router.navigateByUrl("/pro/connexion"), 2500);
+        setTimeout(() => this.router.navigateByUrl("/connexion"), 2500);
       },
       error: (err) => {
         const fallback = this.translate.instant("auth.reset_password_invalid_link");

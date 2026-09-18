@@ -6,13 +6,10 @@ import { AuthService } from "../../../core/auth/auth.service";
 import { SettingsSectionsService } from "./settings-sections";
 import { SettingsCompanyComponent } from "./settings-company.component";
 import { SettingsBrandingComponent } from "./settings-branding.component";
-import { SettingsDirectoryComponent } from "./settings-directory.component";
 import { SettingsPlanningComponent } from "./settings-planning.component";
-import { SettingsContractTypesComponent } from "./settings-contract-types.component";
 import { SettingsRolesComponent } from "./settings-roles.component";
 import { DataExchangeComponent } from "../data-exchange/data-exchange.component";
 import { SettingsAppearanceComponent } from "./settings-appearance.component";
-import { ActivitiesComponent } from "../activities/activities.component";
 
 // Direction A — persistent left rail + detail panel. The rail is flush to the
 // left edge and full height; `/owner/settings/:section` selects the section
@@ -25,13 +22,10 @@ import { ActivitiesComponent } from "../activities/activities.component";
     TranslateModule,
     SettingsCompanyComponent,
     SettingsBrandingComponent,
-    SettingsDirectoryComponent,
     SettingsPlanningComponent,
-    SettingsContractTypesComponent,
     SettingsRolesComponent,
     DataExchangeComponent,
     SettingsAppearanceComponent,
-    ActivitiesComponent,
   ],
   templateUrl: "./settings-shell.component.html",
   styleUrl: "./settings-shell.component.scss",

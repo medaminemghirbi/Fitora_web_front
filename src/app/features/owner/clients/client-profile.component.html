@@ -91,21 +91,6 @@
         </div>
       </div>
 
-      <div class="mobile-login-banner" [class.mobile-login-banner--active]="c.login_enabled" [class.mobile-login-banner--pending]="!c.login_enabled">
-        <div class="d-flex align-items-center gap-2" style="font-size: 0.8125rem">
-          <i class="bi" [class.bi-phone-fill]="c.login_enabled" [class.bi-phone]="!c.login_enabled"></i>
-          @if (c.login_enabled) {
-            <span>{{ "clients.mobile_login_active" | translate }} · {{ c.email }}</span>
-          } @else if (!c.email) {
-            <span>{{ "clients.mobile_login_needs_email" | translate }}</span>
-          } @else {
-            <span>{{ "clients.mobile_login_none" | translate }}</span>
-          }
-        </div>
-        <button type="button" class="btn btn-sm" [class.btn-outline-success]="c.login_enabled" [class.btn-outline-warning]="!c.login_enabled" [disabled]="!c.email" (click)="openLoginModal()">
-          {{ (c.login_enabled ? "clients.reset_login" : "clients.set_login") | translate }}
-        </button>
-      </div>
     </div>
   }
 
@@ -468,28 +453,6 @@
       <button type="button" class="btn btn-outline-secondary" (click)="closePaymentModal()">{{ "common.cancel" | translate }}</button>
       <button type="submit" class="btn btn-primary" [disabled]="saving() || paymentPayableOptions().length === 0">
         {{ (saving() ? "common.saving" : "common.save") | translate }}
-      </button>
-    </div>
-  </form>
-</app-modal>
-
-<app-modal [open]="loginModalOpen()" [title]="'clients.mobile_login' | translate" (closed)="closeLoginModal()">
-  @if (loginFormError()) {
-    <div class="alert alert-danger">{{ loginFormError() }}</div>
-  }
-
-  <p class="form-text">{{ "clients.mobile_login_hint" | translate }}</p>
-
-  <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
-    <div class="mb-3">
-      <label for="client-login-password">{{ "auth.password" | translate }} *</label>
-      <input id="client-login-password" type="password" class="form-control" formControlName="password" dir="ltr" />
-    </div>
-
-    <div class="d-flex justify-content-end gap-2 mt-4">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeLoginModal()">{{ "common.cancel" | translate }}</button>
-      <button type="submit" class="btn btn-primary" [disabled]="loginSaving()">
-        {{ (loginSaving() ? "common.saving" : "common.save") | translate }}
       </button>
     </div>
   </form>

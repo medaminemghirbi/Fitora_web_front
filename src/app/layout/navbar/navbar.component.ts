@@ -33,10 +33,9 @@ export class NavbarComponent {
   @Input() brandSuffix: string | null = null;
   @Input() showActions = true;
   @Input() showNotifications = false;
-  // Set to false when a sidebar (see SidebarComponent) already renders the
-  // brand mark / full desktop nav — the mobile burger + panel still use
-  // [dashboardItem]/[groups]/[flatItems] regardless, since the sidebar is
-  // desktop-only.
+  // Set to false when the surrounding shell already renders the brand mark
+  // and the full desktop nav. The mobile burger + panel still read
+  // [dashboardItem]/[groups]/[flatItems] either way.
   @Input() showBrand = true;
   @Input() showDesktopNav = true;
   // Owner-only shortcut to the modules marketplace — pre-order a module,

@@ -16,14 +16,15 @@ import { StatusBadgeComponent } from "../../../shared/components/status-badge.co
 import { PaginationComponent } from "../../../shared/components/pagination.component";
 import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { clientPageMeta, filterBySearch, pageSlice } from "../../../shared/utils/client-list";
+import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 
 @Component({
-  selector: "app-settings-contract-types",
+  selector: "app-plans",
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, TranslateModule, EmptyStateComponent, ModalComponent, MoneyPipe, SpinnerComponent, StatusBadgeComponent, PaginationComponent, HighlightPipe],
-  templateUrl: "./settings-contract-types.component.html",
+  imports: [PageHeaderComponent, FormsModule, ReactiveFormsModule, TranslateModule, EmptyStateComponent, ModalComponent, MoneyPipe, SpinnerComponent, StatusBadgeComponent, PaginationComponent, HighlightPipe],
+  templateUrl: "./plans.component.html",
 })
-export class SettingsContractTypesComponent implements OnInit {
+export class PlansComponent implements OnInit {
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);

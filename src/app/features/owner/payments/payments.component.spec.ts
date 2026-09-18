@@ -43,8 +43,6 @@ describe("OwnerPaymentsComponent", () => {
     email: null,
     phone: null,
     active: true,
-    login_enabled: false,
-    email_verified: false,
     joined_at: "2026-01-01",
     current_contract: null,
   };

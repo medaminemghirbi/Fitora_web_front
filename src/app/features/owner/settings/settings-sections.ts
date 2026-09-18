@@ -30,6 +30,9 @@ const GROUP_ORDER: { key: SettingsSection["group"]; labelKey: string }[] = [
  * Single source of truth for the settings sections — consumed by the shell
  * to build the left rail. Visibility mirrors the route guards (role /
  * permission).
+ *
+ * Only what a gym sets once belongs here. The catalogue (activities, plans)
+ * moved out to /owner/contracts, next to the subscriptions it prices.
  */
 @Injectable({ providedIn: "root" })
 export class SettingsSectionsService {
@@ -38,10 +41,7 @@ export class SettingsSectionsService {
   private readonly all: SettingsSection[] = [
     { path: "company", icon: "bi-building", labelKey: "settings.nav_company", descKey: "settings.desc_company", group: "establishment", ownerOnly: true },
     { path: "branding", icon: "bi-palette", labelKey: "settings.nav_branding", descKey: "settings.desc_branding", group: "establishment", ownerOnly: true },
-    { path: "directory", icon: "bi-compass", labelKey: "settings.nav_directory", descKey: "settings.desc_directory", group: "establishment", ownerOnly: true },
     { path: "planning", icon: "bi-calendar3", labelKey: "settings.nav_planning", descKey: "settings.desc_planning", group: "planning", ownerOnly: true },
-    { path: "activities", icon: "bi-lightning-charge", labelKey: "settings.nav_activities", descKey: "settings.desc_activities", group: "planning", permission: "activities" },
-    { path: "contract-types", icon: "bi-award", labelKey: "settings.nav_contract_types", descKey: "settings.desc_contract_types", group: "planning", permission: "contracts" },
     { path: "roles", icon: "bi-shield-lock", labelKey: "settings.nav_roles", descKey: "settings.desc_roles", group: "hr", ownerOnly: true },
     { path: "data-exchange", icon: "bi-arrow-down-up", labelKey: "nav.data_exchange", descKey: "settings.desc_data_exchange", group: "establishment", ownerOnly: true },
   ];

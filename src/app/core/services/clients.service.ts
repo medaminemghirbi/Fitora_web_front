@@ -81,7 +81,4 @@ export class ClientsService {
   // Enables (or resets) the client's own mobile-app login — a separate,
   // narrower call than update() since it's a distinct, sensitive action
   // (see Client#login_enabled? on the backend).
-  setLogin(id: string, password: string): Observable<{ client: Client }> {
-    return this.http.patch<{ client: Client }>(`${API_BASE_URL}/clients/${id}`, { client: { password } });
-  }
 }

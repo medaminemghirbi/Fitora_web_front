@@ -19,11 +19,13 @@ import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
+import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 
 @Component({
   selector: "app-activities",
   standalone: true,
   imports: [
+    PageHeaderComponent,
     FormsModule,
     ReactiveFormsModule,
     RouterLink,

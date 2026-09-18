@@ -8,8 +8,6 @@ export interface Client {
   email: string | null;
   phone: string | null;
   active: boolean;
-  login_enabled: boolean;
-  email_verified: boolean;
   joined_at: string;
   current_contract: Contract | null;
 }

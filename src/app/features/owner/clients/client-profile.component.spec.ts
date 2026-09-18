@@ -68,14 +68,14 @@ describe("ClientProfileComponent", () => {
   };
   const client: ClientDetail = {
     id: "cl1", first_name: "Amy", last_name: "Client", full_name: "Amy Client", email: null, phone: "123",
-    active: true, login_enabled: false, email_verified: false, joined_at: "2026-01-01",
+    active: true, joined_at: "2026-01-01",
     current_contract: contract, date_of_birth: null, gender: null, address: null,
     emergency_contact_name: null, emergency_contact_phone: null, notes: "some notes",
     outstanding_balance: "0", attendance_rate: null, last_visit_at: null,
   };
 
   beforeEach(async () => {
-    clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["get", "update", "setLogin"]);
+    clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["get", "update"]);
     contractTypesService = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list"]);
     contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["create", "update", "renew", "cancel", "destroy", "receipt"]);
     activitiesService = jasmine.createSpyObj<ActivitiesService>("ActivitiesService", ["list"]);
@@ -574,36 +574,4 @@ describe("ClientProfileComponent", () => {
     });
   });
 
-  describe("mobile login", () => {
-    it("openLoginModal resets the form", () => {
-      component.openLoginModal();
-      expect(component.loginModalOpen()).toBe(true);
-    });
-
-    it("closeLoginModal closes it", () => {
-      component.loginModalOpen.set(true);
-      component.closeLoginModal();
-      expect(component.loginModalOpen()).toBe(false);
-    });
-
-    it("submitLogin does nothing with an invalid form", () => {
-      component.submitLogin();
-      expect(clientsService.setLogin).not.toHaveBeenCalled();
-    });
-
-    it("submitLogin sets the login and reloads", () => {
-      component.loginForm.setValue({ password: "secret123" });
-      clientsService.setLogin.and.returnValue(of({ client }));
-      component.submitLogin();
-      expect(component.loginModalOpen()).toBe(false);
-      expect(toast.toasts()[0].kind).toBe("success");
-    });
-
-    it("submitLogin shows the backend error on failure", () => {
-      component.loginForm.setValue({ password: "secret123" });
-      clientsService.setLogin.and.returnValue(throwError(() => new Error("nope")));
-      component.submitLogin();
-      expect(component.loginFormError()).toBeTruthy();
-    });
-  });
 });

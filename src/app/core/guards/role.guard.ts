@@ -9,7 +9,7 @@ export function roleGuard(role: UserRole): CanActivateFn {
     const router = inject(Router);
 
     if (!auth.isAuthenticated()) {
-      return router.createUrlTree(["/pro/connexion"]);
+      return router.createUrlTree(["/connexion"]);
     }
 
     if (auth.currentUser()?.role !== role) {

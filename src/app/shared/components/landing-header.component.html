@@ -29,8 +29,8 @@
         }
       </div>
 
-      <a routerLink="/pro/connexion" class="mkt-btn mkt-btn--ghost mkt-btn--sm mkt-nav-hide-sm">{{ "auth.login" | translate }}</a>
-      <a routerLink="/pro/demo" class="mkt-btn mkt-btn--primary mkt-btn--sm mkt-nav-hide-sm">{{ "landing.cta_start" | translate }}</a>
+      <a routerLink="/connexion" class="mkt-btn mkt-btn--ghost mkt-btn--sm mkt-nav-hide-sm">{{ "auth.login" | translate }}</a>
+      <a routerLink="/demo" class="mkt-btn mkt-btn--primary mkt-btn--sm mkt-nav-hide-sm">{{ "landing.cta_start" | translate }}</a>
 
       <button type="button" class="mkt-nav-icon mkt-nav-burger" (click)="mobileOpen.set(!mobileOpen())"
               [attr.aria-label]="'landing.nav_menu' | translate" [attr.aria-expanded]="mobileOpen()">
@@ -43,8 +43,8 @@
     <a [routerLink]="['/']" fragment="features" (click)="closeMobile()">{{ "landing.nav_features" | translate }}</a>
     <a [routerLink]="['/']" fragment="flow" (click)="closeMobile()">{{ "landing.nav_how" | translate }}</a>
     <div class="mkt-mobile-menu-cta">
-      <a routerLink="/pro/connexion" class="mkt-btn mkt-btn--ghost" (click)="closeMobile()">{{ "auth.login" | translate }}</a>
-      <a routerLink="/pro/demo" class="mkt-btn mkt-btn--primary" (click)="closeMobile()">{{ "landing.cta_start" | translate }}</a>
+      <a routerLink="/connexion" class="mkt-btn mkt-btn--ghost" (click)="closeMobile()">{{ "auth.login" | translate }}</a>
+      <a routerLink="/demo" class="mkt-btn mkt-btn--primary" (click)="closeMobile()">{{ "landing.cta_start" | translate }}</a>
     </div>
   </div>
 </header>

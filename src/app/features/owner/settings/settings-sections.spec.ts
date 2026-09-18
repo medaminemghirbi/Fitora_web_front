@@ -26,11 +26,18 @@ describe("SettingsSectionsService", () => {
     expect(service.sections().every((s) => !s.ownerOnly)).toBe(true);
   });
 
-  it("a non-owner sees a permission-gated section only with that permission", () => {
+  it("leaves a non-owner with nothing but Appearance — Settings is the owner's alone", () => {
     build("staff");
-    authStub.hasPermission.and.callFake((key: string) => key === "activities");
-    expect(service.sections().some((s) => s.path === "activities")).toBe(true);
-    expect(service.sections().some((s) => s.path === "contract-types")).toBe(false);
+    authStub.hasPermission.and.returnValue(true);
+    expect(service.sections()).toEqual([]);
+    expect(service.navGroups().map((g) => g.key)).toEqual(["appearance"]);
+  });
+
+  it("no longer carries the catalogue — activities and plans live with the subscriptions", () => {
+    build("owner");
+    const paths = service.sections().map((s) => s.path);
+    expect(paths).not.toContain("activities");
+    expect(paths).not.toContain("contract-types");
   });
 
   it("groupedSections groups visible sections and drops empty groups", () => {

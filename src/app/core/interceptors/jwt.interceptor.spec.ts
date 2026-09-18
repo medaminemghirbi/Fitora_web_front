@@ -68,7 +68,7 @@ describe("jwtInterceptor", () => {
       error: (e) => {
         expect(e).toBe(err);
         expect(authStub.logout).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(["/pro/connexion"]);
+        expect(router.navigate).toHaveBeenCalledWith(["/connexion"]);
         done();
       },
     });

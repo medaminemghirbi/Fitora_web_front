@@ -47,9 +47,10 @@ describe("NavigationService", () => {
   });
 
   it("filters items within a visible group by permission", () => {
-    build("staff", ["clients"]);
-    const management = service.groups().find((g) => g.id === "management")!;
-    expect(management.items.map((i) => i.path)).toEqual(["/owner/clients"]);
+    build("staff", ["contracts"]);
+    const subscriptions = service.groups().find((g) => g.id === "subscriptions")!;
+    // The catalogue entries need "contract_types", which this login lacks.
+    expect(subscriptions.items.map((i) => i.path)).toEqual(["/owner/contracts"]);
   });
 
   it("secondaryItems is empty for a non-owner (every entry is ownerOnly)", () => {
@@ -59,7 +60,10 @@ describe("NavigationService", () => {
 
   it("secondaryItems lists everything for an owner", () => {
     build("owner", []);
-    expect(service.secondaryItems().length).toBe(3);
+    expect(service.secondaryItems().map((i) => i.path)).toEqual([
+      "/owner/subscription",
+      "/owner/settings",
+    ]);
   });
 
   it("homePath is the dashboard path when visible", () => {

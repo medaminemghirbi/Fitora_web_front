@@ -28,7 +28,7 @@ describe("AuthService", () => {
 
   const memberClient: Client = {
     id: "cl1", first_name: "M", last_name: "C", full_name: "M C", email: "m@x.test", phone: null,
-    active: true, login_enabled: true, email_verified: true, joined_at: "2026-01-01", current_contract: null,
+    active: true, joined_at: "2026-01-01", current_contract: null,
   };
 
   function buildService(): AuthService {
@@ -167,7 +167,7 @@ describe("AuthService", () => {
       expect(auth.currentUser()).toBeNull();
       expect(localStorage.getItem("fitora_token")).toBeNull();
       expect(configStub.clear).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(["/pro/connexion"]);
+      expect(router.navigate).toHaveBeenCalledWith(["/connexion"]);
     });
 
     it("clears a client session too", () => {
@@ -264,10 +264,10 @@ describe("AuthService", () => {
       expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
     });
 
-    it("sends a client login to the member home", () => {
+    it("has nowhere to send a member — Fitora is the gym's back office", () => {
       localStorage.setItem("fitora_client", JSON.stringify(memberClient));
       const auth = buildService();
-      expect(auth.homeRouteForCurrentUser()).toBe("/member/home");
+      expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
     });
   });
 

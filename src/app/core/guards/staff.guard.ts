@@ -15,7 +15,7 @@ export const ownerAreaGuard: CanActivateFn = () => {
   const router = inject(Router);
   const user = auth.currentUser();
 
-  if (!user) return router.createUrlTree(["/pro/connexion"]);
+  if (!user) return router.createUrlTree(["/connexion"]);
   if (user.role === "admin") return router.createUrlTree(["/admin/companies"]);
 
   return config.ensureLoaded().pipe(
@@ -33,7 +33,7 @@ export function capabilityGuard(permission: string): CanActivateFn {
     const router = inject(Router);
     const user = auth.currentUser();
 
-    if (!user) return router.createUrlTree(["/pro/connexion"]);
+    if (!user) return router.createUrlTree(["/connexion"]);
 
     return config.ensureLoaded().pipe(
       map(() =>
@@ -55,7 +55,7 @@ export const settingsAccessGuard: CanActivateFn = () => {
   const router = inject(Router);
   const user = auth.currentUser();
 
-  if (!user) return router.createUrlTree(["/pro/connexion"]);
+  if (!user) return router.createUrlTree(["/connexion"]);
 
   return config.ensureLoaded().pipe(
     map(() =>
@@ -76,7 +76,7 @@ export const staffManagerGuard: CanActivateFn = () => {
   const router = inject(Router);
   const user = auth.currentUser();
 
-  if (!user) return router.createUrlTree(["/pro/connexion"]);
+  if (!user) return router.createUrlTree(["/connexion"]);
   if (user.role === "owner") return true;
 
   return router.createUrlTree([auth.homeRouteForCurrentUser()]);
@@ -92,7 +92,7 @@ export function staffRoleGuard(role: StaffRole): CanActivateFn {
     const router = inject(Router);
     const user = auth.currentUser();
 
-    if (!user) return router.createUrlTree(["/pro/connexion"]);
+    if (!user) return router.createUrlTree(["/connexion"]);
     if (user.role !== "staff" || user.staff_role !== role) {
       return router.createUrlTree([auth.homeRouteForCurrentUser()]);
     }

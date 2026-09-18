@@ -30,15 +30,6 @@ interface ImpersonatorStash {
   companyName: string;
 }
 
-export interface RegisterPayload {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-  phone?: string;
-  locale?: string;
-}
-
 @Injectable({ providedIn: "root" })
 export class AuthService {
   private readonly currentUserSignal = signal<User | null>(this.readStoredUser());
@@ -47,8 +38,10 @@ export class AuthService {
   readonly isAdmin = computed(() => this.currentUserSignal()?.role === "admin");
   readonly isStaff = computed(() => this.currentUserSignal()?.role === "staff");
 
-  // A Client's own mobile-style login (/member) — mutually exclusive with
-  // currentUser, never both set at once (see setSession).
+  // A member has no place of their own in Fitora, but /auth/login still
+  // recognises one so the sign-in page can say so plainly instead of
+  // rejecting a real password as wrong. Such a session is dropped on the
+  // spot and never navigated to (see ProLoginComponent).
   private readonly currentClientSignal = signal<Client | null>(this.readStoredClient());
   readonly currentClient = this.currentClientSignal.asReadonly();
   readonly isClient = computed(() => this.currentClientSignal() !== null);
@@ -97,12 +90,6 @@ export class AuthService {
    * self-registration left: a gym asks for a demo or a quote instead
    * (LeadsService), and Fitora opens its account after the conversation.
    */
-  registerClient(payload: RegisterPayload): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${API_BASE_URL}/auth/register_client`, payload)
-      .pipe(tap((res) => this.setSession(res)));
-  }
-
   // (Re)hydrate ConfigurationService from /bootstrap. Safe to call
   // repeatedly; failures leave the last known value in place. Skipped for a
   // platform admin — the /admin surface isn't tenant-scoped — but the admin
@@ -155,11 +142,8 @@ export class AuthService {
       return;
     }
 
-    // Each zone has its own sign-in, so logging out has to land in the one
-    // this account belongs to.
-    const backTo = this.isClient() ? "/connexion" : "/pro/connexion";
     this.clearSession();
-    this.router.navigate([ backTo ]);
+    this.router.navigate(["/connexion"]);
   }
 
   // Called by the admin companies page after POST .../impersonate
@@ -192,7 +176,6 @@ export class AuthService {
   }
 
   homeRouteForCurrentUser(): string {
-    if (this.isClient()) return "/member/home";
     const user = this.currentUserSignal();
     if (user?.role === "admin") return "/admin/companies";
     // A "coach"-role staff uses the dedicated coach shell ("My schedule" /

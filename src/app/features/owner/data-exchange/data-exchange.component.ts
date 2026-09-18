@@ -19,7 +19,7 @@ interface EntityCard {
 const ENTITIES: EntityCard[] = [
   { entity: "clients", icon: "bi-people", titleKey: "nav.clients", descKey: "data_exchange.clients_desc" },
   { entity: "activities", icon: "bi-lightning-charge", titleKey: "activities.title", descKey: "data_exchange.activities_desc" },
-  { entity: "contracts", icon: "bi-file-earmark-text", titleKey: "nav.contracts", descKey: "data_exchange.contracts_desc" },
+  { entity: "contracts", icon: "bi-file-earmark-text", titleKey: "nav.subscriptions", descKey: "data_exchange.contracts_desc" },
   { entity: "payments", icon: "bi-credit-card", titleKey: "nav.payments", descKey: "data_exchange.payments_desc" },
 ];
 

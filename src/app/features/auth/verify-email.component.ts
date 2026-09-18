@@ -62,6 +62,6 @@ export class VerifyEmailComponent implements OnInit {
   }
 
   continueUrl(): string {
-    return this.isAuthenticated() ? this.auth.homeRouteForCurrentUser() : "/pro/connexion";
+    return this.isAuthenticated() ? this.auth.homeRouteForCurrentUser() : "/connexion";
   }
 }

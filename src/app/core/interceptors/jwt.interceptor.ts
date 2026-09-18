@@ -17,7 +17,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && auth.isAuthenticated()) {
         auth.logout();
-        router.navigate(["/pro/connexion"]);
+        router.navigate(["/connexion"]);
       }
 
       // 402 + this specific error code is the trial-lock signal from

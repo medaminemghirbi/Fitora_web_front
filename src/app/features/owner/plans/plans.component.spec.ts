@@ -7,11 +7,11 @@ import { ContractTypesService } from "../../../core/services/contract-types.serv
 import { ActivitiesService } from "../../../core/services/activities.service";
 import { Activity } from "../../../core/models/activity.model";
 import { ToastService } from "../../../core/services/toast.service";
-import { SettingsContractTypesComponent } from "./settings-contract-types.component";
+import { PlansComponent } from "./plans.component";
 
-describe("SettingsContractTypesComponent", () => {
-  let fixture: ComponentFixture<SettingsContractTypesComponent>;
-  let component: SettingsContractTypesComponent;
+describe("PlansComponent", () => {
+  let fixture: ComponentFixture<PlansComponent>;
+  let component: PlansComponent;
   let service: jasmine.SpyObj<ContractTypesService>;
   let activitiesService: jasmine.SpyObj<ActivitiesService>;
   let toast: ToastService;
@@ -36,7 +36,7 @@ describe("SettingsContractTypesComponent", () => {
     activitiesService.list.and.returnValue(of({ activities: [activity] }));
 
     TestBed.configureTestingModule({
-      imports: [SettingsContractTypesComponent, TranslateModule.forRoot()],
+      imports: [PlansComponent, TranslateModule.forRoot()],
       providers: [
         { provide: ContractTypesService, useValue: service },
         { provide: ActivitiesService, useValue: activitiesService },
@@ -44,7 +44,7 @@ describe("SettingsContractTypesComponent", () => {
       ],
     });
 
-    fixture = TestBed.createComponent(SettingsContractTypesComponent);
+    fixture = TestBed.createComponent(PlansComponent);
     component = fixture.componentInstance;
     toast = TestBed.inject(ToastService);
     fixture.detectChanges();

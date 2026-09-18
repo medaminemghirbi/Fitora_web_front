@@ -30,8 +30,8 @@
           }
         </div>
 
-        <a routerLink="/pro/connexion" class="lp-nav-login lp-nav-hide-sm">{{ "auth.login" | translate }}</a>
-        <a routerLink="/pro/demo" class="lp-btn lp-btn--grad lp-nav-hide-sm">{{ "landing.cta_start" | translate }}</a>
+        <a routerLink="/connexion" class="lp-nav-login lp-nav-hide-sm">{{ "auth.login" | translate }}</a>
+        <a routerLink="/demo" class="lp-btn lp-btn--grad lp-nav-hide-sm">{{ "landing.cta_start" | translate }}</a>
 
         <button type="button" class="lp-icon-btn lp-nav-burger" (click)="mobileOpen.set(!mobileOpen())"
                 [attr.aria-label]="'landing.nav_menu' | translate" [attr.aria-expanded]="mobileOpen()">
@@ -45,9 +45,8 @@
       <a [routerLink]="['/']" fragment="solutions" (click)="mobileOpen.set(false)">{{ "landing.nav_solutions" | translate }}</a>
       <a [routerLink]="['/']" fragment="flow" (click)="mobileOpen.set(false)">{{ "landing.nav_how" | translate }}</a>
       <div class="lp-mobile-cta">
-        <a routerLink="/pro/connexion" class="lp-btn lp-btn--ghost" (click)="mobileOpen.set(false)">{{ "auth.login" | translate }}</a>
-        <a routerLink="/pro/demo" class="lp-btn lp-btn--grad" (click)="mobileOpen.set(false)">{{ "landing.cta_start" | translate }}</a>
-        <a routerLink="/gyms" class="lp-btn lp-btn--ghost" (click)="mobileOpen.set(false)">{{ "landing.member_door_search" | translate }}</a>
+        <a routerLink="/connexion" class="lp-btn lp-btn--ghost" (click)="mobileOpen.set(false)">{{ "auth.login" | translate }}</a>
+        <a routerLink="/demo" class="lp-btn lp-btn--grad" (click)="mobileOpen.set(false)">{{ "landing.cta_start" | translate }}</a>
       </div>
     </div>
   </header>
@@ -65,21 +64,10 @@
           <h1 class="lp-h1">{{ "landing.hero_title_1" | translate }}<br /><span class="lp-grad-text lp-shimmer">{{ "landing.hero_title_2" | translate }}</span></h1>
           <p class="lp-hero-sub">{{ "landing.hero_subtitle" | translate }}</p>
           <div class="lp-hero-cta">
-            <a routerLink="/pro/demo" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.hero_cta_primary" | translate }}</a>
-            <a routerLink="/pro/devis" class="lp-btn lp-btn--ghost lp-btn--lg">{{ "landing.hero_cta_secondary" | translate }}</a>
+            <a routerLink="/demo" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.hero_cta_primary" | translate }}</a>
+            <a routerLink="/devis" class="lp-btn lp-btn--ghost lp-btn--lg">{{ "landing.hero_cta_secondary" | translate }}</a>
           </div>
           <p class="lp-hero-note">{{ "landing.hero_note" | translate }}</p>
-
-          <!-- The other audience entirely: someone looking for a gym, not
-               running one. Kept visually apart so neither reads as the other's
-               fine print. -->
-          <div class="lp-member-door">
-            <span class="lp-member-door-label">{{ "landing.member_door_label" | translate }}</span>
-            <div class="lp-member-door-actions">
-              <a routerLink="/gyms" class="lp-btn lp-btn--ghost">{{ "landing.member_door_search" | translate }}</a>
-              <a routerLink="/inscription" class="lp-btn lp-btn--ghost">{{ "landing.member_door_register" | translate }}</a>
-            </div>
-          </div>
         </div>
 
         <div class="lp-cockpit-wrap">
@@ -481,8 +469,8 @@
       <div class="lp-shell lp-final-in">
         <h2>{{ "landing.final_title" | translate }}</h2>
         <p>{{ "landing.final_lead" | translate }}</p>
-        <a routerLink="/pro/demo" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.final_cta" | translate }}</a>
-        <a routerLink="/pro/devis" class="lp-btn lp-btn--ghost lp-btn--lg">{{ "landing.hero_cta_secondary" | translate }}</a>
+        <a routerLink="/demo" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.final_cta" | translate }}</a>
+        <a routerLink="/devis" class="lp-btn lp-btn--ghost lp-btn--lg">{{ "landing.hero_cta_secondary" | translate }}</a>
       </div>
     </section>
   </main>
@@ -517,10 +505,9 @@
 
         <nav class="lp-foot-col">
           <h4>{{ "landing.footer_col_account" | translate }}</h4>
-          <a routerLink="/pro/connexion">{{ "auth.login" | translate }}</a>
-          <a routerLink="/gyms">{{ "landing.member_door_search" | translate }}</a>
-          <a routerLink="/pro/demo">{{ "landing.hero_cta_primary" | translate }}</a>
-          <a routerLink="/pro/devis">{{ "landing.hero_cta_secondary" | translate }}</a>
+          <a routerLink="/connexion">{{ "auth.login" | translate }}</a>
+          <a routerLink="/demo">{{ "landing.hero_cta_primary" | translate }}</a>
+          <a routerLink="/devis">{{ "landing.hero_cta_secondary" | translate }}</a>
         </nav>
       </div>
 

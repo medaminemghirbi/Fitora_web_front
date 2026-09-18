@@ -23,8 +23,6 @@ describe("ClientsListComponent", () => {
     email: null,
     phone: "12345678",
     active: true,
-    login_enabled: false,
-    email_verified: false,
     joined_at: "2026-01-01",
     current_contract: null,
   };

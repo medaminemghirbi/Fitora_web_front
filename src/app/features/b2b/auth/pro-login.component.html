@@ -1,15 +1,14 @@
 <app-auth-pro-shell
   [asideText]="'auth.no_account' | translate"
   [asideLinkText]="'landing.hero_cta_secondary' | translate"
-  asideLink="/pro/devis"
+  asideLink="/devis"
 >
   <h1 class="auth-title">{{ "auth.pro_login_title" | translate }}</h1>
   <p class="auth-subtitle">{{ "auth.pro_login_subtitle" | translate }}</p>
 
   @if (wrongZone()) {
     <div class="alert alert-warning" role="alert">
-      {{ "auth.wrong_zone_member" | translate }}
-      <a routerLink="/connexion">{{ "auth.wrong_zone_member_link" | translate }}</a>
+      {{ "auth.member_account_notice" | translate }}
     </div>
   }
 
@@ -29,7 +28,7 @@
     <div class="mb-3">
       <div class="d-flex justify-content-between align-items-baseline">
         <label for="password">{{ "auth.password" | translate }} *</label>
-        <a routerLink="/pro/mot-de-passe-oublie" class="auth-forgot-link">{{ "auth.forgot_password" | translate }}</a>
+        <a routerLink="/mot-de-passe-oublie" class="auth-forgot-link">{{ "auth.forgot_password" | translate }}</a>
       </div>
       <input id="password" type="password" class="form-control" formControlName="password" autocomplete="current-password" />
       @if (form.controls.password.invalid && form.controls.password.touched) {
@@ -48,7 +47,7 @@
 
   <p class="auth-switch">
     {{ "auth.no_account" | translate }}
-    <a routerLink="/pro/demo">{{ "landing.hero_cta_primary" | translate }}</a>
+    <a routerLink="/demo">{{ "landing.hero_cta_primary" | translate }}</a>
   </p>
 </app-auth-pro-shell
 >

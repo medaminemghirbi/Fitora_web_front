@@ -22,7 +22,7 @@ export class AuthProShellComponent {
   /** The way out to the other kind of visitor, top right. */
   @Input() asideText = "";
   @Input() asideLinkText = "";
-  @Input() asideLink = "/pro/devis";
+  @Input() asideLink = "/devis";
   /** Wider column for the demo / quote form, which has two columns of fields. */
   @Input() wide = false;
 }
