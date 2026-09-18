@@ -64,7 +64,7 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
     items: [
       { path: "/owner/contracts", icon: "bi-file-earmark-text", labelKey: "nav.subscriptions_active", permission: "contracts" },
       { path: "/owner/contracts/plans", icon: "bi-award", labelKey: "nav.plans", permission: "contract_types" },
-      { path: "/owner/contracts/activities", icon: "bi-lightning-charge", labelKey: "nav.activities", permission: "contract_types" },
+      { path: "/owner/contracts/activities", icon: "bi-lightning-charge", labelKey: "nav.activities", permission: "activities" },
     ],
   },
   {

@@ -63,7 +63,7 @@ export const routes: Routes = [
       // The catalogue left Settings: a plan and an activity are seasonal
       // business objects, not one-off configuration.
       { path: "contracts/plans", canActivate: [capabilityGuard("contract_types")], loadComponent: () => import("./features/owner/plans/plans.component").then((m) => m.PlansComponent) },
-      { path: "contracts/activities", canActivate: [capabilityGuard("contract_types")], loadComponent: () => import("./features/owner/activities/activities.component").then((m) => m.ActivitiesComponent) },
+      { path: "contracts/activities", canActivate: [capabilityGuard("activities")], loadComponent: () => import("./features/owner/activities/activities.component").then((m) => m.ActivitiesComponent) },
       { path: "payments", canActivate: [capabilityGuard("payments")], loadComponent: () => import("./features/owner/payments/payments.component").then((m) => m.OwnerPaymentsComponent) },
       // Import/export moved under Settings; the old link keeps working.
       { path: "data-exchange", redirectTo: "settings/data-exchange", pathMatch: "full" },

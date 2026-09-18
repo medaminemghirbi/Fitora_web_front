@@ -59,7 +59,7 @@
                 <td>{{ activity.duration }} min</td>
                 <td>
                   @if (activity.prices.length === 0) {
-                    <a class="small" routerLink="/owner/settings/contract-types">{{ "activities.no_price" | translate }}</a>
+                    <a class="small" routerLink="/owner/contracts/plans">{{ "activities.no_price" | translate }}</a>
                   } @else {
                     <ul class="fx-tariff-list">
                       @for (tariff of activity.prices; track tariff.contract_type_id) {

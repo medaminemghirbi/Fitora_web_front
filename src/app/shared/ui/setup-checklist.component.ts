@@ -12,8 +12,8 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { key: "activity", labelKey: "getting_started.step_activity", descKey: "getting_started.step_activity_desc", route: "/owner/settings/activities", icon: "bi-lightning-charge" },
-  { key: "contract_type", labelKey: "getting_started.step_contract_type", descKey: "getting_started.step_contract_type_desc", route: "/owner/settings/contract-types", icon: "bi-card-checklist" },
+  { key: "activity", labelKey: "getting_started.step_activity", descKey: "getting_started.step_activity_desc", route: "/owner/contracts/activities", icon: "bi-lightning-charge" },
+  { key: "contract_type", labelKey: "getting_started.step_contract_type", descKey: "getting_started.step_contract_type_desc", route: "/owner/contracts/plans", icon: "bi-card-checklist" },
   { key: "coach", labelKey: "getting_started.step_coach", descKey: "getting_started.step_coach_desc", route: "/owner/team", icon: "bi-person-badge" },
 ];
 
