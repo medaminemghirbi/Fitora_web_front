@@ -115,7 +115,7 @@ describe("OwnerShellComponent", () => {
 
   it("trialDaysRemaining surfaces the countdown while on trial", () => {
     build(owner, true);
-    configStub.subscription.and.returnValue({ status: "trial", locked: false, on_trial: true, trial_days_remaining: 5 });
+    configStub.subscription.and.returnValue({ status: "trial", locked: false, on_trial: true, trial_days_remaining: 5, current_period_paid: true, days_before_lock: null, lock_reason: null });
     fixture = TestBed.createComponent(OwnerShellComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -124,7 +124,7 @@ describe("OwnerShellComponent", () => {
 
   it("trialDaysRemaining is null while on trial with no day count yet", () => {
     build(owner, true);
-    configStub.subscription.and.returnValue({ status: "trial", locked: false, on_trial: true, trial_days_remaining: null });
+    configStub.subscription.and.returnValue({ status: "trial", locked: false, on_trial: true, trial_days_remaining: null, current_period_paid: true, days_before_lock: null, lock_reason: null });
     fixture = TestBed.createComponent(OwnerShellComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -146,4 +146,47 @@ describe("OwnerShellComponent", () => {
     fixture.detectChanges();
     expect(component.versionSuffix()).toBe("v1.2.3");
   });
+
+  // The owner should see the door closing, not find it shut mid-task.
+  describe("the month that has not been settled", () => {
+    // The stub is a spy, not a signal, so a computed that already read it
+    // would keep its first answer — the component is rebuilt each time.
+    function withSubscription(patch: Record<string, unknown>): void {
+      build(owner, true);
+      configStub.subscription.and.returnValue({
+        status: "active",
+        locked: false,
+        on_trial: false,
+        trial_days_remaining: null,
+        current_period_paid: true,
+        days_before_lock: null,
+        lock_reason: null,
+        ...patch,
+      });
+      fixture = TestBed.createComponent(OwnerShellComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    }
+
+    it("says nothing while the month is settled", () => {
+      withSubscription({});
+      expect(component.daysToSettle()).toBeNull();
+    });
+
+    it("counts down once the paid period has run out", () => {
+      withSubscription({ current_period_paid: false, days_before_lock: 2 });
+      expect(component.daysToSettle()).toBe(2);
+    });
+
+    it("says zero on the last day rather than falling silent", () => {
+      withSubscription({ current_period_paid: false, days_before_lock: 0 });
+      expect(component.daysToSettle()).toBe(0);
+    });
+
+    it("leaves a gym on trial to its own banner", () => {
+      withSubscription({ on_trial: true, current_period_paid: false, days_before_lock: 1 });
+      expect(component.daysToSettle()).toBeNull();
+    });
+  });
 });
+

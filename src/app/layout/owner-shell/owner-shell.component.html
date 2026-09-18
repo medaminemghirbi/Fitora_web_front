@@ -7,6 +7,12 @@
         <i class="bi bi-box-arrow-left"></i> {{ "admin.exit_impersonation" | translate }}
       </button>
     </div>
+  } @else if (daysToSettle() !== null) {
+    <a routerLink="/owner/subscription" class="trial-shell-banner is-due">
+      <i class="bi bi-cash-coin"></i>
+      <span>{{ "subscription.due_banner_body" | translate: { days: daysToSettle() } }}</span>
+      <span class="trial-shell-banner-link">{{ "subscription.due_banner_cta" | translate }}</span>
+    </a>
   } @else if (trialDaysRemaining() !== null) {
     <a routerLink="/owner/subscription" class="trial-shell-banner">
       <i class="bi bi-stars"></i>

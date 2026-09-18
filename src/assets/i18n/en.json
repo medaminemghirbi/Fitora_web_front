@@ -450,7 +450,9 @@
     "included_count": "{{count}} modules · nothing to activate",
     "group_members": "Members & sessions",
     "group_billing": "Memberships & payments",
-    "group_hr": "Team & payroll"
+    "group_hr": "Team & payroll",
+    "due_banner_body": "This month is unsettled. You have {{days}} day(s) before access closes.",
+    "due_banner_cta": "See my subscription"
   },
   "settings": {
     "title": "Settings",
@@ -810,7 +812,22 @@
     "usage_last_session": "Last session on",
     "usage_never": "No session ever created",
     "awaiting_activation": "{{count}} awaiting activation",
-    "awaiting_short": "Waiting"
+    "awaiting_short": "Waiting",
+    "attention_overdue": "Month unpaid — access is closed.",
+    "attention_due": "Month unsettled — closes in {{days}} day(s).",
+    "attention_paid_through": "Paid through",
+    "attention_never_paid": "never",
+    "payment_title": "This month's payment",
+    "payment_subtitle": "Payment happens off-app: this is the only record that it did.",
+    "payment_on_trial": "Still on trial — nothing to settle yet.",
+    "payment_settled": "Settled",
+    "payment_due": "Unsettled",
+    "payment_grace_left": "{{days}} day(s) left before access closes.",
+    "payment_hint": "One click covers one period. A gym that skipped a month settles the missed one first: click once per period paid.",
+    "record_payment": "Payment received",
+    "undo_payment": "Undo",
+    "payment_recorded": "Payment recorded.",
+    "payment_undone": "Payment undone."
   },
   "staff": {
     "title": "Employees",

@@ -13,6 +13,11 @@ export interface BootstrapSubscription {
   locked: boolean;
   on_trial: boolean;
   trial_days_remaining: number | null;
+  /** Whether the period we are in has been settled. */
+  current_period_paid: boolean;
+  /** Days left before access closes. null when nothing is ticking. */
+  days_before_lock: number | null;
+  lock_reason: "suspended" | "trial_expired" | "term_ended" | "payment_overdue" | null;
 }
 
 export interface CompanyRole {

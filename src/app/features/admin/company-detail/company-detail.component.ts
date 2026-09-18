@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from "@angular/core";
+import { Observable } from "rxjs";
 import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
@@ -75,15 +76,57 @@ export class AdminCompanyDetailComponent implements OnInit {
    * is pending and the banner stays off — a paying gym in good standing
    * should not be shouted at.
    */
-  readonly attention = computed<"asked" | "locked" | "ending" | null>(() => {
+  readonly attention = computed<"asked" | "overdue" | "due" | "locked" | "ending" | null>(() => {
     const c = this.company();
     if (!c) return null;
+    const sub = c.subscription;
     if (this.askedAt()) return "asked";
+    // Money owed outranks a deadline: it is the reason the door is shut and
+    // the one thing an admin can fix from here.
+    if (sub?.payment_overdue) return "overdue";
+    if (sub && !sub.on_trial && !sub.current_period_paid) return "due";
     if (c.trial_locked) return "locked";
     const days = c.trial_days_remaining;
-    if (days !== null && days <= 7 && !c.subscription?.billing_period) return "ending";
+    if (days !== null && days <= 7 && !sub?.billing_period) return "ending";
     return null;
   });
+
+  // ---- the month's payment ------------------------------------------------
+  readonly savingPayment = signal(false);
+
+  readonly paidThrough = computed(() => this.company()?.subscription?.paid_through ?? null);
+  readonly currentPeriodPaid = computed(() => this.company()?.subscription?.current_period_paid ?? false);
+  readonly daysBeforeLock = computed(() => this.company()?.subscription?.days_before_lock ?? null);
+  /** The payment controls mean nothing while a gym is still on its trial. */
+  readonly onPaidPlan = computed(() => {
+    const sub = this.company()?.subscription;
+    return !!sub && !sub.on_trial;
+  });
+
+  recordPayment(): void {
+    if (this.savingPayment()) return;
+    this.runPayment(this.service.recordPayment(this.id), "admin.payment_recorded");
+  }
+
+  undoPayment(): void {
+    if (this.savingPayment()) return;
+    this.runPayment(this.service.undoPayment(this.id), "admin.payment_undone");
+  }
+
+  private runPayment(call: Observable<{ company: AdminCompany }>, successKey: string): void {
+    this.savingPayment.set(true);
+    call.subscribe({
+      next: (res) => {
+        this.savingPayment.set(false);
+        this.hydrate(res.company);
+        this.toast.success(this.translate.instant(successKey));
+      },
+      error: (err) => {
+        this.savingPayment.set(false);
+        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
+  }
 
   /**
    * Activation in one action: their preferred period, no end date, active.

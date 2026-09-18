@@ -450,7 +450,9 @@
     "included_count": "{{count}} وحدات · لا شيء لتفعيله",
     "group_members": "الأعضاء والحصص",
     "group_billing": "الاشتراكات والمدفوعات",
-    "group_hr": "الفريق والرواتب"
+    "group_hr": "الفريق والرواتب",
+    "due_banner_body": "هذا الشهر غير مدفوع. أمامك {{days}} يوم/أيام قبل إغلاق الوصول.",
+    "due_banner_cta": "عرض اشتراكي"
   },
   "settings": {
     "title": "الإعدادات",
@@ -810,7 +812,22 @@
     "usage_last_session": "آخر حصّة في",
     "usage_never": "لم تُنشأ أيّ حصّة",
     "awaiting_activation": "{{count}} في انتظار التفعيل",
-    "awaiting_short": "ينتظر"
+    "awaiting_short": "ينتظر",
+    "attention_overdue": "شهر غير مدفوع — الوصول مغلق.",
+    "attention_due": "شهر غير مدفوع — الإغلاق خلال {{days}} يوم/أيام.",
+    "attention_paid_through": "مدفوع إلى",
+    "attention_never_paid": "أبدًا",
+    "payment_title": "دفع الشهر",
+    "payment_subtitle": "الدفع يتمّ خارج التطبيق: هذا هو السجلّ الوحيد له.",
+    "payment_on_trial": "لا تزال في التجربة — لا شيء للدفع الآن.",
+    "payment_settled": "مدفوع",
+    "payment_due": "غير مدفوع",
+    "payment_grace_left": "بقيت {{days}} يوم/أيام قبل إغلاق الوصول.",
+    "payment_hint": "نقرة واحدة تغطّي فترة واحدة. القاعة التي تخطّت شهرًا تدفع الشهر الفائت أوّلًا: انقر بعدد الفترات المدفوعة.",
+    "record_payment": "تمّ استلام الدفع",
+    "undo_payment": "تراجع",
+    "payment_recorded": "تمّ تسجيل الدفع.",
+    "payment_undone": "تمّ التراجع عن الدفع."
   },
   "staff": {
     "title": "الموظفون",

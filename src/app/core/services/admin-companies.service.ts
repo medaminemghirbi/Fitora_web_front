@@ -43,6 +43,16 @@ export class AdminCompaniesService {
     }>(`${API_BASE_URL}/admin/companies/${id}`);
   }
 
+  /** The money for one period arrived. Payment happens off-app. */
+  recordPayment(id: string): Observable<{ company: AdminCompany }> {
+    return this.http.post<{ company: AdminCompany }>(`${API_BASE_URL}/admin/companies/${id}/record_payment`, {});
+  }
+
+  /** Undoes a payment recorded in error, one period at a time. */
+  undoPayment(id: string): Observable<{ company: AdminCompany }> {
+    return this.http.delete<{ company: AdminCompany }>(`${API_BASE_URL}/admin/companies/${id}/record_payment`);
+  }
+
   updateSubscription(id: string, payload: UpdateSubscriptionPayload): Observable<{ company: AdminCompany }> {
     return this.http.patch<{ company: AdminCompany }>(`${API_BASE_URL}/admin/companies/${id}/subscription`, payload);
   }

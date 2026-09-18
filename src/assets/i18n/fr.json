@@ -450,7 +450,9 @@
     "included_count": "{{count}} modules · rien à activer",
     "group_members": "Adhérents & séances",
     "group_billing": "Abonnements & paiements",
-    "group_hr": "Équipe & paie"
+    "group_hr": "Équipe & paie",
+    "due_banner_body": "Ce mois n'est pas réglé. Il vous reste {{days}} jour(s) avant la fermeture de l'accès.",
+    "due_banner_cta": "Voir mon abonnement"
   },
   "settings": {
     "title": "Paramètres",
@@ -810,7 +812,22 @@
     "usage_last_session": "Dernière séance le",
     "usage_never": "Aucune séance créée",
     "awaiting_activation": "{{count}} en attente d'activation",
-    "awaiting_short": "Attend"
+    "awaiting_short": "Attend",
+    "attention_overdue": "Mois impayé — l'accès est fermé.",
+    "attention_due": "Mois non réglé — fermeture dans {{days}} jour(s).",
+    "attention_paid_through": "Payé jusqu'au",
+    "attention_never_paid": "jamais",
+    "payment_title": "Paiement du mois",
+    "payment_subtitle": "Le paiement se fait hors application : c'est le seul endroit qui en garde trace.",
+    "payment_on_trial": "Salle encore en essai — rien à régler pour l'instant.",
+    "payment_settled": "Réglé",
+    "payment_due": "Non réglé",
+    "payment_grace_left": "Il reste {{days}} jour(s) avant la fermeture de l'accès.",
+    "payment_hint": "Un clic couvre une période. Une salle qui a sauté un mois règle d'abord le mois manqué : cliquez autant de fois qu'elle a payé de périodes.",
+    "record_payment": "Paiement reçu",
+    "undo_payment": "Annuler",
+    "payment_recorded": "Paiement enregistré.",
+    "payment_undone": "Paiement annulé."
   },
   "staff": {
     "title": "Employés",

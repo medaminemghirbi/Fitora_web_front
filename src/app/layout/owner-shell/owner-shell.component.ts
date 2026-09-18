@@ -33,6 +33,17 @@ export class OwnerShellComponent implements OnInit {
     const sub = this.configuration.subscription();
     return sub?.on_trial ? (sub.trial_days_remaining ?? null) : null;
   });
+  /**
+   * Days left to settle the month before access closes. Shown from the day
+   * the paid period runs out, so the owner sees it coming instead of
+   * finding the door shut mid-task.
+   */
+  readonly daysToSettle = computed(() => {
+    const sub = this.configuration.subscription();
+    if (!sub || sub.on_trial || sub.current_period_paid) return null;
+    return sub.days_before_lock;
+  });
+
   readonly versionSuffix = computed(() => (this.version.current() ? `v${this.version.current()}` : null));
 
   // Dismissible per session only — not persisted, so it comes back next

@@ -111,3 +111,10 @@
 
   &:hover { color: var(--color-text); }
 }
+
+// The month is unpaid and the clock is running. Warmer than the trial
+// banner it sits in place of, because this one closes the door.
+.trial-shell-banner.is-due {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}

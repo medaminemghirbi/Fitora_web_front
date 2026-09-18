@@ -41,6 +41,11 @@ describe("AdminCompanyDetailComponent", () => {
       billing_period: "monthly",
       upgrade_requested_at: null,
       upgrade_requested_period: null,
+      paid_through: "2099-12-31",
+      current_period_paid: true,
+      payment_overdue: false,
+      days_before_lock: null,
+      lock_reason: null,
     } as never,
   };
 
@@ -48,6 +53,8 @@ describe("AdminCompanyDetailComponent", () => {
     service = jasmine.createSpyObj<AdminCompaniesService>("AdminCompaniesService", [
       "get",
       "updateSubscription",
+      "recordPayment",
+      "undoPayment",
       "updateSettings",
       "updateDebt",
       "impersonate",
@@ -319,5 +326,64 @@ describe("AdminCompanyDetailComponent", () => {
       expect(component.savingSub()).toBe(false);
     });
   });
-});
 
+  describe("the month's payment", () => {
+    function loadWith(patch: Record<string, unknown>): void {
+      service.get.and.returnValue(
+        of({
+          company: { ...company, subscription: { ...company.subscription, ...patch } } as never,
+          currency_options: [],
+          locale_options: [],
+        })
+      );
+      component.load();
+    }
+
+    it("leads with money owed over a deadline — it is what closed the door", () => {
+      loadWith({ payment_overdue: true, current_period_paid: false, days_before_lock: 0 });
+      expect(component.attention()).toBe("overdue");
+    });
+
+    it("warns while the three days are still running", () => {
+      loadWith({ current_period_paid: false, days_before_lock: 2 });
+      expect(component.attention()).toBe("due");
+      expect(component.daysBeforeLock()).toBe(2);
+    });
+
+    it("hides the payment controls for a gym still on its trial", () => {
+      loadWith({ on_trial: true, billing_period: null, current_period_paid: false });
+      expect(component.onPaidPlan()).toBe(false);
+    });
+
+    it("records a payment and takes the new state from the answer", () => {
+      service.recordPayment.and.returnValue(of({ company }));
+
+      component.recordPayment();
+
+      expect(service.recordPayment).toHaveBeenCalledWith("c1");
+      expect(component.currentPeriodPaid()).toBe(true);
+      expect(component.savingPayment()).toBe(false);
+    });
+
+    it("refuses a second click while one is in flight", () => {
+      service.recordPayment.and.returnValue(new Subject<{ company: AdminCompany }>().asObservable());
+
+      component.recordPayment();
+      component.recordPayment();
+
+      expect(service.recordPayment).toHaveBeenCalledTimes(1);
+    });
+
+    it("stops spinning when the payment is refused", () => {
+      service.recordPayment.and.returnValue(throwError(() => new Error("on_trial")));
+      component.recordPayment();
+      expect(component.savingPayment()).toBe(false);
+    });
+
+    it("undoes a payment recorded in error", () => {
+      service.undoPayment.and.returnValue(of({ company }));
+      component.undoPayment();
+      expect(service.undoPayment).toHaveBeenCalledWith("c1");
+    });
+  });
+});

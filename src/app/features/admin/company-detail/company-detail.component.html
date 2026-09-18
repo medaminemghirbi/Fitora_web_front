@@ -33,20 +33,33 @@
   @if (attention(); as what) {
     <section class="ac-attention" [attr.data-kind]="what">
       <div class="ac-attention-main">
-        <i class="bi" [class.bi-hourglass-split]="what === 'asked'" [class.bi-lock-fill]="what === 'locked'" [class.bi-clock-history]="what === 'ending'"></i>
+        <i
+          class="bi"
+          [class.bi-hourglass-split]="what === 'asked'"
+          [class.bi-cash-coin]="what === 'due'"
+          [class.bi-lock-fill]="what === 'locked' || what === 'overdue'"
+          [class.bi-clock-history]="what === 'ending'"
+        ></i>
         <div>
           <strong>
             @switch (what) {
               @case ("asked") { {{ "admin.attention_asked" | translate: { days: waitingDays() } }} }
+              @case ("overdue") { {{ "admin.attention_overdue" | translate }} }
+              @case ("due") { {{ "admin.attention_due" | translate: { days: daysBeforeLock() } }} }
               @case ("locked") { {{ "admin.attention_locked" | translate }} }
               @case ("ending") { {{ "admin.attention_ending" | translate: { days: c.trial_days_remaining } }} }
             }
           </strong>
           <span>
-            @if (askedPeriod(); as period) {
-              {{ "admin.attention_pref" | translate: { period: ((period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate) } }}
+            @if (what === "due" || what === "overdue") {
+              {{ "admin.attention_paid_through" | translate }}
+              {{ (paidThrough() | date: "d MMM y") || ("admin.attention_never_paid" | translate) }}
             } @else {
-              {{ "admin.attention_no_pref" | translate }}
+              @if (askedPeriod(); as period) {
+                {{ "admin.attention_pref" | translate: { period: ((period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate) } }}
+              } @else {
+                {{ "admin.attention_no_pref" | translate }}
+              }
             }
             · {{ "admin.attention_price" | translate: {
                   monthly: ((c.monthly_subscription_cents / 100) | money: c.currency),
@@ -55,9 +68,15 @@
           </span>
         </div>
       </div>
-      <button type="button" class="btn btn-primary" [disabled]="savingSub()" (click)="activate()">
-        {{ (savingSub() ? "common.saving" : "admin.activate_now") | translate }}
-      </button>
+      @if (what === "due" || what === "overdue") {
+        <button type="button" class="btn btn-primary" [disabled]="savingPayment()" (click)="recordPayment()">
+          {{ (savingPayment() ? "common.saving" : "admin.record_payment") | translate }}
+        </button>
+      } @else {
+        <button type="button" class="btn btn-primary" [disabled]="savingSub()" (click)="activate()">
+          {{ (savingSub() ? "common.saving" : "admin.activate_now") | translate }}
+        </button>
+      }
     </section>
   }
 
@@ -169,8 +188,48 @@
       }
     </div>
 
-    <!-- Right: tenant settings + debt -->
+    <!-- Right: what is owed, then the tenant's own settings -->
     <div class="ac-col">
+      <div class="app-card">
+        <div class="app-card-header">
+          <div>
+            <h2>{{ "admin.payment_title" | translate }}</h2>
+            <p class="fx-muted mb-0" style="font-size: 0.8125rem">{{ "admin.payment_subtitle" | translate }}</p>
+          </div>
+        </div>
+        <div class="app-card-body">
+          @if (!onPaidPlan()) {
+            <p class="fx-muted mb-0">{{ "admin.payment_on_trial" | translate }}</p>
+          } @else {
+            <div class="ac-paid">
+              <app-status-badge [status]="currentPeriodPaid() ? 'paid' : 'unpaid'">
+                {{ (currentPeriodPaid() ? "admin.payment_settled" : "admin.payment_due") | translate }}
+              </app-status-badge>
+              <span class="fx-muted">
+                {{ "admin.attention_paid_through" | translate }}
+                {{ (paidThrough() | date: "d MMM y") || ("admin.attention_never_paid" | translate) }}
+              </span>
+            </div>
+
+            @if (daysBeforeLock() !== null) {
+              <p class="fx-muted ac-hint">{{ "admin.payment_grace_left" | translate: { days: daysBeforeLock() } }}</p>
+            }
+
+            <div class="ac-key mt-3">
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="savingPayment()" (click)="recordPayment()">
+                {{ (savingPayment() ? "common.saving" : "admin.record_payment") | translate }}
+              </button>
+              @if (paidThrough()) {
+                <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="savingPayment()" (click)="undoPayment()">
+                  {{ "admin.undo_payment" | translate }}
+                </button>
+              }
+            </div>
+            <p class="fx-muted ac-hint">{{ "admin.payment_hint" | translate }}</p>
+          }
+        </div>
+      </div>
+
       <div class="app-card">
         <div class="app-card-header">
           <div>
