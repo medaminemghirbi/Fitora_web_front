@@ -31,9 +31,8 @@ describe("AdminShellComponent", () => {
     fixture.detectChanges();
   });
 
-  it("opens on the inbox — every gym starts as a request", () => {
+  it("lists the admin areas", () => {
     expect(component.navItems.map((n) => n.path)).toEqual([
-      "/admin/leads",
       "/admin/companies",
       "/admin/pricing",
       "/admin/support",

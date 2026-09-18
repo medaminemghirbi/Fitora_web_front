@@ -6,6 +6,15 @@ export interface AdminCurrencyOption {
   name: string;
 }
 
+/** What the gym is actually doing with Fitora — what an activation rests on. */
+export interface AdminCompanyUsage {
+  clients: number;
+  staff: number;
+  activities: number;
+  sessions_last_30_days: number;
+  last_session_at: string | null;
+}
+
 export interface AdminCompany {
   id: string;
   name: string;
@@ -18,6 +27,9 @@ export interface AdminCompany {
   created_at: string;
   owner: { id: string; full_name: string; email: string; phone: string | null };
   subscription: Subscription | null;
+  /** Whether this gym is asking to carry on past its trial. */
+  awaiting_activation: boolean;
+  usage: AdminCompanyUsage;
   trial_locked: boolean;
   trial_days_remaining: number | null;
   // The subscription price in the company's currency, read-only here.

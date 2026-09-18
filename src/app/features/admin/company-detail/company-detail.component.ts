@@ -57,6 +57,56 @@ export class AdminCompanyDetailComponent implements OnInit {
 
   private id!: string;
 
+  // ---- what needs deciding, said in one line ------------------------------
+  // The page used to make you read three controls and a date to work out
+  // whether a gym was fine, running out, or already locked out.
+  readonly askedAt = computed(() => this.company()?.subscription?.upgrade_requested_at ?? null);
+  readonly askedPeriod = computed(() => this.company()?.subscription?.upgrade_requested_period ?? null);
+
+  /** Whole days since they asked to carry on. */
+  readonly waitingDays = computed(() => {
+    const asked = this.askedAt();
+    if (!asked) return 0;
+    return Math.max(0, Math.floor((Date.now() - new Date(asked).getTime()) / 86_400_000));
+  });
+
+  /**
+   * The one thing this page is for, when there is one. `null` means nothing
+   * is pending and the banner stays off — a paying gym in good standing
+   * should not be shouted at.
+   */
+  readonly attention = computed<"asked" | "locked" | "ending" | null>(() => {
+    const c = this.company();
+    if (!c) return null;
+    if (this.askedAt()) return "asked";
+    if (c.trial_locked) return "locked";
+    const days = c.trial_days_remaining;
+    if (days !== null && days <= 7 && !c.subscription?.billing_period) return "ending";
+    return null;
+  });
+
+  /**
+   * Activation in one action: their preferred period, no end date, active.
+   * Clearing expires_at is what unlocks them (see the backend's
+   * update_subscription) — the three controls below still do it by hand for
+   * anything unusual, like a fixed renewal date.
+   */
+  activate(): void {
+    const period = this.askedPeriod() || "monthly";
+    this.savingSub.set(true);
+    this.service.updateSubscription(this.id, { status: "active", expires_at: null, billing_period: period }).subscribe({
+      next: (res) => {
+        this.savingSub.set(false);
+        this.hydrate(res.company);
+        this.toast.success(this.translate.instant("admin.activated"));
+      },
+      error: (err) => {
+        this.savingSub.set(false);
+        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
+  }
+
   // Summary tile: the current plan (or "free trial" while no billing period).
   readonly formuleLabelKey = computed(() => {
     const period = this.company()?.subscription?.billing_period;

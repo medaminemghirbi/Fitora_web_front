@@ -49,13 +49,25 @@ export class AdminCompaniesComponent implements OnInit {
     this.load();
   }
 
+  // How many gyms are asking to carry on past their trial. Shown whether or
+  // not the list is narrowed to them, so the signal cannot be missed.
+  readonly awaitingCount = signal(0);
+  readonly onlyAwaiting = signal(false);
+
+  toggleAwaiting(): void {
+    this.onlyAwaiting.update((v) => !v);
+    this.page.set(1);
+    this.load();
+  }
+
   load(): void {
     this.loading.set(true);
     this.error.set(false);
-    this.companiesService.list(this.page(), this.search() || undefined).subscribe({
+    this.companiesService.list(this.page(), this.search() || undefined, this.onlyAwaiting()).subscribe({
       next: (res) => {
         this.companies.set(res.companies);
         this.meta.set(res.meta);
+        this.awaitingCount.set(res.awaiting_count ?? 0);
         this.loading.set(false);
       },
       error: () => {

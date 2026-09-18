@@ -27,7 +27,6 @@ export class AdminShellComponent implements OnInit {
   readonly langMenuOpen = signal(false);
 
   readonly navItems: NavItem[] = [
-    { path: "/admin/leads", labelKey: "admin.leads.nav" },
     { path: "/admin/companies", labelKey: "admin.companies" },
     { path: "/admin/pricing", labelKey: "admin.pricing_nav" },
     { path: "/admin/support", labelKey: "admin.support_nav" },

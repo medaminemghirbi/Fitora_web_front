@@ -16,6 +16,8 @@ describe("AdminCompanyDetailComponent", () => {
   let authStub: { startImpersonation: jasmine.Spy };
 
   const company: AdminCompany = {
+    awaiting_activation: false,
+    usage: { clients: 0, staff: 0, activities: 0, sessions_last_30_days: 0, last_session_at: null },
     id: "c1",
     name: "Acme Gym",
     city: "Tunis",
@@ -227,4 +229,95 @@ describe("AdminCompanyDetailComponent", () => {
       expect(service.impersonate).not.toHaveBeenCalled();
     });
   });
+
+  describe("what needs deciding", () => {
+    function loadWith(patch: Record<string, unknown>): void {
+      service.get.and.returnValue(
+        of({ company: { ...company, ...patch } as never, currency_options: [], locale_options: [] })
+      );
+      component.load();
+    }
+
+    it("says nothing at all about a paying gym in good standing", () => {
+      loadWith({ subscription: { ...company.subscription, billing_period: "monthly", upgrade_requested_at: null }, trial_locked: false, trial_days_remaining: null });
+      expect(component.attention()).toBeNull();
+    });
+
+    it("leads with the gym that asked, over one merely running out", () => {
+      loadWith({
+        subscription: { ...company.subscription, upgrade_requested_at: "2026-09-14T00:00:00Z", upgrade_requested_period: "yearly" },
+        trial_locked: true,
+        trial_days_remaining: 0,
+      });
+      expect(component.attention()).toBe("asked");
+      expect(component.askedPeriod()).toBe("yearly");
+    });
+
+    it("flags a gym already locked out", () => {
+      loadWith({ subscription: { ...company.subscription, upgrade_requested_at: null }, trial_locked: true });
+      expect(component.attention()).toBe("locked");
+    });
+
+    it("warns while a trial is running out, but not once a plan is set", () => {
+      loadWith({ subscription: { ...company.subscription, billing_period: null, upgrade_requested_at: null }, trial_locked: false, trial_days_remaining: 3 });
+      expect(component.attention()).toBe("ending");
+
+      loadWith({ subscription: { ...company.subscription, billing_period: "monthly", upgrade_requested_at: null }, trial_locked: false, trial_days_remaining: 3 });
+      expect(component.attention()).toBeNull();
+    });
+
+    it("counts the days a gym has been waiting", () => {
+      const fourDaysAgo = new Date(Date.now() - 4 * 86_400_000).toISOString();
+      loadWith({ subscription: { ...company.subscription, upgrade_requested_at: fourDaysAgo } });
+      expect(component.waitingDays()).toBe(4);
+    });
+  });
+
+  describe("activating in one action", () => {
+    it("grants the period they asked for, with no end date — clearing it is what unlocks them", () => {
+      service.updateSubscription.and.returnValue(of({ company }));
+      service.get.and.returnValue(
+        of({
+          company: { ...company, subscription: { ...company.subscription, upgrade_requested_at: "2026-09-14T00:00:00Z", upgrade_requested_period: "yearly" } } as never,
+          currency_options: [],
+          locale_options: [],
+        })
+      );
+      component.load();
+
+      component.activate();
+
+      expect(service.updateSubscription).toHaveBeenCalledWith("c1", {
+        status: "active",
+        expires_at: null,
+        billing_period: "yearly",
+      });
+    });
+
+    it("falls back to monthly when they expressed no preference", () => {
+      service.updateSubscription.and.returnValue(of({ company }));
+      service.get.and.returnValue(
+        of({
+          company: { ...company, subscription: { ...company.subscription, upgrade_requested_at: "2026-09-14T00:00:00Z", upgrade_requested_period: null } } as never,
+          currency_options: [],
+          locale_options: [],
+        })
+      );
+      component.load();
+
+      component.activate();
+
+      expect(service.updateSubscription).toHaveBeenCalledWith(
+        "c1",
+        jasmine.objectContaining({ billing_period: "monthly" })
+      );
+    });
+
+    it("stops spinning when the activation is refused", () => {
+      service.updateSubscription.and.returnValue(throwError(() => new Error("nope")));
+      component.activate();
+      expect(component.savingSub()).toBe(false);
+    });
+  });
 });
+

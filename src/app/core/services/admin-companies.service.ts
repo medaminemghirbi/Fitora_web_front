@@ -16,18 +16,19 @@ export interface UpdateSubscriptionPayload {
 export class AdminCompaniesService {
   constructor(private readonly http: HttpClient) {}
 
-  list(page = 1, q?: string): Observable<{ companies: AdminCompany[]; meta: PageMeta }> {
+  /**
+   * `awaiting` narrows to the gyms asking to carry on past their trial. The
+   * count comes back either way, so the list can say how many are waiting —
+   * nobody should have to open a gym's page to discover it asked.
+   */
+  list(page = 1, q?: string, awaiting = false): Observable<{ companies: AdminCompany[]; meta: PageMeta; awaiting_count: number }> {
     const params: Record<string, string> = { page: String(page) };
     if (q) params["q"] = q;
-    return this.http.get<{ companies: AdminCompany[]; meta: PageMeta }>(`${API_BASE_URL}/admin/companies`, { params });
-  }
-
-  /**
-   * The gyms asking to carry on past their trial, longest wait first.
-   * An inbox rather than a directory: it empties as they are answered.
-   */
-  activationRequests(): Observable<{ companies: AdminCompany[] }> {
-    return this.http.get<{ companies: AdminCompany[] }>(`${API_BASE_URL}/admin/companies/activation_requests`);
+    if (awaiting) params["awaiting"] = "1";
+    return this.http.get<{ companies: AdminCompany[]; meta: PageMeta; awaiting_count: number }>(
+      `${API_BASE_URL}/admin/companies`,
+      { params }
+    );
   }
 
   get(id: string): Observable<{

@@ -28,6 +28,39 @@
     </div>
   </div>
 
+  <!-- The one thing this page is for, when there is one. A paying gym in
+       good standing gets no banner at all. -->
+  @if (attention(); as what) {
+    <section class="ac-attention" [attr.data-kind]="what">
+      <div class="ac-attention-main">
+        <i class="bi" [class.bi-hourglass-split]="what === 'asked'" [class.bi-lock-fill]="what === 'locked'" [class.bi-clock-history]="what === 'ending'"></i>
+        <div>
+          <strong>
+            @switch (what) {
+              @case ("asked") { {{ "admin.attention_asked" | translate: { days: waitingDays() } }} }
+              @case ("locked") { {{ "admin.attention_locked" | translate }} }
+              @case ("ending") { {{ "admin.attention_ending" | translate: { days: c.trial_days_remaining } }} }
+            }
+          </strong>
+          <span>
+            @if (askedPeriod(); as period) {
+              {{ "admin.attention_pref" | translate: { period: ((period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate) } }}
+            } @else {
+              {{ "admin.attention_no_pref" | translate }}
+            }
+            · {{ "admin.attention_price" | translate: {
+                  monthly: ((c.monthly_subscription_cents / 100) | money: c.currency),
+                  yearly: ((c.annual_subscription_cents / 100) | money: c.currency)
+                } }}
+          </span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" [disabled]="savingSub()" (click)="activate()">
+        {{ (savingSub() ? "common.saving" : "admin.activate_now") | translate }}
+      </button>
+    </section>
+  }
+
   <!-- Summary strip -->
   <div class="ac-summary">
     <div class="ac-stat">
@@ -37,6 +70,7 @@
     <div class="ac-stat">
       <span class="ac-stat-label">{{ "admin.subscription_title" | translate }}</span>
       <strong>{{ (c.monthly_subscription_cents / 100) | money: c.currency }} <span class="ac-stat-unit">{{ "admin.per_month" | translate }}</span></strong>
+      <span class="ac-stat-sub">{{ (c.annual_subscription_cents / 100) | money: c.currency }} {{ "admin.per_year" | translate }}</span>
     </div>
     <div class="ac-stat">
       <span class="ac-stat-label">{{ "admin.renewal_label" | translate }}</span>
@@ -50,10 +84,48 @@
     </div>
   </div>
 
+  <!-- What the gym is actually doing with Fitora. An activation rests on
+       this far more than on the subscription row. -->
+  <div class="app-card ac-usage-card">
+    <div class="app-card-header">
+      <h2>{{ "admin.usage_title" | translate }}</h2>
+      <span class="fx-muted">
+        @if (c.usage.last_session_at) {
+          {{ "admin.usage_last_session" | translate }} {{ c.usage.last_session_at | date: "d MMM y" }}
+        } @else {
+          {{ "admin.usage_never" | translate }}
+        }
+      </span>
+    </div>
+    <div class="app-card-body ac-usage">
+      <div class="ac-stat">
+        <span class="ac-stat-label">{{ "nav.clients" | translate }}</span>
+        <strong>{{ c.usage.clients }}</strong>
+      </div>
+      <div class="ac-stat">
+        <span class="ac-stat-label">{{ "nav.team" | translate }}</span>
+        <strong>{{ c.usage.staff }}</strong>
+      </div>
+      <div class="ac-stat">
+        <span class="ac-stat-label">{{ "nav.activities" | translate }}</span>
+        <strong>{{ c.usage.activities }}</strong>
+      </div>
+      <div class="ac-stat">
+        <span class="ac-stat-label">{{ "admin.usage_sessions_30" | translate }}</span>
+        <strong [class.ac-stat--due]="c.usage.sessions_last_30_days === 0">{{ c.usage.sessions_last_30_days }}</strong>
+      </div>
+    </div>
+  </div>
+
   <div class="ac-grid">
     <!-- Left: subscription & access -->
     <div class="app-card">
-      <div class="app-card-header"><h2>{{ "admin.subscription_access_title" | translate }}</h2></div>
+      <div class="app-card-header">
+        <div>
+          <h2>{{ "admin.subscription_access_title" | translate }}</h2>
+          <p class="fx-muted mb-0" style="font-size: 0.8125rem">{{ "admin.subscription_access_subtitle" | translate }}</p>
+        </div>
+      </div>
       <div class="app-card-body ac-form">
         <div>
           <div class="form-label">{{ "admin.access_status" | translate }}</div>

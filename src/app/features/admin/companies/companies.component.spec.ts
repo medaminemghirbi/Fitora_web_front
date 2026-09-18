@@ -13,6 +13,8 @@ describe("AdminCompaniesComponent", () => {
 
   const meta = { page: 1, per_page: 20, total: 1, total_pages: 1 };
   const company: AdminCompany = {
+    awaiting_activation: false,
+    usage: { clients: 0, staff: 0, activities: 0, sessions_last_30_days: 0, last_session_at: null },
     id: "c1",
     name: "Acme Gym",
     city: "Tunis",
@@ -35,7 +37,7 @@ describe("AdminCompaniesComponent", () => {
 
   beforeEach(async () => {
     service = jasmine.createSpyObj<AdminCompaniesService>("AdminCompaniesService", ["list"]);
-    service.list.and.returnValue(of({ companies: [company], meta }));
+    service.list.and.returnValue(of({ companies: [company], meta, awaiting_count: 0 }));
 
     await TestBed.configureTestingModule({
       imports: [AdminCompaniesComponent, TranslateModule.forRoot()],
@@ -48,7 +50,7 @@ describe("AdminCompaniesComponent", () => {
   });
 
   it("loads the first page on init", () => {
-    expect(service.list).toHaveBeenCalledWith(1, undefined);
+    expect(service.list).toHaveBeenCalledWith(1, undefined, false);
     expect(component.companies().length).toBe(1);
     expect(component.loading()).toBe(false);
   });
@@ -63,12 +65,12 @@ describe("AdminCompaniesComponent", () => {
   it("onSearchChange debounces, resets to page 1, and passes the term", fakeAsync(() => {
     component.page.set(3);
     component.onSearchChange("acme");
-    expect(service.list).not.toHaveBeenCalledWith(1, "acme");
+    expect(service.list).not.toHaveBeenCalledWith(1, "acme", false);
 
     tick(1000);
 
     expect(component.page()).toBe(1);
-    expect(service.list).toHaveBeenCalledWith(1, "acme");
+    expect(service.list).toHaveBeenCalledWith(1, "acme", false);
   }));
 
   it("onSearchChange restarts the debounce timer on rapid typing", fakeAsync(() => {
@@ -76,14 +78,42 @@ describe("AdminCompaniesComponent", () => {
     tick(500);
     component.onSearchChange("acme"); // clears the still-pending first timer
     tick(500);
-    expect(service.list).not.toHaveBeenCalledWith(1, "acme");
+    expect(service.list).not.toHaveBeenCalledWith(1, "acme", false);
     tick(500);
-    expect(service.list).toHaveBeenCalledWith(1, "acme");
+    expect(service.list).toHaveBeenCalledWith(1, "acme", false);
   }));
 
   it("onPageChange loads the requested page", () => {
     component.onPageChange(2);
     expect(component.page()).toBe(2);
-    expect(service.list).toHaveBeenCalledWith(2, undefined);
+    expect(service.list).toHaveBeenCalledWith(2, undefined, false);
+  });
+
+  // Removing the separate inbox must not lose the signal: a gym that asked
+  // to carry on has to be visible without opening its page.
+  describe("gyms waiting on an answer", () => {
+    it("reports how many are waiting, even while the list shows everyone", () => {
+      service.list.and.returnValue(of({ companies: [company], meta, awaiting_count: 3 }));
+      component.load();
+      expect(component.awaitingCount()).toBe(3);
+      expect(component.onlyAwaiting()).toBe(false);
+    });
+
+    it("narrows to them on request, and back again", () => {
+      component.toggleAwaiting();
+      expect(component.onlyAwaiting()).toBe(true);
+      expect(service.list).toHaveBeenCalledWith(1, undefined, true);
+
+      component.toggleAwaiting();
+      expect(component.onlyAwaiting()).toBe(false);
+      expect(service.list).toHaveBeenCalledWith(1, undefined, false);
+    });
+
+    it("returns to the first page when narrowing, so nothing hides on page 2", () => {
+      component.page.set(4);
+      component.toggleAwaiting();
+      expect(component.page()).toBe(1);
+    });
   });
 });
+

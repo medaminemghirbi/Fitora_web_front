@@ -146,3 +146,68 @@ label {
   color: var(--color-text-secondary);
   margin-bottom: 0.4rem;
 }
+
+// ---------- the one thing this page is for, when there is one ----------
+// Colour carries the urgency: waiting on us is amber, locked out is red,
+// running out is the quiet one.
+.ac-attention {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-warning);
+  background: var(--color-warning-soft);
+
+  &[data-kind="locked"] {
+    border-color: var(--color-danger);
+    background: var(--color-danger-soft);
+  }
+
+  &[data-kind="ending"] {
+    border-color: var(--color-border);
+    background: var(--color-surface-sunken);
+  }
+}
+
+.ac-attention-main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+
+  > .bi { font-size: 1.15rem; margin-top: 0.1rem; }
+
+  strong { display: block; }
+  span { font-size: 0.85rem; opacity: 0.85; }
+}
+
+.ac-usage-card .app-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.ac-usage {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+
+.ac-usage .ac-stat strong {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+// The second price, under the one the gym is on.
+.ac-stat-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}

@@ -8,7 +8,7 @@ import { memberGuard } from "./core/guards/member.guard";
 
 /**
  * Fitora is sold to gyms. Everything before signing in is written for one:
- * the landing page, the demo and quote requests, and a single sign-in.
+ * the landing page, signing up, and a single sign-in.
  *
  * /member is the app a gym gives its own members — the gym's schedule, their
  * bookings, their file. It is reached only by a member whose gym enabled
@@ -24,8 +24,6 @@ export const routes: Routes = [
       { path: "", pathMatch: "full", loadComponent: () => import("./features/landing/landing.component").then((m) => m.LandingComponent) },
       { path: "connexion", loadComponent: () => import("./features/b2b/auth/pro-login.component").then((m) => m.ProLoginComponent) },
       { path: "inscription", loadComponent: () => import("./features/b2b/auth/register.component").then((m) => m.RegisterComponent) },
-      { path: "demo", data: { kind: "demo" }, loadComponent: () => import("./features/b2b/contact/request-access.component").then((m) => m.RequestAccessComponent) },
-      { path: "devis", data: { kind: "quote" }, loadComponent: () => import("./features/b2b/contact/request-access.component").then((m) => m.RequestAccessComponent) },
       { path: "mot-de-passe-oublie", loadComponent: () => import("./features/auth/forgot-password.component").then((m) => m.ForgotPasswordComponent) },
     ],
   },
@@ -99,9 +97,6 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard("admin")],
     loadComponent: () => import("./layout/admin-shell/admin-shell.component").then((m) => m.AdminShellComponent),
     children: [
-      // The front door: a gym cannot sign itself up, so every account starts
-      // as a request on this screen.
-      { path: "leads", loadComponent: () => import("./features/admin/leads/leads.component").then((m) => m.AdminLeadsComponent) },
       { path: "companies", loadComponent: () => import("./features/admin/companies/companies.component").then((m) => m.AdminCompaniesComponent) },
       { path: "companies/:id", loadComponent: () => import("./features/admin/company-detail/company-detail.component").then((m) => m.AdminCompanyDetailComponent) },
       { path: "pricing", loadComponent: () => import("./features/admin/pricing/pricing.component").then((m) => m.AdminPricingComponent) },
@@ -127,14 +122,10 @@ export const routes: Routes = [
   // ---- where the earlier layouts put these -------------------------------
   { path: "pro", pathMatch: "full", redirectTo: "" },
   { path: "pro/connexion", pathMatch: "full", redirectTo: "/connexion" },
-  { path: "pro/demo", pathMatch: "full", redirectTo: "/demo" },
-  { path: "pro/devis", pathMatch: "full", redirectTo: "/devis" },
   { path: "pro/mot-de-passe-oublie", pathMatch: "full", redirectTo: "/mot-de-passe-oublie" },
   { path: "auth/login", pathMatch: "full", redirectTo: "/connexion" },
-  { path: "auth/register", pathMatch: "full", redirectTo: "/demo" },
+  { path: "auth/register", pathMatch: "full", redirectTo: "/inscription" },
   { path: "auth/forgot-password", pathMatch: "full", redirectTo: "/mot-de-passe-oublie" },
-  { path: "auth/demo", pathMatch: "full", redirectTo: "/demo" },
-  { path: "auth/devis", pathMatch: "full", redirectTo: "/devis" },
   // A gym is joined, never found: the directory the member sign-up fed is
   // not coming back. /inscription is the gym's own sign-up now.
   { path: "gyms", redirectTo: "" },
