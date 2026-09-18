@@ -530,7 +530,8 @@
     "perm_locations": "Opening hours & location",
     "desc_data_exchange": "Import your members, plans and schedule from a file, or export them.",
     "company_city": "City",
-    "perm_revenue": "Revenue"
+    "perm_revenue": "Revenue",
+    "company_name": "Gym name"
   },
   "contract": {
     "status_pending": "Pending",
@@ -565,7 +566,8 @@
     "renew": "Renew",
     "renewed": "Subscription renewed.",
     "renew_confirm_body_for": "A new period starts for {{name}}, right after the current one ends.",
-    "empty_title": "No subscriptions yet"
+    "empty_title": "No subscriptions yet",
+    "start_date": "Start date"
   },
   "contract_types": {
     "new": "New Contract",
@@ -1184,5 +1186,22 @@
     "title": "Check-in",
     "now": "In progress",
     "open": "Check in"
+  },
+  "lead": {
+    "demo_title": "Book a demo",
+    "quote_title": "Request a quote",
+    "demo_hint": "Twenty minutes, on your schedule. We show you the app on your own numbers and answer whatever you need.",
+    "quote_hint": "Tell us about your gym and we send back a price for what you actually need.",
+    "kind": "What are you after?",
+    "kind_demo": "A demo",
+    "kind_quote": "A quote",
+    "contact_name": "Your name",
+    "gym_name": "Gym name",
+    "message": "Anything we should know",
+    "message_placeholder": "How many members, what you use today, what is not working…",
+    "submit": "Send the request",
+    "sent_title": "Request received",
+    "sent_body": "We come back to you within one business day, on the email you gave us.",
+    "back_home": "Back to the home page"
   }
 }

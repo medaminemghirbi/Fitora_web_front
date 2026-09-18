@@ -12,17 +12,13 @@ describe("ProLoginComponent", () => {
   let router: Router;
   let authStub: {
     login: jasmine.Spy;
-    isClient: jasmine.Spy;
-    clearSession: jasmine.Spy;
     homeRouteForCurrentUser: jasmine.Spy;
   };
 
-  function build(isClient = false): void {
+  function build(): void {
     TestBed.resetTestingModule();
     authStub = {
       login: jasmine.createSpy("login").and.returnValue(of({ token: "t", user: {} })),
-      isClient: jasmine.createSpy("isClient").and.returnValue(isClient),
-      clearSession: jasmine.createSpy("clearSession"),
       homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
     };
 
@@ -55,17 +51,6 @@ describe("ProLoginComponent", () => {
 
     expect(authStub.login).toHaveBeenCalledWith("owner@example.com", "password123");
     expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/dashboard");
-    expect(component.wrongZone()).toBe(false);
-  });
-
-  it("refuses a member account: drops the session and stays put", () => {
-    build(true);
-
-    component.submit();
-
-    expect(authStub.clearSession).toHaveBeenCalled();
-    expect(component.wrongZone()).toBe(true);
-    expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 
   it("shows the backend's message when the credentials are wrong", () => {

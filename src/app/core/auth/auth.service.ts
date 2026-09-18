@@ -5,7 +5,6 @@ import { Observable, map, tap } from "rxjs";
 import * as Sentry from "@sentry/angular";
 import { ConfigurationService } from "../configuration/configuration.service";
 import { API_BASE_URL } from "../models/api-config";
-import { Client } from "../models/client.model";
 import { User } from "../models/user.model";
 
 const TOKEN_KEY = "fitora_token";
@@ -13,15 +12,13 @@ const USER_KEY = "fitora_user";
 const CLIENT_KEY = "fitora_client";
 const IMPERSONATOR_KEY = "fitora_impersonator";
 
-// /auth/login tries a platform account (owner/staff/admin) first, then a
-// client's own mobile login — account_type says which one came back. Every
-// other AuthResponse in this file (register, impersonation) is always a
-// "user" login, so account_type/client stay optional there.
+// Only a platform account signs in — an owner, their staff, or a Fitora
+// admin. account_type is still read so an older backend's response parses,
+// but "client" no longer names anything this app can be.
 interface AuthResponse {
   token: string;
   account_type?: "user" | "client";
   user?: User;
-  client?: Client;
 }
 
 interface ImpersonatorStash {
@@ -38,15 +35,7 @@ export class AuthService {
   readonly isAdmin = computed(() => this.currentUserSignal()?.role === "admin");
   readonly isStaff = computed(() => this.currentUserSignal()?.role === "staff");
 
-  // A member has no place of their own in Fitora, but /auth/login still
-  // recognises one so the sign-in page can say so plainly instead of
-  // rejecting a real password as wrong. Such a session is dropped on the
-  // spot and never navigated to (see ProLoginComponent).
-  private readonly currentClientSignal = signal<Client | null>(this.readStoredClient());
-  readonly currentClient = this.currentClientSignal.asReadonly();
-  readonly isClient = computed(() => this.currentClientSignal() !== null);
-
-  readonly isAuthenticated = computed(() => this.currentUserSignal() !== null || this.currentClientSignal() !== null);
+  readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
 
   private readonly impersonatorStashSignal = signal<ImpersonatorStash | null>(this.readImpersonatorStash());
   readonly isImpersonating = computed(() => this.impersonatorStashSignal() !== null);
@@ -63,15 +52,18 @@ export class AuthService {
     private readonly http: HttpClient,
     private readonly router: Router
   ) {
+    // A browser that signed in as a member before Fitora became gym-only
+    // still holds that session. It is not a session any more — nothing here
+    // can be reached with it — so it is dropped on sight. Leaving it would
+    // make isAuthenticated() true with no user behind it, and every guard
+    // would bounce the person between the sign-in page and a page that
+    // needs a user.
+    localStorage.removeItem(CLIENT_KEY);
+
     // Attributes any error caught after this to the tenant it happened for
     // — a no-op call when Sentry was never initialized (no DSN, see
     // main.ts), so this is safe to always run.
-    const client = this.currentClientSignal();
-    if (client) {
-      Sentry.setUser({ id: client.id, email: client.email ?? undefined });
-    } else {
-      this.syncSentryUser(this.currentUserSignal());
-    }
+    this.syncSentryUser(this.currentUserSignal());
   }
 
   private syncSentryUser(user: User | null): void {
@@ -84,24 +76,11 @@ export class AuthService {
       .pipe(tap((res) => this.setSession(res)));
   }
 
-  /**
-   * Someone signing themselves up as a member — no gym involved; they pick
-   * their gyms afterwards from the directory. This is the ONLY
-   * self-registration left: a gym asks for a demo or a quote instead
-   * (LeadsService), and Fitora opens its account after the conversation.
-   */
   // (Re)hydrate ConfigurationService from /bootstrap. Safe to call
   // repeatedly; failures leave the last known value in place. Skipped for a
   // platform admin — the /admin surface isn't tenant-scoped — but the admin
-  // still gets the real-time system_update notification feed. Also skipped
-  // for a client: /bootstrap is built entirely around current_user (role,
-  // permissions, modules) and has nothing a member's own shell needs — it
-  // fetches its own branding directly via BrandingService instead.
+  // still gets the real-time system_update notification feed.
   loadConfiguration(): void {
-    if (this.isClient()) {
-      this.config.clear();
-      return;
-    }
     if (this.currentUserSignal()?.role === "admin") {
       this.config.clear();
       this.config.connectAdminNotifications();
@@ -117,17 +96,11 @@ export class AuthService {
     return this.config.hasPermission(key);
   }
 
-  /**
-   * Drops the session without leaving the page. Used when a sign-in
-   * succeeded but landed in the wrong zone — the account is real, it just
-   * does not belong here, so the page stays put and says where to go.
-   */
+  /** Drops the session without leaving the page. */
   clearSession(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(CLIENT_KEY);
     this.currentUserSignal.set(null);
-    this.currentClientSignal.set(null);
     this.syncSentryUser(null);
     this.config.clear();
   }
@@ -210,22 +183,12 @@ export class AuthService {
   }
 
   private setSession(res: AuthResponse): void {
+    if (!res.user) return;
+
     localStorage.setItem(TOKEN_KEY, res.token);
-
-    if (res.account_type === "client" && res.client) {
-      localStorage.removeItem(USER_KEY);
-      localStorage.setItem(CLIENT_KEY, JSON.stringify(res.client));
-      this.currentUserSignal.set(null);
-      this.currentClientSignal.set(res.client);
-      Sentry.setUser({ id: res.client.id, email: res.client.email ?? undefined });
-    } else if (res.user) {
-      localStorage.removeItem(CLIENT_KEY);
-      localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-      this.currentClientSignal.set(null);
-      this.currentUserSignal.set(res.user);
-      this.syncSentryUser(res.user);
-    }
-
+    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+    this.currentUserSignal.set(res.user);
+    this.syncSentryUser(res.user);
     this.loadConfiguration();
   }
 
@@ -234,16 +197,6 @@ export class AuthService {
     if (!raw) return null;
     try {
       return JSON.parse(raw) as User;
-    } catch {
-      return null;
-    }
-  }
-
-  private readStoredClient(): Client | null {
-    const raw = localStorage.getItem(CLIENT_KEY);
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw) as Client;
     } catch {
       return null;
     }

@@ -24,7 +24,6 @@ export class ProLoginComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   /** Set when the credentials were right but the account is a member's. */
-  readonly wrongZone = signal(false);
 
   readonly form = this.fb.nonNullable.group({
     email: ["", [Validators.required, Validators.email]],
@@ -46,17 +45,11 @@ export class ProLoginComponent {
 
     this.loading.set(true);
     this.error.set(null);
-    this.wrongZone.set(false);
 
     const { email, password } = this.form.getRawValue();
     this.auth.login(email, password).subscribe({
       next: () => {
         this.loading.set(false);
-        if (this.auth.isClient()) {
-          this.auth.clearSession();
-          this.wrongZone.set(true);
-          return;
-        }
         this.router.navigateByUrl(this.auth.homeRouteForCurrentUser());
       },
       error: (err) => {

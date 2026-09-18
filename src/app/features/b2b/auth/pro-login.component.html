@@ -6,12 +6,6 @@
   <h1 class="auth-title">{{ "auth.pro_login_title" | translate }}</h1>
   <p class="auth-subtitle">{{ "auth.pro_login_subtitle" | translate }}</p>
 
-  @if (wrongZone()) {
-    <div class="alert alert-warning" role="alert">
-      {{ "auth.member_account_notice" | translate }}
-    </div>
-  }
-
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     @if (error()) {
       <div class="alert alert-danger" role="alert">{{ error() }}</div>

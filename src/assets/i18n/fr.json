@@ -530,7 +530,8 @@
     "perm_locations": "Horaires & lieu",
     "desc_data_exchange": "Importez vos adhérents, formules et planning depuis un fichier, ou exportez-les.",
     "company_city": "Ville",
-    "perm_revenue": "Chiffre d'affaires"
+    "perm_revenue": "Chiffre d'affaires",
+    "company_name": "Nom de la salle"
   },
   "contract": {
     "status_pending": "En attente",
@@ -565,7 +566,8 @@
     "renew": "Renouveler",
     "renewed": "Abonnement renouvelé.",
     "renew_confirm_body_for": "Une nouvelle période commence pour {{name}}, juste après la fin de l'actuelle.",
-    "empty_title": "Aucun abonnement pour le moment"
+    "empty_title": "Aucun abonnement pour le moment",
+    "start_date": "Date de début"
   },
   "contract_types": {
     "new": "Nouveau contrat",
@@ -1184,5 +1186,22 @@
     "title": "Pointage",
     "now": "En cours",
     "open": "Pointer"
+  },
+  "lead": {
+    "demo_title": "Réserver une démo",
+    "quote_title": "Demander un devis",
+    "demo_hint": "Vingt minutes, à votre horaire. On vous montre l'app sur vos propres chiffres et on répond à tout.",
+    "quote_hint": "Parlez-nous de votre salle, on vous renvoie un prix pour ce dont vous avez réellement besoin.",
+    "kind": "Vous souhaitez ?",
+    "kind_demo": "Une démo",
+    "kind_quote": "Un devis",
+    "contact_name": "Votre nom",
+    "gym_name": "Nom de la salle",
+    "message": "Ce qu'il faut savoir",
+    "message_placeholder": "Combien d'adhérents, ce que vous utilisez aujourd'hui, ce qui coince…",
+    "submit": "Envoyer la demande",
+    "sent_title": "Demande bien reçue",
+    "sent_body": "On revient vers vous sous un jour ouvré, à l'adresse que vous nous avez laissée.",
+    "back_home": "Retour à l'accueil"
   }
 }

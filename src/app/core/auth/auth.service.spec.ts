@@ -90,19 +90,17 @@ describe("AuthService", () => {
       expect(auth.isImpersonating()).toBe(false);
     });
 
-    it("restores a stored client session", () => {
+    // A browser that signed in as a member before Fitora became gym-only
+    // still holds that key. Counting it would make isAuthenticated() true
+    // with no user behind it, and the guards would bounce the person
+    // between the sign-in page and a page that needs a user, forever.
+    it("throws away a member session left over from before, rather than half-honouring it", () => {
       localStorage.setItem("fitora_client", JSON.stringify(memberClient));
       const auth = buildService();
-      expect(auth.isAuthenticated()).toBe(true);
-      expect(auth.isClient()).toBe(true);
-      expect(auth.currentClient()).toEqual(memberClient);
-      expect(auth.currentUser()).toBeNull();
-    });
 
-    it("tolerates corrupt JSON in the stored client", () => {
-      localStorage.setItem("fitora_client", "{not json");
-      const auth = buildService();
-      expect(auth.currentClient()).toBeNull();
+      expect(auth.isAuthenticated()).toBe(false);
+      expect(auth.currentUser()).toBeNull();
+      expect(localStorage.getItem("fitora_client")).toBeNull();
     });
   });
 
@@ -167,20 +165,6 @@ describe("AuthService", () => {
       expect(auth.currentUser()).toBeNull();
       expect(localStorage.getItem("fitora_token")).toBeNull();
       expect(configStub.clear).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(["/connexion"]);
-    });
-
-    it("clears a client session too", () => {
-      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
-      localStorage.setItem("fitora_token", "tok");
-      const auth = buildService();
-
-      auth.logout();
-
-      expect(auth.isClient()).toBe(false);
-      expect(auth.currentClient()).toBeNull();
-      expect(localStorage.getItem("fitora_client")).toBeNull();
-      // Each zone has its own sign-in; a member lands back on theirs.
       expect(router.navigate).toHaveBeenCalledWith(["/connexion"]);
     });
 
@@ -264,11 +248,9 @@ describe("AuthService", () => {
       expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
     });
 
-    it("has nowhere to send a member — Fitora is the gym's back office", () => {
-      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
-      const auth = buildService();
-      expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
-    });
+    // The guards read isAuthenticated(); homeRouteForCurrentUser is only
+    // ever asked once that is true, so a leftover member key must not make
+    // it true. Covered in "throws away a member session left over".
   });
 
   it("coachShellApplies mirrors staff_role === 'coach'", () => {
@@ -312,17 +294,6 @@ describe("AuthService", () => {
       auth.loadConfiguration();
 
       expect(configStub.load).toHaveBeenCalled();
-    });
-
-    it("clears config and skips bootstrap for a client login", () => {
-      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
-      const auth = buildService();
-
-      auth.loadConfiguration();
-
-      expect(configStub.clear).toHaveBeenCalled();
-      expect(configStub.connectAdminNotifications).not.toHaveBeenCalled();
-      expect(configStub.load).not.toHaveBeenCalled();
     });
 
     it("swallows a bootstrap load failure", () => {

@@ -10,7 +10,7 @@
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <div class="mb-3">
-          <label for="org-name">{{ "locations.name" | translate }} *</label>
+          <label for="org-name">{{ "settings.company_name" | translate }} *</label>
           <input id="org-name" class="form-control" formControlName="name" />
         </div>
         <div class="mb-3">
@@ -29,7 +29,7 @@
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="org-city">{{ "locations.city" | translate }}</label>
+            <label for="org-city">{{ "settings.company_city" | translate }}</label>
             <input id="org-city" class="form-control" formControlName="city" />
           </div>
           <div class="col-md-6 mb-3">
