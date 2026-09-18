@@ -245,4 +245,45 @@ describe("AdminCompanyDetailComponent", () => {
       build({}, []);
       expect(component.ledgerYears()).toEqual([new Date().getFullYear()]);
     });
+
+  describe("the two tabs", () => {
+    it("opens on billing — the question the page is usually open for", () => {
+      expect(component.activeTab()).toBe("billing");
+    });
+
+    it("switches to the gym and back", () => {
+      component.setTab("gym");
+      expect(component.activeTab()).toBe("gym");
+
+      component.setTab("billing");
+      expect(component.activeTab()).toBe("billing");
+    });
+
+    // Something that needs deciding must not sit behind a tab: that is how
+    // an activation request went unseen before.
+    it("keeps the banner visible whichever tab is open", () => {
+      build({ subscription: { ...company.subscription!, current_period_paid: false, days_before_lock: 2 } });
+      expect(fixture.nativeElement.querySelector(".ac-attention")).not.toBeNull();
+
+      component.setTab("gym");
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".ac-attention")).not.toBeNull();
+    });
+
+    it("shows the ledger only under billing", () => {
+      expect(fixture.nativeElement.querySelector(".ac-ledger")).not.toBeNull();
+
+      component.setTab("gym");
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".ac-ledger")).toBeNull();
+    });
+
+    it("shows usage only under the gym", () => {
+      expect(fixture.nativeElement.querySelector(".ac-usage")).toBeNull();
+
+      component.setTab("gym");
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".ac-usage")).not.toBeNull();
+    });
+  });
 });

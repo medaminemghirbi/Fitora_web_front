@@ -301,3 +301,10 @@ label {
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
 }
+
+// Two selects sit better side by side than stacked in a full-width card.
+.ac-form--row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--space-4);
+}

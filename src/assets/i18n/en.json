@@ -818,7 +818,9 @@
     "void_invoice_body": "Invoice {{number}} disappears, and the period it covered goes back to unpaid.",
     "closed_access": "{{count}} closed",
     "closed_short": "Closed",
-    "subscription_access_title": "Access & billing"
+    "subscription_access_title": "Access & billing",
+    "tab_billing": "Billing",
+    "tab_gym": "The gym"
   },
   "staff": {
     "title": "Employees",

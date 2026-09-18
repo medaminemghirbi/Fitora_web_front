@@ -818,7 +818,9 @@
     "void_invoice_body": "La facture {{number}} disparaît, et la période qu'elle couvrait redevient impayée.",
     "closed_access": "{{count}} accès fermé(s)",
     "closed_short": "Fermé",
-    "subscription_access_title": "Accès & facturation"
+    "subscription_access_title": "Accès & facturation",
+    "tab_billing": "Facturation",
+    "tab_gym": "La salle"
   },
   "staff": {
     "title": "Employés",

@@ -49,6 +49,18 @@ export class AdminCompanyDetailComponent implements OnInit {
   readonly impersonating = signal(false);
   readonly ledgerYear = signal(new Date().getFullYear());
 
+  /**
+   * The page answers two questions, and they do not belong together: is this
+   * gym paying, and what is this gym. The banner above stays out of both —
+   * something that needs deciding must not sit behind a tab.
+   */
+  readonly tabs = ["billing", "gym"] as const;
+  readonly activeTab = signal<(typeof this.tabs)[number]>("billing");
+
+  setTab(tab: (typeof this.tabs)[number]): void {
+    this.activeTab.set(tab);
+  }
+
   private id!: string;
 
   // ---- the access, read not computed --------------------------------------

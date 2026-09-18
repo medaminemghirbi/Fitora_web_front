@@ -818,7 +818,9 @@
     "void_invoice_body": "تختفي الفاتورة {{number}}، وتعود الفترة التي تغطّيها غير مدفوعة.",
     "closed_access": "{{count}} مغلق",
     "closed_short": "مغلق",
-    "subscription_access_title": "الوصول والفوترة"
+    "subscription_access_title": "الوصول والفوترة",
+    "tab_billing": "الفوترة",
+    "tab_gym": "القاعة"
   },
   "staff": {
     "title": "الموظفون",
