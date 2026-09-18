@@ -5,6 +5,18 @@ import { AuthService } from "../auth/auth.service";
 import { ConfigurationService } from "../configuration/configuration.service";
 import { StaffRole } from "../models/user.model";
 
+/**
+ * Where to send someone who reached a staff page without a staff account.
+ *
+ * A signed-in member has an account, just not one for this half, so they go
+ * to their own home. Sending them to the sign-in page instead would bounce
+ * them straight back here — the loop that once left the app hanging on a
+ * blank screen.
+ */
+function elsewhereFor(auth: AuthService, router: Router) {
+  return router.createUrlTree([auth.isAuthenticated() ? auth.homeRouteForCurrentUser() : "/connexion"]);
+}
+
 // Entry guard for the /owner shell — the owner, plus staff. A "coach"-role
 // staff only gets bounced to the dedicated coach shell when the company runs
 // the fitness module; otherwise (a practitioner in a medical/legal/… company)
@@ -15,7 +27,7 @@ export const ownerAreaGuard: CanActivateFn = () => {
   const router = inject(Router);
   const user = auth.currentUser();
 
-  if (!user) return router.createUrlTree(["/connexion"]);
+  if (!user) return elsewhereFor(auth, router);
   if (user.role === "admin") return router.createUrlTree(["/admin/companies"]);
 
   return config.ensureLoaded().pipe(
@@ -33,7 +45,7 @@ export function capabilityGuard(permission: string): CanActivateFn {
     const router = inject(Router);
     const user = auth.currentUser();
 
-    if (!user) return router.createUrlTree(["/connexion"]);
+    if (!user) return elsewhereFor(auth, router);
 
     return config.ensureLoaded().pipe(
       map(() =>
@@ -55,7 +67,7 @@ export const settingsAccessGuard: CanActivateFn = () => {
   const router = inject(Router);
   const user = auth.currentUser();
 
-  if (!user) return router.createUrlTree(["/connexion"]);
+  if (!user) return elsewhereFor(auth, router);
 
   return config.ensureLoaded().pipe(
     map(() =>
@@ -76,7 +88,7 @@ export const staffManagerGuard: CanActivateFn = () => {
   const router = inject(Router);
   const user = auth.currentUser();
 
-  if (!user) return router.createUrlTree(["/connexion"]);
+  if (!user) return elsewhereFor(auth, router);
   if (user.role === "owner") return true;
 
   return router.createUrlTree([auth.homeRouteForCurrentUser()]);
@@ -92,7 +104,7 @@ export function staffRoleGuard(role: StaffRole): CanActivateFn {
     const router = inject(Router);
     const user = auth.currentUser();
 
-    if (!user) return router.createUrlTree(["/connexion"]);
+    if (!user) return elsewhereFor(auth, router);
     if (user.role !== "staff" || user.staff_role !== role) {
       return router.createUrlTree([auth.homeRouteForCurrentUser()]);
     }

@@ -384,7 +384,15 @@
     "pay_later_hint": "The subscription is created unpaid and will show up under \\u201cNeeds your attention\\u201d.",
     "finish": "Finish",
     "finish_without_plan": "Save without a subscription",
-    "notes_placeholder": "Injury, preference, reminder…"
+    "notes_placeholder": "Injury, preference, reminder…",
+    "mobile_login": "App access",
+    "mobile_login_active": "Access on",
+    "mobile_login_none": "Access not enabled",
+    "mobile_login_needs_email": "Add an email to enable access.",
+    "mobile_login_hint": "They will see the schedule, book and cancel. A confirmation email is sent to them.",
+    "set_login": "Enable access",
+    "reset_login": "Reset",
+    "login_set": "Access enabled."
   },
   "subscription": {
     "title": "Fitora Subscription",
@@ -1203,5 +1211,38 @@
     "sent_title": "Request received",
     "sent_body": "We come back to you within one business day, on the email you gave us.",
     "back_home": "Back to the home page"
+  },
+  "member": {
+    "nav": {
+      "schedule": "Schedule",
+      "bookings": "My bookings",
+      "profile": "My profile"
+    },
+    "schedule_title": "Upcoming sessions",
+    "no_sessions_title": "No sessions scheduled",
+    "no_sessions_body": "Your gym has not put anything on the schedule yet. Check back soon.",
+    "spots_left": "{{count}} place(s) left",
+    "full": "Full",
+    "book": "Book",
+    "booked": "Place booked.",
+    "booked_state": "Booked",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "cancel": "Cancel",
+    "cancelled": "Booking cancelled.",
+    "cancel_confirm_title": "Cancel this booking?",
+    "cancel_confirm_body": "Your place in {{activity}} goes back to someone else.",
+    "no_upcoming_title": "No upcoming bookings",
+    "no_upcoming_body": "Book a session from the schedule.",
+    "no_past_title": "No past sessions",
+    "subscription": "My subscription",
+    "valid_until": "Valid until",
+    "sessions_left": "{{count}} session(s) left",
+    "unlimited": "Unlimited sessions",
+    "no_subscription_title": "No active subscription",
+    "no_subscription_body": "Talk to your gym's front desk to take one out.",
+    "attendance": "My attendance",
+    "attendance_rate_hint": "Of the sessions you booked, the ones you came to.",
+    "no_attendance": "No sessions attended yet"
   }
 }

@@ -97,6 +97,14 @@ export class ClientsService {
     return this.http.post<EnrolmentResponse>(`${API_BASE_URL}/clients`, body);
   }
 
+  /**
+   * Switches the member's own app on, or resets the password for it. The
+   * member is emailed a confirmation link; nothing else about them changes.
+   */
+  setLogin(id: string, password: string): Observable<{ client: Client }> {
+    return this.http.patch<{ client: Client }>(`${API_BASE_URL}/clients/${id}`, { client: { password } });
+  }
+
   update(id: string, payload: ClientPayload): Observable<{ client: Client }> {
     return this.http.patch<{ client: Client }>(`${API_BASE_URL}/clients/${id}`, { client: payload });
   }

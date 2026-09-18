@@ -58,7 +58,8 @@ describe("CalendarComponent", () => {
   } as never;
   const client: Client = {
     id: "cl1", first_name: "Amy", last_name: "Client", full_name: "Amy Client", email: null, phone: null,
-    active: true, joined_at: "2026-01-01", current_contract: null,
+    active: true, login_enabled: false,
+    joined_at: "2026-01-01", current_contract: null,
   };
   const attBooking: AttendanceBooking = { booking_id: "b1", client_name: "Amy", status: "confirmed" } as never;
 

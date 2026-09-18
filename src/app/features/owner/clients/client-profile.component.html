@@ -92,6 +92,26 @@
       </div>
 
       <div class="app-card">
+        <div class="app-card-header"><h2>{{ "clients.mobile_login" | translate }}</h2></div>
+        <div class="app-card-body">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <p class="fx-muted mb-0" style="font-size: 0.8125rem">
+              @if (c.login_enabled) {
+                {{ "clients.mobile_login_active" | translate }} · <span dir="ltr">{{ c.email }}</span>
+              } @else if (!c.email) {
+                {{ "clients.mobile_login_needs_email" | translate }}
+              } @else {
+                {{ "clients.mobile_login_none" | translate }}
+              }
+            </p>
+            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="!c.email" (click)="openLoginModal()">
+              {{ (c.login_enabled ? "clients.reset_login" : "clients.set_login") | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-card">
         <div class="app-card-header"><h2>{{ "clients.notes" | translate }}</h2></div>
         <div class="app-card-body">
           <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
@@ -431,6 +451,28 @@
       <button type="button" class="btn btn-outline-secondary" (click)="closePaymentModal()">{{ "common.cancel" | translate }}</button>
       <button type="submit" class="btn btn-primary" [disabled]="saving() || paymentPayableOptions().length === 0">
         {{ (saving() ? "common.saving" : "common.save") | translate }}
+      </button>
+    </div>
+  </form>
+</app-modal>
+
+<app-modal [open]="loginModalOpen()" [title]="'clients.mobile_login' | translate" (closed)="closeLoginModal()">
+  @if (loginFormError()) {
+    <div class="alert alert-danger">{{ loginFormError() }}</div>
+  }
+
+  <p class="form-text">{{ "clients.mobile_login_hint" | translate }}</p>
+
+  <form [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
+    <div class="mb-3">
+      <label for="client-login-password">{{ "auth.password" | translate }} *</label>
+      <input id="client-login-password" type="password" class="form-control" formControlName="password" dir="ltr" />
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeLoginModal()">{{ "common.cancel" | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="loginSaving()">
+        {{ (loginSaving() ? "common.saving" : "common.save") | translate }}
       </button>
     </div>
   </form>

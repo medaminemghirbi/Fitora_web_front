@@ -1,0 +1,53 @@
+<div class="mb-page">
+  <h1 class="mb-title">{{ "member.nav.bookings" | translate }}</h1>
+
+  <div class="fx-segmented mb-4" role="group">
+    <button type="button" [class.is-active]="when() === 'upcoming'" (click)="show('upcoming')">
+      {{ "member.upcoming" | translate }}
+    </button>
+    <button type="button" [class.is-active]="when() === 'past'" (click)="show('past')">
+      {{ "member.past" | translate }}
+    </button>
+  </div>
+
+  @if (loading()) {
+    <app-skeleton variant="line" width="100%" />
+    <app-skeleton variant="line" width="90%" />
+  } @else if (error()) {
+    <app-error-state (retry)="load()" />
+  } @else if (bookings().length === 0) {
+    <app-empty-state
+      [title]="(when() === 'upcoming' ? 'member.no_upcoming_title' : 'member.no_past_title') | translate"
+      [body]="(when() === 'upcoming' ? 'member.no_upcoming_body' : '') | translate"
+      icon="bi-calendar-check"
+    />
+  } @else {
+    <ul class="mb-list">
+      @for (b of bookings(); track b.id) {
+        <li class="mb-slot">
+          <span class="mb-slot-main">
+            <span class="mb-slot-name">
+              {{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}{{ b.session.activity_name }}
+            </span>
+            <span class="mb-slot-sub">{{ b.session.starts_at | date: "EEEE d MMMM, HH:mm" }}</span>
+          </span>
+
+          @if (when() === "upcoming" && b.status === "confirmed") {
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary mb-slot-cta"
+              [disabled]="cancelling() !== null"
+              (click)="cancel(b)"
+            >
+              {{ "member.cancel" | translate }}
+            </button>
+          } @else {
+            <app-status-badge [status]="b.status">
+              {{ ("bookings.status_" + b.status) | translate }}
+            </app-status-badge>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

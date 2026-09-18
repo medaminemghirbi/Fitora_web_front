@@ -384,7 +384,15 @@
     "pay_later_hint": "L'abonnement sera créé comme non réglé et apparaîtra dans « Ce qui demande votre attention ».",
     "finish": "Terminer",
     "finish_without_plan": "Enregistrer sans abonnement",
-    "notes_placeholder": "Blessure, préférence, rappel…"
+    "notes_placeholder": "Blessure, préférence, rappel…",
+    "mobile_login": "Accès à l'app",
+    "mobile_login_active": "Accès actif",
+    "mobile_login_none": "Accès non activé",
+    "mobile_login_needs_email": "Ajoutez un e-mail pour activer l'accès.",
+    "mobile_login_hint": "L'adhérent pourra voir le planning, réserver et annuler. Il reçoit un e-mail de confirmation.",
+    "set_login": "Activer l'accès",
+    "reset_login": "Réinitialiser",
+    "login_set": "Accès activé."
   },
   "subscription": {
     "title": "Abonnement Fitora",
@@ -1203,5 +1211,38 @@
     "sent_title": "Demande bien reçue",
     "sent_body": "On revient vers vous sous un jour ouvré, à l'adresse que vous nous avez laissée.",
     "back_home": "Retour à l'accueil"
+  },
+  "member": {
+    "nav": {
+      "schedule": "Planning",
+      "bookings": "Mes réservations",
+      "profile": "Mon profil"
+    },
+    "schedule_title": "Prochaines séances",
+    "no_sessions_title": "Aucune séance programmée",
+    "no_sessions_body": "Votre salle n'a rien mis au planning pour l'instant. Revenez bientôt.",
+    "spots_left": "{{count}} place(s) restante(s)",
+    "full": "Complet",
+    "book": "Réserver",
+    "booked": "Place réservée.",
+    "booked_state": "Réservé",
+    "upcoming": "À venir",
+    "past": "Passées",
+    "cancel": "Annuler",
+    "cancelled": "Réservation annulée.",
+    "cancel_confirm_title": "Annuler cette réservation ?",
+    "cancel_confirm_body": "Votre place en {{activity}} sera rendue à quelqu'un d'autre.",
+    "no_upcoming_title": "Aucune réservation à venir",
+    "no_upcoming_body": "Réservez une séance depuis le planning.",
+    "no_past_title": "Aucune séance passée",
+    "subscription": "Mon abonnement",
+    "valid_until": "Valable jusqu'au",
+    "sessions_left": "{{count}} séance(s) restante(s)",
+    "unlimited": "Séances illimitées",
+    "no_subscription_title": "Aucun abonnement actif",
+    "no_subscription_body": "Adressez-vous à l'accueil de votre salle pour en souscrire un.",
+    "attendance": "Ma présence",
+    "attendance_rate_hint": "Des séances réservées auxquelles vous êtes venu.",
+    "no_attendance": "Aucune séance suivie pour l'instant"
   }
 }

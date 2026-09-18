@@ -68,7 +68,8 @@ describe("ClientProfileComponent", () => {
   };
   const client: ClientDetail = {
     id: "cl1", first_name: "Amy", last_name: "Client", full_name: "Amy Client", email: null, phone: "123",
-    active: true, joined_at: "2026-01-01",
+    active: true, login_enabled: false,
+    joined_at: "2026-01-01",
     current_contract: contract, date_of_birth: null, gender: null, address: null,
     emergency_contact_name: null, emergency_contact_phone: null, notes: "some notes",
     outstanding_balance: "0", attendance_rate: null, last_visit_at: null,

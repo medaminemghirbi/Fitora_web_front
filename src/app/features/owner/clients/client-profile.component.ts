@@ -135,6 +135,16 @@ export class ClientProfileComponent implements OnInit {
     notes: [""],
   });
 
+  // ---- the member's own app -----------------------------------------------
+  // Off unless the gym switches it on, from here. Setting a password emails
+  // the member a confirmation link; it changes nothing else about them.
+  readonly loginModalOpen = signal(false);
+  readonly loginSaving = signal(false);
+  readonly loginFormError = signal<string | null>(null);
+  readonly loginForm = this.fb.nonNullable.group({
+    password: ["", [Validators.required, Validators.minLength(8)]],
+  });
+
   readonly notesForm = this.fb.nonNullable.group({ notes: [""] });
 
 
@@ -188,6 +198,39 @@ export class ClientProfileComponent implements OnInit {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
+  }
+
+  openLoginModal(): void {
+    this.loginForm.reset();
+    this.loginFormError.set(null);
+    this.loginModalOpen.set(true);
+  }
+
+  closeLoginModal(): void {
+    this.loginModalOpen.set(false);
+  }
+
+  submitLogin(): void {
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+
+    this.loginSaving.set(true);
+    this.loginFormError.set(null);
+
+    this.clientsService.setLogin(this.clientId, this.loginForm.getRawValue().password).subscribe({
+      next: () => {
+        this.loginSaving.set(false);
+        this.loginModalOpen.set(false);
+        this.toast.success(this.translate.instant("clients.login_set"));
+        this.load();
+      },
+      error: (err) => {
+        this.loginSaving.set(false);
+        this.loginFormError.set(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
   }
 
   balanceTone(balance: number): "success" | "danger" {

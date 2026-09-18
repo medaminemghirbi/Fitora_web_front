@@ -8,6 +8,7 @@ import { capabilityGuard, ownerAreaGuard, settingsAccessGuard, staffManagerGuard
 
 describe("staff.guard", () => {
   let authStub: {
+    isAuthenticated: jasmine.Spy;
     currentUser: jasmine.Spy;
     homeRouteForCurrentUser: jasmine.Spy;
     coachShellApplies: jasmine.Spy;
@@ -20,6 +21,7 @@ describe("staff.guard", () => {
   beforeEach(() => {
     authStub = {
       currentUser: jasmine.createSpy(),
+      isAuthenticated: jasmine.createSpy().and.returnValue(false),
       homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
       coachShellApplies: jasmine.createSpy().and.returnValue(false),
       hasPermission: jasmine.createSpy().and.returnValue(false),
@@ -215,6 +217,20 @@ describe("staff.guard", () => {
       authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach" } as User);
       configStub.ensureLoaded.and.returnValue(throwError(() => new Error("network")));
       expect(await resolve(run())).toBe(true);
+    });
+  });
+
+  // A signed-in member has an account, just not one for this half. Sending
+  // them to the sign-in page would send them straight back here.
+  describe("a signed-in member reaching a staff page", () => {
+    it("goes to their own home, not to the sign-in page", () => {
+      authStub.currentUser.and.returnValue(null);
+      authStub.isAuthenticated.and.returnValue(true);
+      authStub.homeRouteForCurrentUser.and.returnValue("/member/home");
+
+      TestBed.runInInjectionContext(() => ownerAreaGuard({} as never, {} as never));
+
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/member/home"]);
     });
   });
 });

@@ -1,0 +1,51 @@
+@use "../schedule/member-schedule.component.scss";
+
+.mb-contact {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  margin-top: -0.75rem;
+  margin-bottom: var(--space-5);
+}
+
+.mb-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.mb-card-head {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.mb-sub-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.mb-muted {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.mb-rate {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+
+.mb-list--flush {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  margin-top: var(--space-3);
+}

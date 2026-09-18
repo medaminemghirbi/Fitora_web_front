@@ -8,6 +8,8 @@ export interface Client {
   email: string | null;
   phone: string | null;
   active: boolean;
+  /** Whether the gym has switched on this member's own app. */
+  login_enabled: boolean;
   joined_at: string;
   current_contract: Contract | null;
 }

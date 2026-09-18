@@ -28,7 +28,8 @@ describe("AuthService", () => {
 
   const memberClient: Client = {
     id: "cl1", first_name: "M", last_name: "C", full_name: "M C", email: "m@x.test", phone: null,
-    active: true, joined_at: "2026-01-01", current_contract: null,
+    active: true, login_enabled: false,
+    joined_at: "2026-01-01", current_contract: null,
   };
 
   function buildService(): AuthService {
@@ -90,17 +91,30 @@ describe("AuthService", () => {
       expect(auth.isImpersonating()).toBe(false);
     });
 
-    // A browser that signed in as a member before Fitora became gym-only
-    // still holds that key. Counting it would make isAuthenticated() true
-    // with no user behind it, and the guards would bounce the person
-    // between the sign-in page and a page that needs a user, forever.
-    it("throws away a member session left over from before, rather than half-honouring it", () => {
+    it("restores a stored member session", () => {
       localStorage.setItem("fitora_client", JSON.stringify(memberClient));
       const auth = buildService();
 
-      expect(auth.isAuthenticated()).toBe(false);
+      expect(auth.isAuthenticated()).toBe(true);
+      expect(auth.isClient()).toBe(true);
+      expect(auth.currentClient()).toEqual(memberClient);
       expect(auth.currentUser()).toBeNull();
-      expect(localStorage.getItem("fitora_client")).toBeNull();
+    });
+
+    // isAuthenticated() must never be true without somewhere to send them:
+    // that combination once bounced people between the sign-in page and a
+    // page needing a user until the app gave up painting.
+    it("sends a member somewhere they can actually reach", () => {
+      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
+      const auth = buildService();
+
+      expect(auth.homeRouteForCurrentUser()).toBe("/member/home");
+    });
+
+    it("tolerates corrupt JSON in the stored member", () => {
+      localStorage.setItem("fitora_client", "{not json");
+      const auth = buildService();
+      expect(auth.currentClient()).toBeNull();
     });
   });
 

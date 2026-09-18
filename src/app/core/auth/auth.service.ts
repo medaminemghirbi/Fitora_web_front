@@ -5,6 +5,7 @@ import { Observable, map, tap } from "rxjs";
 import * as Sentry from "@sentry/angular";
 import { ConfigurationService } from "../configuration/configuration.service";
 import { API_BASE_URL } from "../models/api-config";
+import { Client } from "../models/client.model";
 import { User } from "../models/user.model";
 
 const TOKEN_KEY = "fitora_token";
@@ -12,13 +13,14 @@ const USER_KEY = "fitora_user";
 const CLIENT_KEY = "fitora_client";
 const IMPERSONATOR_KEY = "fitora_impersonator";
 
-// Only a platform account signs in — an owner, their staff, or a Fitora
-// admin. account_type is still read so an older backend's response parses,
-// but "client" no longer names anything this app can be.
+// One door, two kinds of account: a platform login (owner, staff, Fitora
+// admin) or a member whose gym enabled their access. account_type says which
+// came back, so nobody is asked who they are before signing in.
 interface AuthResponse {
   token: string;
   account_type?: "user" | "client";
   user?: User;
+  client?: Client;
 }
 
 interface ImpersonatorStash {
@@ -35,7 +37,15 @@ export class AuthService {
   readonly isAdmin = computed(() => this.currentUserSignal()?.role === "admin");
   readonly isStaff = computed(() => this.currentUserSignal()?.role === "staff");
 
-  readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
+  // A member signed in on their own app. Mutually exclusive with
+  // currentUser — never both, see setSession.
+  private readonly currentClientSignal = signal<Client | null>(this.readStoredClient());
+  readonly currentClient = this.currentClientSignal.asReadonly();
+  readonly isClient = computed(() => this.currentClientSignal() !== null);
+
+  readonly isAuthenticated = computed(
+    () => this.currentUserSignal() !== null || this.currentClientSignal() !== null
+  );
 
   private readonly impersonatorStashSignal = signal<ImpersonatorStash | null>(this.readImpersonatorStash());
   readonly isImpersonating = computed(() => this.impersonatorStashSignal() !== null);
@@ -52,18 +62,15 @@ export class AuthService {
     private readonly http: HttpClient,
     private readonly router: Router
   ) {
-    // A browser that signed in as a member before Fitora became gym-only
-    // still holds that session. It is not a session any more — nothing here
-    // can be reached with it — so it is dropped on sight. Leaving it would
-    // make isAuthenticated() true with no user behind it, and every guard
-    // would bounce the person between the sign-in page and a page that
-    // needs a user.
-    localStorage.removeItem(CLIENT_KEY);
-
-    // Attributes any error caught after this to the tenant it happened for
-    // — a no-op call when Sentry was never initialized (no DSN, see
-    // main.ts), so this is safe to always run.
-    this.syncSentryUser(this.currentUserSignal());
+    // Attributes any error caught after this to whoever it happened to — a
+    // no-op call when Sentry was never initialized (no DSN, see main.ts), so
+    // this is safe to always run.
+    const client = this.currentClientSignal();
+    if (client) {
+      Sentry.setUser({ id: client.id, email: client.email ?? undefined });
+    } else {
+      this.syncSentryUser(this.currentUserSignal());
+    }
   }
 
   private syncSentryUser(user: User | null): void {
@@ -79,8 +86,14 @@ export class AuthService {
   // (Re)hydrate ConfigurationService from /bootstrap. Safe to call
   // repeatedly; failures leave the last known value in place. Skipped for a
   // platform admin — the /admin surface isn't tenant-scoped — but the admin
-  // still gets the real-time system_update notification feed.
+  // still gets the real-time system_update notification feed. Skipped for a
+  // member too: /bootstrap is built entirely around current_user (role,
+  // permissions) and holds nothing their app needs.
   loadConfiguration(): void {
+    if (this.isClient()) {
+      this.config.clear();
+      return;
+    }
     if (this.currentUserSignal()?.role === "admin") {
       this.config.clear();
       this.config.connectAdminNotifications();
@@ -100,7 +113,9 @@ export class AuthService {
   clearSession(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(CLIENT_KEY);
     this.currentUserSignal.set(null);
+    this.currentClientSignal.set(null);
     this.syncSentryUser(null);
     this.config.clear();
   }
@@ -149,6 +164,7 @@ export class AuthService {
   }
 
   homeRouteForCurrentUser(): string {
+    if (this.isClient()) return "/member/home";
     const user = this.currentUserSignal();
     if (user?.role === "admin") return "/admin/companies";
     // A "coach"-role staff uses the dedicated coach shell ("My schedule" /
@@ -183,13 +199,33 @@ export class AuthService {
   }
 
   private setSession(res: AuthResponse): void {
-    if (!res.user) return;
-
     localStorage.setItem(TOKEN_KEY, res.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-    this.currentUserSignal.set(res.user);
-    this.syncSentryUser(res.user);
+
+    if (res.account_type === "client" && res.client) {
+      localStorage.removeItem(USER_KEY);
+      localStorage.setItem(CLIENT_KEY, JSON.stringify(res.client));
+      this.currentUserSignal.set(null);
+      this.currentClientSignal.set(res.client);
+      Sentry.setUser({ id: res.client.id, email: res.client.email ?? undefined });
+    } else if (res.user) {
+      localStorage.removeItem(CLIENT_KEY);
+      localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+      this.currentClientSignal.set(null);
+      this.currentUserSignal.set(res.user);
+      this.syncSentryUser(res.user);
+    }
+
     this.loadConfiguration();
+  }
+
+  private readStoredClient(): Client | null {
+    const raw = localStorage.getItem(CLIENT_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as Client;
+    } catch {
+      return null;
+    }
   }
 
   private readStoredUser(): User | null {

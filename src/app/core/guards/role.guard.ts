@@ -12,6 +12,8 @@ export function roleGuard(role: UserRole): CanActivateFn {
       return router.createUrlTree(["/connexion"]);
     }
 
+    // A member is authenticated but has no role at all; homeRouteForCurrentUser
+    // sends them to their own half rather than back to the sign-in page.
     if (auth.currentUser()?.role !== role) {
       return router.createUrlTree([auth.homeRouteForCurrentUser()]);
     }

@@ -4,14 +4,17 @@ import { guestGuard } from "./core/guards/guest.guard";
 import { noCompanyGuard, companyGuard } from "./core/guards/company.guard";
 import { roleGuard } from "./core/guards/role.guard";
 import { capabilityGuard, ownerAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
+import { memberGuard } from "./core/guards/member.guard";
 
 /**
- * One zone: a gym and the people who run it.
+ * Fitora is sold to gyms. Everything before signing in is written for one:
+ * the landing page, the demo and quote requests, and a single sign-in.
  *
- * Fitora is sold to gyms. A gym's members are records its staff manage —
- * they have no account here and no page of their own, so there is a single
- * sign-in and a single front door. The /pro prefix that used to separate
- * this half from a member-facing half is gone; the old paths redirect.
+ * /member is the app a gym gives its own members — the gym's schedule, their
+ * bookings, their file. It is reached only by a member whose gym enabled
+ * their account: there is no directory to browse, no gym to search for and
+ * no way to sign yourself up. /auth/login serves both kinds of account and
+ * says which came back, which is why there is still only one door.
  */
 export const routes: Routes = [
   {
@@ -105,6 +108,18 @@ export const routes: Routes = [
     ],
   },
 
+  {
+    path: "member",
+    canActivate: [authGuard, memberGuard],
+    loadComponent: () => import("./layout/member-shell/member-shell.component").then((m) => m.MemberShellComponent),
+    children: [
+      { path: "home", loadComponent: () => import("./features/member/schedule/member-schedule.component").then((m) => m.MemberScheduleComponent) },
+      { path: "bookings", loadComponent: () => import("./features/member/bookings/member-bookings.component").then((m) => m.MemberBookingsComponent) },
+      { path: "profile", loadComponent: () => import("./features/member/profile/member-profile.component").then((m) => m.MemberProfileComponent) },
+      { path: "", pathMatch: "full", redirectTo: "home" },
+    ],
+  },
+
   // ---- where the earlier layouts put these -------------------------------
   { path: "pro", pathMatch: "full", redirectTo: "" },
   { path: "pro/connexion", pathMatch: "full", redirectTo: "/connexion" },
@@ -116,11 +131,10 @@ export const routes: Routes = [
   { path: "auth/forgot-password", pathMatch: "full", redirectTo: "/mot-de-passe-oublie" },
   { path: "auth/demo", pathMatch: "full", redirectTo: "/demo" },
   { path: "auth/devis", pathMatch: "full", redirectTo: "/devis" },
-  // The member half of the app is gone; so are the gym directory and the
-  // member sign-up that fed it.
+  // A gym is joined, never found: the directory and the member sign-up that
+  // fed it are not coming back.
   { path: "inscription", pathMatch: "full", redirectTo: "" },
   { path: "gyms", redirectTo: "" },
-  { path: "member", redirectTo: "" },
 
   { path: "**", redirectTo: "" },
 ];

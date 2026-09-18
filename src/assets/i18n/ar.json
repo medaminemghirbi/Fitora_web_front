@@ -384,7 +384,15 @@
     "pay_later_hint": "سيُنشأ الاشتراك غير مدفوع وسيظهر ضمن «ما يستدعي انتباهك».",
     "finish": "إنهاء",
     "finish_without_plan": "حفظ بدون اشتراك",
-    "notes_placeholder": "إصابة، تفضيل، تذكير…"
+    "notes_placeholder": "إصابة، تفضيل، تذكير…",
+    "mobile_login": "الوصول إلى التطبيق",
+    "mobile_login_active": "الوصول مفعّل",
+    "mobile_login_none": "الوصول غير مفعّل",
+    "mobile_login_needs_email": "أضف بريدًا إلكترونيًا لتفعيل الوصول.",
+    "mobile_login_hint": "سيرى الجدول ويحجز ويلغي. تُرسل إليه رسالة تأكيد.",
+    "set_login": "تفعيل الوصول",
+    "reset_login": "إعادة تعيين",
+    "login_set": "تمّ تفعيل الوصول."
   },
   "subscription": {
     "title": "اشتراك Fitora",
@@ -1203,5 +1211,38 @@
     "sent_title": "تم استلام طلبك",
     "sent_body": "نعود إليك خلال يوم عمل واحد على البريد الذي تركته لنا.",
     "back_home": "العودة إلى الصفحة الرئيسية"
+  },
+  "member": {
+    "nav": {
+      "schedule": "الجدول",
+      "bookings": "حجوزاتي",
+      "profile": "ملفّي"
+    },
+    "schedule_title": "الحصص القادمة",
+    "no_sessions_title": "لا حصص مبرمجة",
+    "no_sessions_body": "لم تبرمج قاعتك شيئًا بعد. عد قريبًا.",
+    "spots_left": "بقيت {{count}} مكان/أماكن",
+    "full": "مكتملة",
+    "book": "احجز",
+    "booked": "تمّ حجز مكانك.",
+    "booked_state": "محجوز",
+    "upcoming": "القادمة",
+    "past": "السابقة",
+    "cancel": "إلغاء",
+    "cancelled": "تمّ إلغاء الحجز.",
+    "cancel_confirm_title": "إلغاء هذا الحجز؟",
+    "cancel_confirm_body": "سيعود مكانك في {{activity}} إلى شخص آخر.",
+    "no_upcoming_title": "لا حجوزات قادمة",
+    "no_upcoming_body": "احجز حصّة من الجدول.",
+    "no_past_title": "لا حصص سابقة",
+    "subscription": "اشتراكي",
+    "valid_until": "صالح إلى",
+    "sessions_left": "بقيت {{count}} حصّة/حصص",
+    "unlimited": "حصص غير محدودة",
+    "no_subscription_title": "لا اشتراك جارٍ",
+    "no_subscription_body": "توجّه إلى استقبال قاعتك للاشتراك.",
+    "attendance": "حضوري",
+    "attendance_rate_hint": "من الحصص التي حجزتها، تلك التي حضرتها.",
+    "no_attendance": "لم تحضر أيّ حصّة بعد"
   }
 }
