@@ -1,0 +1,164 @@
+<div class="fx-stack">
+  <app-page-header
+    [title]="'admin.leads.title' | translate"
+    [description]="'admin.leads.subtitle' | translate"
+  ></app-page-header>
+
+  <div class="fx-segmented mb-3" role="group">
+    @for (opt of statusOptions; track opt.value) {
+      <button type="button" [class.is-active]="statusFilter() === opt.value" (click)="filterBy(opt.value)">
+        {{ opt.labelKey | translate }}
+        <span class="al-count">{{ counts()[opt.countKey] ?? 0 }}</span>
+      </button>
+    }
+  </div>
+
+  <div class="app-card">
+    @if (loading()) {
+      <div class="app-card-body"><app-skeleton variant="table" [rows]="5" [cols]="5" /></div>
+    } @else if (error()) {
+      <div class="app-card-body"><app-error-state (retry)="load()" /></div>
+    } @else if (leads().length === 0) {
+      <div class="app-card-body">
+        <app-empty-state
+          [title]="'admin.leads.empty_title' | translate"
+          [body]="'admin.leads.empty_body' | translate"
+          icon="bi-inbox"
+        />
+      </div>
+    } @else {
+      <div class="fx-table-scroll">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{{ "admin.leads.gym" | translate }}</th>
+              <th>{{ "admin.leads.contact" | translate }}</th>
+              <th>{{ "admin.leads.kind" | translate }}</th>
+              <th>{{ "common.status" | translate }}</th>
+              <th>{{ "admin.leads.received" | translate }}</th>
+              <th class="text-end">{{ "common.actions" | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (lead of leads(); track lead.id) {
+              <tr>
+                <td>
+                  <span class="fx-strong">{{ lead.gym_name }}</span>
+                  @if (lead.city) { <span class="fx-muted"> · {{ lead.city }}</span> }
+                </td>
+                <td>
+                  {{ lead.contact_name }}
+                  <span class="fx-muted d-block" dir="ltr">{{ lead.email }}</span>
+                </td>
+                <td>
+                  {{ ("admin.leads.kind_" + lead.kind) | translate }}
+                </td>
+                <td>
+                  <app-status-badge [status]="lead.status === 'converted' ? 'active' : lead.status === 'dropped' ? 'cancelled' : 'pending'">
+                    {{ ("admin.leads.status_" + lead.status) | translate }}
+                  </app-status-badge>
+                </td>
+                <td class="fx-muted">{{ lead.created_at | date: "d MMM y" }}</td>
+                <td class="text-end">
+                  <div class="fx-row-actions">
+                    @if (lead.status !== "converted") {
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        [disabled]="busy() !== null"
+                        (click)="convert(lead)"
+                      >
+                        {{ "admin.leads.convert" | translate }}
+                      </button>
+                    }
+                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="open(lead)">
+                      {{ "admin.leads.open" | translate }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- What they asked for, and what was said back. -->
+<app-modal [open]="openLead() !== null" [title]="'admin.leads.request' | translate" (closed)="close()">
+  @if (openLead(); as lead) {
+    <dl class="al-facts">
+      <div><dt>{{ "admin.leads.gym" | translate }}</dt><dd>{{ lead.gym_name }}</dd></div>
+      <div><dt>{{ "admin.leads.contact" | translate }}</dt><dd>{{ lead.contact_name }}</dd></div>
+      <div><dt>{{ "auth.email" | translate }}</dt><dd dir="ltr">{{ lead.email }}</dd></div>
+      @if (lead.phone) {
+        <div><dt>{{ "auth.phone" | translate }}</dt><dd dir="ltr">{{ lead.phone }}</dd></div>
+      }
+      @if (lead.city) {
+        <div><dt>{{ "settings.company_city" | translate }}</dt><dd>{{ lead.city }}</dd></div>
+      }
+      <div><dt>{{ "admin.leads.kind" | translate }}</dt><dd>{{ ("admin.leads.kind_" + lead.kind) | translate }}</dd></div>
+      @if (lead.handled_by) {
+        <div><dt>{{ "admin.leads.handled_by" | translate }}</dt><dd>{{ lead.handled_by }}</dd></div>
+      }
+    </dl>
+
+    @if (lead.message) {
+      <p class="al-message">{{ lead.message }}</p>
+    }
+
+    <div class="mb-3">
+      <label for="lead-notes">{{ "admin.leads.internal_notes" | translate }}</label>
+      <textarea
+        id="lead-notes"
+        class="form-control"
+        rows="3"
+        [ngModel]="notes()"
+        (ngModelChange)="notes.set($event)"
+        [placeholder]="'admin.leads.internal_notes_hint' | translate"
+      ></textarea>
+    </div>
+
+    <div class="d-flex justify-content-between gap-2 mt-4 flex-wrap">
+      <div class="d-flex gap-2">
+        @if (lead.status !== "converted") {
+          <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="busy() !== null" (click)="save('contacted')">
+            {{ "admin.leads.mark_contacted" | translate }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="busy() !== null" (click)="save('dropped')">
+            {{ "admin.leads.mark_dropped" | translate }}
+          </button>
+        }
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="close()">{{ "common.cancel" | translate }}</button>
+        <button type="button" class="btn btn-primary" [disabled]="busy() !== null" (click)="save()">
+          {{ "common.save" | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</app-modal>
+
+<!-- Shown once. The password is not stored anywhere it can be read back. -->
+<app-modal [open]="conversion() !== null" [title]="'admin.leads.opened_title' | translate" (closed)="dismissConversion()">
+  @if (conversion(); as res) {
+    <p>{{ "admin.leads.opened_body" | translate: { gym: res.company.name } }}</p>
+
+    <dl class="al-facts al-facts--credentials">
+      <div><dt>{{ "auth.email" | translate }}</dt><dd dir="ltr">{{ res.owner.email }}</dd></div>
+      <div><dt>{{ "admin.leads.temporary_password" | translate }}</dt><dd dir="ltr" class="al-password">{{ res.temporary_password }}</dd></div>
+      <div><dt>{{ "admin.leads.access" | translate }}</dt><dd>{{ "admin.leads.access_trial" | translate }}</dd></div>
+    </dl>
+
+    <div class="alert alert-warning">{{ "admin.leads.password_once" | translate }}</div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="button" class="btn btn-outline-secondary" (click)="copyCredentials()">
+        <i class="bi bi-clipboard"></i> {{ "admin.leads.copy" | translate }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="dismissConversion()">{{ "common.close" | translate }}</button>
+    </div>
+  }
+</app-modal>

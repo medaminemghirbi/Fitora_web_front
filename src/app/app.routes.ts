@@ -98,6 +98,9 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard("admin")],
     loadComponent: () => import("./layout/admin-shell/admin-shell.component").then((m) => m.AdminShellComponent),
     children: [
+      // The front door: a gym cannot sign itself up, so every account starts
+      // as a request on this screen.
+      { path: "leads", loadComponent: () => import("./features/admin/leads/leads.component").then((m) => m.AdminLeadsComponent) },
       { path: "companies", loadComponent: () => import("./features/admin/companies/companies.component").then((m) => m.AdminCompaniesComponent) },
       { path: "companies/:id", loadComponent: () => import("./features/admin/company-detail/company-detail.component").then((m) => m.AdminCompanyDetailComponent) },
       { path: "pricing", loadComponent: () => import("./features/admin/pricing/pricing.component").then((m) => m.AdminPricingComponent) },
