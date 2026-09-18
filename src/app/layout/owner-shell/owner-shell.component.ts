@@ -7,12 +7,13 @@ import { ConfigurationService } from "../../core/configuration/configuration.ser
 import { NavigationService } from "../../core/configuration/navigation.service";
 import { BrandingService } from "../../core/services/branding.service";
 import { AppVersionService } from "../../core/services/app-version.service";
+import { MobileBarComponent } from "../mobile-bar/mobile-bar.component";
 import { NavbarComponent } from "../navbar/navbar.component";
 
 @Component({
   selector: "app-owner-shell",
   standalone: true,
-  imports: [RouterLink, RouterOutlet, TranslateModule, NavbarComponent],
+  imports: [RouterLink, RouterOutlet, TranslateModule, NavbarComponent, MobileBarComponent],
   templateUrl: "./owner-shell.component.html",
   styleUrl: "./owner-shell.component.scss",
 })

@@ -25,6 +25,11 @@
 
 .owner-shell .app-content { flex: 1; }
 
+// The bottom bar is fixed, so the last thing on a page would sit under it.
+@media (max-width: 767.98px) {
+  .owner-shell .app-content { padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px)); }
+}
+
 // ---------- Banners (impersonation / trial) ----------
 .impersonation-banner,
 .trial-shell-banner {

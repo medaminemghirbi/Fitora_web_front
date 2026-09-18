@@ -110,7 +110,7 @@
         <div class="app-card-body"><app-error-state (retry)="loadContracts()" /></div>
       } @else if (contracts().length === 0) {
         <div class="app-card-body">
-          <app-empty-state [title]="'clients.no_contract' | translate" [body]="'contracts.empty_body' | translate" icon="bi-file-earmark-text" />
+          <app-empty-state [title]="'contracts.empty_title' | translate" [body]="'contracts.empty_body' | translate" icon="bi-file-earmark-text" />
         </div>
       } @else {
         <div class="fx-table-scroll">
