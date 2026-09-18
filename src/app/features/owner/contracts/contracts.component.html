@@ -166,11 +166,25 @@
                   <td><app-status-badge [status]="m.status">{{ ("contract.status_" + m.status) | translate }}</app-status-badge></td>
                   <td><app-status-badge [status]="m.payment_status">{{ ("payments.status_" + m.payment_status) | translate }}</app-status-badge></td>
                   <td class="text-end">
-                    <app-action-menu>
-                      <a class="fx-menu-item" [routerLink]="['/owner/clients', m.client.id]">
-                        <i class="bi bi-person"></i> {{ "contracts.view_client" | translate }}
-                      </a>
-                    </app-action-menu>
+                    <!-- The two things the dashboard sends people here to do,
+                         on the row rather than inside the member's file. -->
+                    <div class="fx-row-actions">
+                      @if (m.payment_status === "unpaid" && m.status !== "cancelled") {
+                        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="rowBusy() !== null" (click)="collect(m)">
+                          {{ "payments.collect" | translate }}
+                        </button>
+                      }
+                      @if (m.status === "active" || m.status === "expired") {
+                        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="rowBusy() !== null" (click)="renew(m)">
+                          {{ "contracts.renew" | translate }}
+                        </button>
+                      }
+                      <app-action-menu>
+                        <a class="fx-menu-item" [routerLink]="['/owner/clients', m.client.id]">
+                          <i class="bi bi-person"></i> {{ "contracts.view_client" | translate }}
+                        </a>
+                      </app-action-menu>
+                    </div>
                   </td>
                 </tr>
               }

@@ -331,10 +331,8 @@
     "no_sessions_available": "Aucune séance disponible pour cette date.",
     "tab_overview": "Aperçu",
     "tab_contracts": "Abonnements",
-    "tab_bookings": "Réservations",
-    "tab_attendance": "Présence",
+    "tab_attendance": "Présences",
     "tab_payments": "Paiements",
-    "tab_notes": "Notes",
     "current_contract": "Contrat actuel",
     "elapsed": "écoulé",
     "stats": "Résumé",
@@ -385,7 +383,8 @@
     "collect_now": "Encaisser maintenant",
     "pay_later_hint": "L'abonnement sera créé comme non réglé et apparaîtra dans « Ce qui demande votre attention ».",
     "finish": "Terminer",
-    "finish_without_plan": "Enregistrer sans abonnement"
+    "finish_without_plan": "Enregistrer sans abonnement",
+    "notes_placeholder": "Blessure, préférence, rappel…"
   },
   "subscription": {
     "title": "Abonnement Fitora",
@@ -562,7 +561,10 @@
     "average_basket": "Panier moyen",
     "unpaid_value": "Montant impayé",
     "expiring_soon": "Expirent sous 30 j",
-    "filter_unpaid": "Non réglés"
+    "filter_unpaid": "Non réglés",
+    "renew": "Renouveler",
+    "renewed": "Abonnement renouvelé.",
+    "renew_confirm_body_for": "Une nouvelle période commence pour {{name}}, juste après la fin de l'actuelle."
   },
   "contract_types": {
     "new": "Nouveau contrat",
@@ -616,7 +618,9 @@
     "collected_this_month": "Encaissé ce mois",
     "collected_total": "Encaissé au total",
     "average_payment": "Paiement moyen",
-    "receipts": "Reçus émis"
+    "receipts": "Reçus émis",
+    "collect": "Encaisser",
+    "recorded": "Encaissement enregistré."
   },
   "onboarding": {
     "title": "Créez votre entreprise",

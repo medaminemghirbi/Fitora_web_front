@@ -134,13 +134,12 @@ describe("ClientProfileComponent", () => {
     expect(component.activeTab()).toBe("contracts");
   });
 
-  it("bookingsWithAttendance keeps only confirmed/completed/no_show", () => {
-    component.bookings.set([
-      { ...booking, status: "confirmed" },
-      { ...booking, status: "cancelled" },
-      { ...booking, status: "completed" },
-    ]);
-    expect(component.bookingsWithAttendance().length).toBe(2);
+  it("offers four tabs — what was booked and whether they turned up is one list", () => {
+    expect(component.tabs).toEqual(["overview", "contracts", "attendance", "payments"]);
+  });
+
+  it("opens on the overview, so the file says something before anything is clicked", () => {
+    expect(component.activeTab()).toBe("overview");
   });
 
   it("balanceTone is danger for a positive balance, success otherwise", () => {

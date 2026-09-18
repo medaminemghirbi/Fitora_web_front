@@ -206,6 +206,15 @@ label { font-weight: 500; font-size: 0.8125rem; color: var(--color-text); margin
   }
 }
 
+// A row's own actions: one or two things worth doing without opening the
+// record, plus the overflow menu for the rest.
+.fx-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
 // Input with a leading icon (search fields)
 .fx-input-icon {
   position: relative;

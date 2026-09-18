@@ -91,6 +91,17 @@
         </div>
       </div>
 
+      <div class="app-card">
+        <div class="app-card-header"><h2>{{ "clients.notes" | translate }}</h2></div>
+        <div class="app-card-body">
+          <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
+            <textarea class="form-control mb-3" rows="4" formControlName="notes" [placeholder]="'clients.notes_placeholder' | translate"></textarea>
+            <button type="submit" class="btn btn-outline-secondary btn-sm" [disabled]="notesSaving()">
+              {{ (notesSaving() ? "common.saving" : "common.save") | translate }}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   }
 
@@ -179,7 +190,7 @@
     }
   }
 
-  @if (activeTab() === "bookings") {
+  @if (activeTab() === "attendance") {
     <div class="app-card">
       @if (bookings().length === 0) {
         <div class="app-card-body"><app-empty-state [title]="'bookings.empty_title' | translate" body="" icon="bi-journal-check" /></div>
@@ -189,7 +200,6 @@
             <thead>
               <tr>
                 <th>{{ "activities.title" | translate }}</th>
-                <th>{{ "bookings.location" | translate }}</th>
                 <th>{{ "bookings.date" | translate }}</th>
                 <th>{{ "common.status" | translate }}</th>
                 <th class="text-end">{{ "common.actions" | translate }}</th>
@@ -199,7 +209,6 @@
               @for (b of bookings(); track b.id) {
                 <tr>
                   <td>{{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}{{ b.session.activity_name }}</td>
-                  <td>{{ b.session.company_name }}</td>
                   <td>{{ b.session.starts_at | date: "medium" }}</td>
                   <td><app-status-badge [status]="b.status">{{ ("bookings.status_" + b.status) | translate }}</app-status-badge></td>
                   <td class="text-end">
@@ -219,25 +228,6 @@
           </table>
         </div>
       }
-    </div>
-  }
-
-  @if (activeTab() === "attendance") {
-    <div class="app-card">
-      <div class="app-card-body">
-        @if (bookingsWithAttendance().length === 0) {
-          <app-empty-state [title]="'clients.no_attendance' | translate" body="" icon="bi-clock-history" />
-        } @else {
-          <ul class="fx-list">
-            @for (b of bookingsWithAttendance(); track b.id) {
-              <li>
-                <span class="fx-list-main">{{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}{{ b.session.activity_name }} — {{ b.session.starts_at | date: "medium" }}</span>
-                <app-status-badge [status]="b.status">{{ ("bookings.status_" + b.status) | translate }}</app-status-badge>
-              </li>
-            }
-          </ul>
-        }
-      </div>
     </div>
   }
 
@@ -274,18 +264,6 @@
     </div>
   }
 
-  @if (activeTab() === "notes") {
-    <div class="app-card">
-      <div class="app-card-body">
-        <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
-          <textarea class="form-control mb-3" rows="6" formControlName="notes"></textarea>
-          <button type="submit" class="btn btn-primary" [disabled]="notesSaving()">
-            {{ (notesSaving() ? "common.saving" : "common.save") | translate }}
-          </button>
-        </form>
-      </div>
-    </div>
-  }
 } @else if (loading()) {
   <app-skeleton variant="kpi" [count]="3" />
 } @else if (error()) {

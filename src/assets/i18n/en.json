@@ -331,10 +331,8 @@
     "no_sessions_available": "No sessions available for this date.",
     "tab_overview": "Overview",
     "tab_contracts": "Memberships",
-    "tab_bookings": "Bookings",
     "tab_attendance": "Attendance",
     "tab_payments": "Payments",
-    "tab_notes": "Notes",
     "current_contract": "Current contract",
     "elapsed": "elapsed",
     "stats": "Summary",
@@ -385,7 +383,8 @@
     "collect_now": "Take payment now",
     "pay_later_hint": "The subscription is created unpaid and will show up under \\u201cNeeds your attention\\u201d.",
     "finish": "Finish",
-    "finish_without_plan": "Save without a subscription"
+    "finish_without_plan": "Save without a subscription",
+    "notes_placeholder": "Injury, preference, reminder…"
   },
   "subscription": {
     "title": "Fitora Subscription",
@@ -562,7 +561,10 @@
     "average_basket": "Average basket",
     "unpaid_value": "Unpaid amount",
     "expiring_soon": "Expiring within 30 days",
-    "filter_unpaid": "Unpaid"
+    "filter_unpaid": "Unpaid",
+    "renew": "Renew",
+    "renewed": "Subscription renewed.",
+    "renew_confirm_body_for": "A new period starts for {{name}}, right after the current one ends."
   },
   "contract_types": {
     "new": "New Contract",
@@ -616,7 +618,9 @@
     "collected_this_month": "Collected this month",
     "collected_total": "Collected total",
     "average_payment": "Average payment",
-    "receipts": "Receipts"
+    "receipts": "Receipts",
+    "collect": "Take payment",
+    "recorded": "Payment recorded."
   },
   "onboarding": {
     "title": "Create your company",

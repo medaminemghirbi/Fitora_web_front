@@ -7,6 +7,10 @@ import { Contract, ContractStatus } from "../../../core/models/contract.model";
 import { ContractType } from "../../../core/models/contract-type.model";
 import { ContractTypesService } from "../../../core/services/contract-types.service";
 import { ContractsService } from "../../../core/services/contracts.service";
+import { PaymentsService } from "../../../core/services/payments.service";
+import { ToastService } from "../../../core/services/toast.service";
+import { ConfirmService } from "../../../core/services/confirm.service";
+import { extractErrorMessage } from "../../../core/services/error.util";
 import { PageMeta } from "../../../core/services/sessions.service";
 import { AvatarComponent } from "../../../shared/components/avatar.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
@@ -98,7 +102,10 @@ export class ContractsComponent implements OnInit {
     private readonly contractTypesService: ContractTypesService,
     private readonly branding: BrandingService,
     private readonly translate: TranslateService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly paymentsService: PaymentsService,
+    private readonly toast: ToastService,
+    private readonly confirm: ConfirmService
   ) {}
 
   ngOnInit(): void {
@@ -190,6 +197,59 @@ export class ContractsComponent implements OnInit {
 
   hasFilters(): boolean {
     return this.contractStatusFilter() !== "" || this.contractTypeFilter() !== "" || this.search() !== "";
+  }
+
+  // ---- what the dashboard sends people here to do -------------------------
+  // Renewing and collecting used to mean opening the member's file from the
+  // row you were already looking at. The row does both now.
+  readonly rowBusy = signal<string | null>(null);
+
+  async renew(contract: Contract): Promise<void> {
+    if (this.rowBusy()) return;
+
+    const confirmed = await this.confirm.ask({
+      title: this.translate.instant("contracts.renew_confirm_title"),
+      body: this.translate.instant("contracts.renew_confirm_body_for", { name: contract.client.full_name }),
+    });
+    if (!confirmed) return;
+
+    this.rowBusy.set(contract.id);
+    this.contractsService.renew(contract.id).subscribe({
+      next: () => {
+        this.rowBusy.set(null);
+        this.toast.success(this.translate.instant("contracts.renewed"));
+        this.loadContracts();
+      },
+      error: (err) => {
+        this.rowBusy.set(null);
+        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
+  }
+
+  /**
+   * Settles the period in full, in cash — the desk's overwhelming case. The
+   * amount is deliberately not sent: the backend settles the payable, which
+   * is the whole price or nothing (Fitora takes no part payments). Anything
+   * else still goes through Encaissements.
+   */
+  collect(contract: Contract): void {
+    if (this.rowBusy() || !contract.current_period_id) return;
+
+    this.rowBusy.set(contract.id);
+    this.paymentsService
+      .record({ client_id: contract.client.id, payment_method: "cash", contract_period_id: contract.current_period_id })
+      .subscribe({
+        next: () => {
+          this.rowBusy.set(null);
+          this.toast.success(this.translate.instant("payments.recorded"));
+          this.loadContracts();
+        },
+        error: (err) => {
+          this.rowBusy.set(null);
+          this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+        },
+      });
   }
 
   readonly filterChips = computed(() => {

@@ -331,10 +331,8 @@
     "no_sessions_available": "لا توجد حصص متاحة لهذا التاريخ.",
     "tab_overview": "نظرة عامة",
     "tab_contracts": "الاشتراكات",
-    "tab_bookings": "الحجوزات",
     "tab_attendance": "الحضور",
     "tab_payments": "المدفوعات",
-    "tab_notes": "ملاحظات",
     "current_contract": "العقد الحالي",
     "elapsed": "منقضي",
     "stats": "ملخص",
@@ -385,7 +383,8 @@
     "collect_now": "التحصيل الآن",
     "pay_later_hint": "سيُنشأ الاشتراك غير مدفوع وسيظهر ضمن «ما يستدعي انتباهك».",
     "finish": "إنهاء",
-    "finish_without_plan": "حفظ بدون اشتراك"
+    "finish_without_plan": "حفظ بدون اشتراك",
+    "notes_placeholder": "إصابة، تفضيل، تذكير…"
   },
   "subscription": {
     "title": "اشتراك Fitora",
@@ -562,7 +561,10 @@
     "average_basket": "متوسط السلة",
     "unpaid_value": "المبلغ غير المدفوع",
     "expiring_soon": "تنتهي خلال 30 يومًا",
-    "filter_unpaid": "غير مدفوعة"
+    "filter_unpaid": "غير مدفوعة",
+    "renew": "تجديد",
+    "renewed": "تمّ تجديد الاشتراك.",
+    "renew_confirm_body_for": "تبدأ فترة جديدة لـ {{name}} مباشرة بعد نهاية الحالية."
   },
   "contract_types": {
     "new": "عقد جديد",
@@ -616,7 +618,9 @@
     "collected_this_month": "المحصّل هذا الشهر",
     "collected_total": "إجمالي المحصّل",
     "average_payment": "متوسط الدفع",
-    "receipts": "الإيصالات"
+    "receipts": "الإيصالات",
+    "collect": "تحصيل",
+    "recorded": "تمّ تسجيل التحصيل."
   },
   "onboarding": {
     "title": "أنشئ شركتك",

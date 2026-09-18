@@ -33,7 +33,11 @@ import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 
-type Tab = "overview" | "contracts" | "bookings" | "attendance" | "payments" | "notes";
+// Four tabs, not six. "Bookings" and "Attendance" were the same list read
+// twice — what was booked, and whether they turned up — and a note about
+// someone belongs with the rest of what you read about them, on the
+// overview.
+type Tab = "overview" | "contracts" | "attendance" | "payments";
 
 function toDateInputValue(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -73,7 +77,7 @@ export class ClientProfileComponent implements OnInit {
   readonly payments = signal<Payment[]>([]);
   readonly activeTab = signal<Tab>("overview");
   readonly contractProgress = signal<{ percent: number; tone: "success" | "warning" | "danger" } | null>(null);
-  readonly tabs: Tab[] = ["overview", "contracts", "bookings", "attendance", "payments", "notes"];
+  readonly tabs: Tab[] = ["overview", "contracts", "attendance", "payments"];
 
   readonly contractTypes = signal<ContractType[]>([]);
   readonly activities = signal<Activity[]>([]);
@@ -184,10 +188,6 @@ export class ClientProfileComponent implements OnInit {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
-  }
-
-  bookingsWithAttendance(): Booking[] {
-    return this.bookings().filter((b) => b.status === "confirmed" || b.status === "completed" || b.status === "no_show");
   }
 
   balanceTone(balance: number): "success" | "danger" {
