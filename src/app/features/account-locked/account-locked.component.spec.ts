@@ -1,35 +1,27 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { provideHttpClient } from "@angular/common/http";
-import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { provideRouter } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
-import { of, throwError } from "rxjs";
 import { AuthService } from "../../core/auth/auth.service";
 import { ConfigurationService } from "../../core/configuration/configuration.service";
-import { SubscriptionInfo, SubscriptionService } from "../../core/services/subscription.service";
 import { AccountLockedComponent } from "./account-locked.component";
 
 describe("AccountLockedComponent", () => {
   let fixture: ComponentFixture<AccountLockedComponent>;
   let component: AccountLockedComponent;
   let authStub: { logout: jasmine.Spy; currentUser: jasmine.Spy };
-  let subscriptions: jasmine.SpyObj<SubscriptionService>;
 
-  function build(role = "owner", lockReason: string | null = "payment_overdue"): void {
+  function build(role = "owner", lockReason: string | null = "unpaid"): void {
     TestBed.resetTestingModule();
     authStub = {
       logout: jasmine.createSpy("logout"),
       currentUser: jasmine.createSpy("currentUser").and.returnValue({ role, email: "o@x.test" }),
     };
-    subscriptions = jasmine.createSpyObj<SubscriptionService>("SubscriptionService", ["requestUpgrade"]);
-    subscriptions.requestUpgrade.and.returnValue(of({} as SubscriptionInfo));
 
     TestBed.configureTestingModule({
       imports: [AccountLockedComponent, TranslateModule.forRoot()],
       providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
+        provideRouter([]),
         { provide: AuthService, useValue: authStub },
-        { provide: SubscriptionService, useValue: subscriptions },
         { provide: ConfigurationService, useValue: { subscription: () => ({ lock_reason: lockReason }) } },
       ],
     });
@@ -39,50 +31,31 @@ describe("AccountLockedComponent", () => {
     fixture.detectChanges();
   }
 
-  it("names the reason the door is shut", () => {
-    build("owner", "payment_overdue");
-    expect(component.reason()).toBe("payment_overdue");
+  it("names which of the two reasons shut the door", () => {
+    build("owner", "unpaid");
+    expect(component.reason()).toBe("unpaid");
+
+    build("owner", "suspended");
+    expect(component.reason()).toBe("suspended");
   });
 
-  it("falls back to the general case rather than showing nothing", () => {
+  it("falls back to suspended rather than showing nothing", () => {
     build("owner", null);
     expect(component.reason()).toBe("suspended");
   });
 
-  // Asking to be activated is how the lock gets lifted, so it cannot live
-  // behind the door it closed.
-  it("lets the owner ask for activation from here, with no period to choose", () => {
+  // There is nothing to ask for any more: a gym settles with Fitora. What it
+  // can still do is read what it owes, so that is the only link.
+  it("sends the owner to their invoices, the one place that helps", () => {
     build("owner");
-
-    component.ask();
-
-    expect(subscriptions.requestUpgrade).toHaveBeenCalledWith();
-    expect(component.requested()).toBe(true);
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector("a[href]");
+    expect(link?.getAttribute("href")).toBe("/owner/subscription");
   });
 
-  it("refuses a second request while one is in flight", () => {
-    build("owner");
-    component.requesting.set(true);
-
-    component.ask();
-
-    expect(subscriptions.requestUpgrade).not.toHaveBeenCalled();
-  });
-
-  it("stays asking when the request fails, rather than claiming it was sent", () => {
-    build("owner");
-    subscriptions.requestUpgrade.and.returnValue(throwError(() => new Error("nope")));
-
-    component.ask();
-
-    expect(component.requested()).toBe(false);
-    expect(component.requesting()).toBe(false);
-  });
-
-  it("gives staff no action — the money is not theirs to settle", () => {
+  it("gives staff no link at all — the money is not theirs to settle", () => {
     build("staff");
     expect(component.isOwner()).toBe(false);
-    expect(fixture.nativeElement.textContent).not.toContain("locked.ask");
+    expect(fixture.nativeElement.querySelector("a[href]")).toBeNull();
   });
 
   it("logout delegates to AuthService", () => {

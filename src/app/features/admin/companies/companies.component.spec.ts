@@ -13,7 +13,8 @@ describe("AdminCompaniesComponent", () => {
 
   const meta = { page: 1, per_page: 20, total: 1, total_pages: 1 };
   const company: AdminCompany = {
-    awaiting_activation: false,
+    arrears_cents: 0,
+    access_open: true,
     usage: { clients: 0, staff: 0, activities: 0, sessions_last_30_days: 0, last_session_at: null },
     id: "c1",
     name: "Acme Gym",
@@ -26,18 +27,15 @@ describe("AdminCompaniesComponent", () => {
     created_at: "2026-01-01T00:00:00Z",
     owner: { id: "o1", full_name: "Sami Owner", email: "sami@x.test", phone: null },
     subscription: null,
-    trial_locked: false,
-    trial_days_remaining: null,
     monthly_subscription_cents: 15000,
     annual_subscription_cents: 162000,
     annual_discount_percent: 10,
-    debt_cents: 0,
     included_modules: [],
   };
 
   beforeEach(async () => {
     service = jasmine.createSpyObj<AdminCompaniesService>("AdminCompaniesService", ["list"]);
-    service.list.and.returnValue(of({ companies: [company], meta, awaiting_count: 0 }));
+    service.list.and.returnValue(of({ companies: [company], meta, closed_count: 0 }));
 
     await TestBed.configureTestingModule({
       imports: [AdminCompaniesComponent, TranslateModule.forRoot()],
@@ -91,27 +89,27 @@ describe("AdminCompaniesComponent", () => {
 
   // Removing the separate inbox must not lose the signal: a gym that asked
   // to carry on has to be visible without opening its page.
-  describe("gyms waiting on an answer", () => {
+  describe("gyms whose access is shut", () => {
     it("reports how many are waiting, even while the list shows everyone", () => {
-      service.list.and.returnValue(of({ companies: [company], meta, awaiting_count: 3 }));
+      service.list.and.returnValue(of({ companies: [company], meta, closed_count: 3 }));
       component.load();
-      expect(component.awaitingCount()).toBe(3);
-      expect(component.onlyAwaiting()).toBe(false);
+      expect(component.closedCount()).toBe(3);
+      expect(component.onlyClosed()).toBe(false);
     });
 
     it("narrows to them on request, and back again", () => {
-      component.toggleAwaiting();
-      expect(component.onlyAwaiting()).toBe(true);
+      component.toggleClosed();
+      expect(component.onlyClosed()).toBe(true);
       expect(service.list).toHaveBeenCalledWith(1, undefined, true);
 
-      component.toggleAwaiting();
-      expect(component.onlyAwaiting()).toBe(false);
+      component.toggleClosed();
+      expect(component.onlyClosed()).toBe(false);
       expect(service.list).toHaveBeenCalledWith(1, undefined, false);
     });
 
     it("returns to the first page when narrowing, so nothing hides on page 2", () => {
       component.page.set(4);
-      component.toggleAwaiting();
+      component.toggleClosed();
       expect(component.page()).toBe(1);
     });
   });

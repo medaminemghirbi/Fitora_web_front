@@ -27,20 +27,16 @@ export class OwnerShellComponent implements OnInit {
   readonly secondaryNavItems = this.nav.secondaryItems;
   readonly showOwnerOnlySections = computed(() => this.auth.currentUser()?.role === "owner");
 
-  // Only while the company is still on the free trial — once a real
-  // subscription is active, expires_at is a renewal date, not a countdown.
-  readonly trialDaysRemaining = computed(() => {
-    const sub = this.configuration.subscription();
-    return sub?.on_trial ? (sub.trial_days_remaining ?? null) : null;
-  });
+
   /**
-   * Days left to settle the month before access closes. Shown from the day
-   * the paid period runs out, so the owner sees it coming instead of
-   * finding the door shut mid-task.
+   * Days left to settle before access closes. Shown from the day the paid
+   * period runs out, so the owner sees it coming instead of finding the
+   * door shut mid-task. The free trial is one of these periods like any
+   * other, so it warns on its way out too.
    */
   readonly daysToSettle = computed(() => {
     const sub = this.configuration.subscription();
-    if (!sub || sub.on_trial || sub.current_period_paid) return null;
+    if (!sub || sub.current_period_paid) return null;
     return sub.days_before_lock;
   });
 

@@ -27,16 +27,14 @@ export interface AdminCompany {
   created_at: string;
   owner: { id: string; full_name: string; email: string; phone: string | null };
   subscription: Subscription | null;
-  /** Whether this gym is asking to carry on past its trial. */
-  awaiting_activation: boolean;
+  /** Owed: periods with no invoice behind them, times the tariff. */
+  arrears_cents: number;
   usage: AdminCompanyUsage;
-  trial_locked: boolean;
-  trial_days_remaining: number | null;
+  access_open: boolean;
   // The subscription price in the company's currency, read-only here.
   monthly_subscription_cents: number;
   annual_subscription_cents: number;
   annual_discount_percent: number;
-  debt_cents: number;
   // Every feature is included for every company.
   included_modules: string[];
 }

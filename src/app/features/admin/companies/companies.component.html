@@ -13,16 +13,16 @@
       />
     </div>
 
-    @if (awaitingCount() > 0 || onlyAwaiting()) {
+    @if (closedCount() > 0 || onlyClosed()) {
       <button
         type="button"
         class="btn btn-sm ms-auto"
-        [class.btn-warning]="!onlyAwaiting()"
-        [class.btn-outline-secondary]="onlyAwaiting()"
-        (click)="toggleAwaiting()"
+        [class.btn-warning]="!onlyClosed()"
+        [class.btn-outline-secondary]="onlyClosed()"
+        (click)="toggleClosed()"
       >
-        <i class="bi bi-hourglass-split"></i>
-        {{ "admin.awaiting_activation" | translate: { count: awaitingCount() } }}
+        <i class="bi bi-lock-fill"></i>
+        {{ "admin.closed_access" | translate: { count: closedCount() } }}
       </button>
     }
   </div>
@@ -44,7 +44,6 @@
               <th>{{ "admin.companies_title" | translate }}</th>
               <th>{{ "admin.owner" | translate }}</th>
               <th>{{ "common.status" | translate }}</th>
-              <th></th>
               <th class="fx-num">{{ "admin.total_month" | translate }}</th>
               <th aria-hidden="true"></th>
             </tr>
@@ -69,22 +68,15 @@
                 </td>
                 <td>
                   <div class="company-status">
-                    <app-status-badge [status]="company.subscription?.status ?? 'inactive'">
-                      {{ ("subscription.status_" + (company.subscription?.status ?? "inactive")) | translate }}
+                    <app-status-badge [status]="company.access_open ? 'active' : 'cancelled'">
+                      {{ (company.access_open ? "admin.access_open" : "admin.access_closed") | translate }}
                     </app-status-badge>
-                    @if (company.trial_locked) {
-                      <app-status-badge status="cancelled">🔒 {{ "admin.trial_locked" | translate }}</app-status-badge>
-                    } @else if (company.trial_days_remaining !== null) {
-                      <app-status-badge [status]="company.trial_days_remaining! <= 3 ? 'inactive' : 'active'">
-                        {{ "admin.trial_days_left" | translate: { days: company.trial_days_remaining } }}
+                    @if (company.arrears_cents > 0) {
+                      <app-status-badge status="unpaid">
+                        {{ (company.arrears_cents / 100) | money: company.currency }}
                       </app-status-badge>
                     }
                   </div>
-                </td>
-                <td>
-                  @if (company.awaiting_activation) {
-                    <span class="fx-pill-waiting"><i class="bi bi-hourglass-split"></i> {{ "admin.awaiting_short" | translate }}</span>
-                  }
                 </td>
                 <td class="fx-num company-total">{{ (company.monthly_subscription_cents / 100) | money: company.currency }}</td>
                 <td class="fx-num"><i class="bi bi-chevron-right fx-muted"></i></td>

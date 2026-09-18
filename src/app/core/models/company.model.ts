@@ -36,5 +36,4 @@ export interface Company {
   annual_discount_percent: number;
   // What the company currently owes Fitora, in cents — set by hand by an
   // admin, shown read-only on the owner's subscription page.
-  debt_cents: number;
 }

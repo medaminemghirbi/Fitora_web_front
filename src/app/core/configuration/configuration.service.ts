@@ -3,21 +3,21 @@ import { Injectable, Injector, computed, inject, signal } from "@angular/core";
 import { Observable, catchError, of, shareReplay, tap } from "rxjs";
 import { API_BASE_URL } from "../models/api-config";
 import { Company } from "../models/company.model";
+import { LockReason } from "../models/subscription.model";
 import { MePermissions, User } from "../models/user.model";
 import { BrandingService, CompanyBranding } from "../services/branding.service";
 import { LocaleService } from "../services/locale.service";
 import { NotificationService } from "../services/notification.service";
 
 export interface BootstrapSubscription {
-  status: string;
+  /** The access itself. Nothing is computed to read it. */
+  active: boolean;
   locked: boolean;
-  on_trial: boolean;
-  trial_days_remaining: number | null;
+  lock_reason: LockReason;
   /** Whether the period we are in has been settled. */
   current_period_paid: boolean;
   /** Days left before access closes. null when nothing is ticking. */
   days_before_lock: number | null;
-  lock_reason: "suspended" | "trial_expired" | "term_ended" | "payment_overdue" | null;
 }
 
 export interface CompanyRole {

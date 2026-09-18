@@ -23,18 +23,16 @@ describe("SubscriptionService", () => {
     req.flush({});
   });
 
-  it("requestUpgrade POSTs the billing period", () => {
-    service.requestUpgrade("yearly").subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/subscription/request_upgrade`);
-    expect(req.request.method).toBe("POST");
-    expect(req.request.body).toEqual({ period: "yearly" });
-    req.flush({});
+  it("downloads an invoice as the blob the browser saves", () => {
+    service.downloadInvoice("inv1").subscribe();
+
+    const req = httpMock.expectOne(`${API_BASE_URL}/invoices/inv1`);
+    expect(req.request.method).toBe("GET");
+    expect(req.request.responseType).toBe("blob");
+    req.flush(new Blob());
   });
 
-  it("cancelUpgradeRequest DELETEs the pending request", () => {
-    service.cancelUpgradeRequest().subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/subscription/request_upgrade`);
-    expect(req.request.method).toBe("DELETE");
-    req.flush({});
+  it("no longer offers anything to ask for", () => {
+    expect((service as unknown as Record<string, unknown>)["requestUpgrade"]).toBeUndefined();
   });
 });

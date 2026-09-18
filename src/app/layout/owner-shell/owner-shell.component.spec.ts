@@ -86,8 +86,8 @@ describe("OwnerShellComponent", () => {
       expect(component.emailUnverified()).toBe(false);
     });
 
-    it("trialDaysRemaining is null with no subscription", () => {
-      expect(component.trialDaysRemaining()).toBeNull();
+    it("says nothing about settling when there is no subscription at all", () => {
+      expect(component.daysToSettle()).toBeNull();
     });
 
     it("resendVerificationEmail flips the loading/success flags on success", () => {
@@ -113,24 +113,6 @@ describe("OwnerShellComponent", () => {
     expect(component.showOwnerOnlySections()).toBe(false);
   });
 
-  it("trialDaysRemaining surfaces the countdown while on trial", () => {
-    build(owner, true);
-    configStub.subscription.and.returnValue({ status: "trial", locked: false, on_trial: true, trial_days_remaining: 5, current_period_paid: true, days_before_lock: null, lock_reason: null });
-    fixture = TestBed.createComponent(OwnerShellComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    expect(component.trialDaysRemaining()).toBe(5);
-  });
-
-  it("trialDaysRemaining is null while on trial with no day count yet", () => {
-    build(owner, true);
-    configStub.subscription.and.returnValue({ status: "trial", locked: false, on_trial: true, trial_days_remaining: null, current_period_paid: true, days_before_lock: null, lock_reason: null });
-    fixture = TestBed.createComponent(OwnerShellComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    expect(component.trialDaysRemaining()).toBeNull();
-  });
-
   it("versionSuffix is null with no app version loaded yet", () => {
     build(owner, true);
     fixture = TestBed.createComponent(OwnerShellComponent);
@@ -154,10 +136,8 @@ describe("OwnerShellComponent", () => {
     function withSubscription(patch: Record<string, unknown>): void {
       build(owner, true);
       configStub.subscription.and.returnValue({
-        status: "active",
+        active: true,
         locked: false,
-        on_trial: false,
-        trial_days_remaining: null,
         current_period_paid: true,
         days_before_lock: null,
         lock_reason: null,
@@ -183,9 +163,11 @@ describe("OwnerShellComponent", () => {
       expect(component.daysToSettle()).toBe(0);
     });
 
-    it("leaves a gym on trial to its own banner", () => {
-      withSubscription({ on_trial: true, current_period_paid: false, days_before_lock: 1 });
-      expect(component.daysToSettle()).toBeNull();
+    // The free trial is one of these periods like any other, so its last
+    // days warn exactly as a paid one's do.
+    it("warns on the way out of the free trial too", () => {
+      withSubscription({ current_period_paid: false, days_before_lock: 1 });
+      expect(component.daysToSettle()).toBe(1);
     });
   });
 });

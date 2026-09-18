@@ -6,7 +6,7 @@
   <div class="d-flex justify-content-center py-5"><app-spinner [size]="32" /></div>
 } @else if (error()) {
   <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
-} @else if (company()) {
+} @else {
   @if (company(); as c) {
   <div class="ac-head">
     <div>
@@ -18,8 +18,8 @@
       </p>
     </div>
     <div class="ac-head-actions">
-      <app-status-badge [status]="c.subscription?.status ?? 'inactive'">
-        {{ ("subscription.status_" + (c.subscription?.status ?? "inactive")) | translate }}
+      <app-status-badge [status]="accessOpen() ? 'active' : 'cancelled'">
+        {{ (accessOpen() ? "admin.access_open" : "admin.access_closed") | translate }}
       </app-status-badge>
       <button type="button" class="btn btn-primary btn-sm" [disabled]="impersonating()" (click)="impersonate()">
         <i class="bi bi-box-arrow-in-right"></i>
@@ -28,62 +28,48 @@
     </div>
   </div>
 
-  <!-- The one thing this page is for, when there is one. A paying gym in
-       good standing gets no banner at all. -->
+  <!-- The one thing this page is for, when there is one. A gym that is open
+       and paid up gets no banner at all. -->
   @if (attention(); as what) {
     <section class="ac-attention" [attr.data-kind]="what">
       <div class="ac-attention-main">
-        <i
-          class="bi"
-          [class.bi-hourglass-split]="what === 'asked'"
-          [class.bi-cash-coin]="what === 'due'"
-          [class.bi-lock-fill]="what === 'locked' || what === 'overdue'"
-          [class.bi-clock-history]="what === 'ending'"
-        ></i>
+        <i class="bi" [class.bi-cash-coin]="what === 'due'" [class.bi-lock-fill]="what !== 'due'"></i>
         <div>
           <strong>
             @switch (what) {
-              @case ("asked") { {{ "admin.attention_asked" | translate: { days: waitingDays() } }} }
-              @case ("overdue") { {{ "admin.attention_overdue" | translate }} }
               @case ("due") { {{ "admin.attention_due" | translate: { days: daysBeforeLock() } }} }
-              @case ("locked") { {{ "admin.attention_locked" | translate }} }
-              @case ("ending") { {{ "admin.attention_ending" | translate: { days: c.trial_days_remaining } }} }
+              @case ("unpaid") { {{ "admin.attention_unpaid" | translate }} }
+              @case ("suspended") { {{ "admin.attention_suspended" | translate }} }
             }
           </strong>
           <span>
-            @if (what === "due" || what === "overdue") {
-              {{ "admin.attention_paid_through" | translate }}
-              {{ (paidThrough() | date: "d MMM y") || ("admin.attention_never_paid" | translate) }}
+            @if (paidThrough()) {
+              {{ "admin.attention_paid_through" | translate }} {{ paidThrough() | date: "d MMM y" }}
             } @else {
-              @if (askedPeriod(); as period) {
-                {{ "admin.attention_pref" | translate: { period: ((period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate) } }}
-                ·
-              }
-              {{ "admin.attention_price" | translate: {
-                    monthly: ((c.monthly_subscription_cents / 100) | money: c.currency),
-                    yearly: ((c.annual_subscription_cents / 100) | money: c.currency)
-                  } }}
+              {{ "admin.attention_never_paid" | translate }}
+            }
+            @if (arrears() > 0) {
+              · {{ "admin.attention_arrears" | translate: { amount: (arrears() | money: c.currency) } }}
             }
           </span>
         </div>
       </div>
-      @if (what === "due" || what === "overdue") {
-        <button type="button" class="btn btn-primary" [disabled]="savingPayment()" (click)="recordPayment()">
-          {{ (savingPayment() ? "common.saving" : "admin.record_payment") | translate }}
+      @if (what === "suspended") {
+        <button type="button" class="btn btn-primary" [disabled]="savingSub()" (click)="toggleAccess()">
+          {{ "admin.restore_access" | translate }}
         </button>
       } @else {
-        <button type="button" class="btn btn-primary" [disabled]="savingSub()" (click)="activate()">
-          {{ (savingSub() ? "common.saving" : "admin.activate_now") | translate }}
+        <button type="button" class="btn btn-primary" [disabled]="savingInvoice()" (click)="issueInvoice()">
+          {{ (savingInvoice() ? "common.saving" : "admin.record_payment") | translate }}
         </button>
       }
     </section>
   }
 
-  <!-- Summary strip -->
   <div class="ac-summary">
     <div class="ac-stat">
       <span class="ac-stat-label">{{ "admin.billing_period" | translate }}</span>
-      <strong>{{ formuleLabelKey() | translate }}</strong>
+      <strong>{{ (c.subscription?.billing_period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate }}</strong>
     </div>
     <div class="ac-stat">
       <span class="ac-stat-label">{{ "admin.subscription_title" | translate }}</span>
@@ -91,22 +77,54 @@
       <span class="ac-stat-sub">{{ (c.annual_subscription_cents / 100) | money: c.currency }} {{ "admin.per_year" | translate }}</span>
     </div>
     <div class="ac-stat">
-      <span class="ac-stat-label">{{ "admin.renewal_label" | translate }}</span>
-      <strong>{{ (c.subscription?.expires_at | date: "d MMM y") || ("admin.no_end_date" | translate) }}</strong>
+      <span class="ac-stat-label">{{ "admin.attention_paid_through" | translate }}</span>
+      <strong>{{ (paidThrough() | date: "d MMM y") || ("admin.attention_never_paid" | translate) }}</strong>
     </div>
     <div class="ac-stat">
-      <span class="ac-stat-label">{{ "admin.debt_title" | translate }}</span>
-      <strong [class.ac-stat--ok]="c.debt_cents === 0" [class.ac-stat--due]="c.debt_cents > 0">
-        {{ (c.debt_cents / 100) | money: c.currency }}
+      <span class="ac-stat-label">{{ "admin.arrears_title" | translate }}</span>
+      <strong [class.ac-stat--ok]="arrears() === 0" [class.ac-stat--due]="arrears() > 0">
+        {{ arrears() | money: c.currency }}
       </strong>
     </div>
   </div>
 
-  <!-- What the gym is actually doing with Fitora. An activation rests on
-       this far more than on the subscription row. -->
-  <div class="app-card ac-usage-card">
-    <div class="app-card-header">
-      <h2>{{ "admin.usage_title" | translate }}</h2>
+  <!-- The ledger: every month of a year, and the invoice behind it. -->
+  <div class="app-card">
+    <div class="app-card-header ac-ledger-head">
+      <div>
+        <h2>{{ "admin.ledger_title" | translate }}</h2>
+        <p class="fx-muted mb-0" style="font-size: 0.8125rem">
+          {{ "admin.ledger_summary" | translate: { count: ledgerPaidCount(), amount: (ledgerCollected() | money: c.currency) } }}
+        </p>
+      </div>
+      <div class="fx-segmented">
+        @for (y of ledgerYears(); track y) {
+          <button type="button" [class.is-active]="ledgerYear() === y" (click)="ledgerYear.set(y)">{{ y }}</button>
+        }
+      </div>
+    </div>
+    <div class="app-card-body">
+      <div class="ac-ledger">
+        @for (cell of ledger(); track cell.label) {
+          <div class="ac-cell" [attr.data-state]="cell.state">
+            <span class="ac-cell-month">{{ cell.label }}</span>
+            <span class="ac-cell-mark">
+              @switch (cell.state) {
+                @case ("paid") { ✓ }
+                @case ("future") { · }
+                @default { ✕ }
+              }
+            </span>
+            <span class="ac-cell-foot">{{ cell.invoice ? cell.invoice.number.slice(-4) : "" }}</span>
+          </div>
+        }
+      </div>
+      <p class="fx-muted ac-hint">{{ "admin.ledger_hint" | translate }}</p>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header"><h2>{{ "admin.usage_title" | translate }}</h2>
       <span class="fx-muted">
         @if (c.usage.last_session_at) {
           {{ "admin.usage_last_session" | translate }} {{ c.usage.last_session_at | date: "d MMM y" }}
@@ -116,18 +134,9 @@
       </span>
     </div>
     <div class="app-card-body ac-usage">
-      <div class="ac-stat">
-        <span class="ac-stat-label">{{ "nav.clients" | translate }}</span>
-        <strong>{{ c.usage.clients }}</strong>
-      </div>
-      <div class="ac-stat">
-        <span class="ac-stat-label">{{ "nav.team" | translate }}</span>
-        <strong>{{ c.usage.staff }}</strong>
-      </div>
-      <div class="ac-stat">
-        <span class="ac-stat-label">{{ "nav.activities" | translate }}</span>
-        <strong>{{ c.usage.activities }}</strong>
-      </div>
+      <div class="ac-stat"><span class="ac-stat-label">{{ "nav.clients" | translate }}</span><strong>{{ c.usage.clients }}</strong></div>
+      <div class="ac-stat"><span class="ac-stat-label">{{ "nav.team" | translate }}</span><strong>{{ c.usage.staff }}</strong></div>
+      <div class="ac-stat"><span class="ac-stat-label">{{ "nav.activities" | translate }}</span><strong>{{ c.usage.activities }}</strong></div>
       <div class="ac-stat">
         <span class="ac-stat-label">{{ "admin.usage_sessions_30" | translate }}</span>
         <strong [class.ac-stat--due]="c.usage.sessions_last_30_days === 0">{{ c.usage.sessions_last_30_days }}</strong>
@@ -136,84 +145,62 @@
   </div>
 
   <div class="ac-grid">
-    <!-- Left: subscription & access -->
     <div class="app-card">
-      <div class="app-card-header">
-        <div>
-          <h2>{{ "admin.subscription_access_title" | translate }}</h2>
-          <p class="fx-muted mb-0" style="font-size: 0.8125rem">{{ "admin.subscription_access_subtitle" | translate }}</p>
+      <div class="app-card-header"><h2>{{ "admin.invoices_title" | translate }}</h2></div>
+      @if (invoices().length === 0) {
+        <div class="app-card-body"><p class="fx-muted mb-0">{{ "admin.no_invoices" | translate }}</p></div>
+      } @else {
+        <div class="fx-table-scroll">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>{{ "subscription.invoice_number" | translate }}</th>
+                <th>{{ "subscription.period" | translate }}</th>
+                <th>{{ "payments.amount" | translate }}</th>
+                <th class="text-end"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (invoice of invoices(); track invoice.id) {
+                <tr>
+                  <td class="fx-strong" dir="ltr">{{ invoice.number }}</td>
+                  <td>{{ invoice.period_start | date: "d MMM" }} — {{ invoice.period_end | date: "d MMM y" }}</td>
+                  <td class="fx-num">{{ invoice.amount | money: invoice.currency }}</td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="savingInvoice()" (click)="voidInvoice(invoice)">
+                      {{ "admin.void_invoice" | translate }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
-      </div>
-      <div class="app-card-body ac-form">
-        <div class="ac-form-row">
+      }
+    </div>
+
+    <div class="ac-col">
+      <div class="app-card">
+        <div class="app-card-header">
+          <div>
+            <h2>{{ "admin.subscription_access_title" | translate }}</h2>
+            <p class="fx-muted mb-0" style="font-size: 0.8125rem">{{ "admin.subscription_access_subtitle" | translate }}</p>
+          </div>
+        </div>
+        <div class="app-card-body ac-form">
           <div>
             <label for="ac-period">{{ "admin.billing_period" | translate }}</label>
-            <select id="ac-period" class="form-select" [ngModel]="billingPeriod()" (ngModelChange)="billingPeriod.set($event)">
-              <option value="">{{ "admin.billing_period_trial" | translate }}</option>
+            <select id="ac-period" class="form-select" [value]="billingPeriod()" (change)="changeBillingPeriod($any($event.target).value)">
               <option value="monthly">{{ "subscription.plan_monthly" | translate }}</option>
               <option value="yearly">{{ "subscription.plan_yearly" | translate }}</option>
             </select>
             <p class="fx-muted ac-hint">{{ "admin.billing_period_hint" | translate }}</p>
           </div>
-          <div>
-            <label for="ac-exp">{{ "admin.expires_at" | translate }}</label>
-            <input id="ac-exp" type="date" class="form-control" [ngModel]="expiresAt()" (ngModelChange)="expiresAt.set($event)" />
-            <p class="fx-muted ac-hint">{{ "admin.expires_at_hint" | translate }}</p>
-          </div>
         </div>
-
-      </div>
-      <div class="ac-card-foot ac-card-foot--split">
-        <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="savingSub()" (click)="toggleSuspended()">
-          {{ (suspended() ? "admin.restore_access" : "admin.suspend_access") | translate }}
-        </button>
-        @if (subDirty()) {
-          <button type="button" class="btn btn-sm btn-primary" [disabled]="savingSub()" (click)="saveSubscription()">
-            {{ (savingSub() ? "common.saving" : "common.save") | translate }}
+        <div class="ac-card-foot">
+          <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="savingSub()" (click)="toggleAccess()">
+            {{ (accessOpen() ? "admin.suspend_access" : "admin.restore_access") | translate }}
           </button>
-        }
-      </div>
-    </div>
-
-    <!-- Right: what is owed, then the tenant's own settings -->
-    <div class="ac-col">
-      <div class="app-card">
-        <div class="app-card-header">
-          <div>
-            <h2>{{ "admin.payment_title" | translate }}</h2>
-            <p class="fx-muted mb-0" style="font-size: 0.8125rem">{{ "admin.payment_subtitle" | translate }}</p>
-          </div>
-        </div>
-        <div class="app-card-body">
-          @if (!onPaidPlan()) {
-            <p class="fx-muted mb-0">{{ "admin.payment_on_trial" | translate }}</p>
-          } @else {
-            <div class="ac-paid">
-              <app-status-badge [status]="currentPeriodPaid() ? 'paid' : 'unpaid'">
-                {{ (currentPeriodPaid() ? "admin.payment_settled" : "admin.payment_due") | translate }}
-              </app-status-badge>
-              <span class="fx-muted">
-                {{ "admin.attention_paid_through" | translate }}
-                {{ (paidThrough() | date: "d MMM y") || ("admin.attention_never_paid" | translate) }}
-              </span>
-            </div>
-
-            @if (daysBeforeLock() !== null) {
-              <p class="fx-muted ac-hint">{{ "admin.payment_grace_left" | translate: { days: daysBeforeLock() } }}</p>
-            }
-
-            <div class="ac-key mt-3">
-              <button type="button" class="btn btn-sm btn-primary" [disabled]="savingPayment()" (click)="recordPayment()">
-                {{ (savingPayment() ? "common.saving" : "admin.record_payment") | translate }}
-              </button>
-              @if (paidThrough()) {
-                <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="savingPayment()" (click)="undoPayment()">
-                  {{ "admin.undo_payment" | translate }}
-                </button>
-              }
-            </div>
-            <p class="fx-muted ac-hint">{{ "admin.payment_hint" | translate }}</p>
-          }
         </div>
       </div>
 
@@ -249,23 +236,6 @@
             </button>
           </div>
         }
-      </div>
-
-      <div class="app-card">
-        <div class="app-card-header"><h2>{{ "admin.debt_title" | translate }}</h2></div>
-        <div class="app-card-body">
-          <label for="ac-debt">{{ "admin.debt_amount_label" | translate }}</label>
-          <div class="ac-key">
-            <div class="input-group" style="max-width: 200px">
-              <input id="ac-debt" type="number" min="0" step="1" class="form-control" [ngModel]="debtAmount()" (ngModelChange)="debtAmount.set($event)" />
-              <span class="input-group-text">{{ c.currency_symbol }}</span>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="savingDebt() || !debtDirty()" (click)="saveDebt()">
-              {{ (savingDebt() ? "common.saving" : "common.save") | translate }}
-            </button>
-          </div>
-          <p class="fx-muted ac-hint">{{ "admin.debt_hint" | translate }}</p>
-        </div>
       </div>
     </div>
   </div>

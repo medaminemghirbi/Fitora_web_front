@@ -162,12 +162,12 @@ label {
   border: 1px solid var(--color-warning);
   background: var(--color-warning-soft);
 
-  &[data-kind="locked"] {
+  &[data-kind="unpaid"] {
     border-color: var(--color-danger);
     background: var(--color-danger-soft);
   }
 
-  &[data-kind="ending"] {
+  &[data-kind="suspended"] {
     border-color: var(--color-border);
     background: var(--color-surface-sunken);
   }
@@ -210,4 +210,94 @@ label {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
   font-variant-numeric: tabular-nums;
+}
+
+// ---------- the ledger: a year of months, each one an invoice ----------
+// Colour carries the state, and the shape is the same on both sides of the
+// relationship so a gym and Fitora are looking at the same picture.
+.ac-ledger {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ac-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 64px;
+  padding: 8px 4px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--color-surface);
+  font: inherit;
+  text-align: center;
+
+  &[data-state="paid"] {
+    background: var(--color-success-soft);
+    border-color: var(--color-success);
+    color: var(--color-success);
+    cursor: pointer;
+  }
+
+  &[data-state="missed"] {
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
+
+  &[data-state="current"] {
+    background: var(--color-warning-soft);
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+  }
+
+  &[data-state="future"] {
+    border-style: dashed;
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+    opacity: 0.6;
+  }
+
+  &:disabled { cursor: default; }
+}
+
+.ac-cell-month {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.ac-cell-mark { font-size: 1.05rem; font-weight: 700; line-height: 1; }
+
+.ac-cell-foot {
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+  min-height: 0.75rem;
+}
+
+.ac-ledger-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.ac-ledger-hint { font-size: 0.8rem; margin: var(--space-3) 0 0; }
+
+// Twelve cells across is unreadable on a phone; three rows of four is not.
+@media (max-width: 767.98px) {
+  .ac-ledger { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.ac-usage {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
 }

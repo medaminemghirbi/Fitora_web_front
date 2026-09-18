@@ -49,13 +49,13 @@ export class AdminCompaniesComponent implements OnInit {
     this.load();
   }
 
-  // How many gyms are asking to carry on past their trial. Shown whether or
-  // not the list is narrowed to them, so the signal cannot be missed.
-  readonly awaitingCount = signal(0);
-  readonly onlyAwaiting = signal(false);
+  // How many gyms have had their access shut. Shown whether or not the list
+  // is narrowed to them, so the signal cannot be missed.
+  readonly closedCount = signal(0);
+  readonly onlyClosed = signal(false);
 
-  toggleAwaiting(): void {
-    this.onlyAwaiting.update((v) => !v);
+  toggleClosed(): void {
+    this.onlyClosed.update((v) => !v);
     this.page.set(1);
     this.load();
   }
@@ -63,11 +63,11 @@ export class AdminCompaniesComponent implements OnInit {
   load(): void {
     this.loading.set(true);
     this.error.set(false);
-    this.companiesService.list(this.page(), this.search() || undefined, this.onlyAwaiting()).subscribe({
+    this.companiesService.list(this.page(), this.search() || undefined, this.onlyClosed()).subscribe({
       next: (res) => {
         this.companies.set(res.companies);
         this.meta.set(res.meta);
-        this.awaitingCount.set(res.awaiting_count ?? 0);
+        this.closedCount.set(res.closed_count ?? 0);
         this.loading.set(false);
       },
       error: () => {

@@ -13,12 +13,6 @@
       <span>{{ "subscription.due_banner_body" | translate: { days: daysToSettle() } }}</span>
       <span class="trial-shell-banner-link">{{ "subscription.due_banner_cta" | translate }}</span>
     </a>
-  } @else if (trialDaysRemaining() !== null) {
-    <a routerLink="/owner/subscription" class="trial-shell-banner">
-      <i class="bi bi-stars"></i>
-      <span>{{ "subscription.trial_banner_body" | translate: { days: trialDaysRemaining() } }}</span>
-      <span class="trial-shell-banner-link">{{ "subscription.trial_banner_cta" | translate }}</span>
-    </a>
   } @else if (emailUnverified() && !emailBannerDismissed()) {
     <div class="verify-email-banner">
       <i class="bi bi-envelope-exclamation"></i>

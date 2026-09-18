@@ -1,24 +1,37 @@
 export type BillingPeriod = "monthly" | "yearly";
 
+/** Why access is closed, or null when it is open. Two reasons, never four. */
+export type LockReason = "suspended" | "unpaid" | null;
+
+/**
+ * A gym's access to Fitora.
+ *
+ * `active` IS the access — nothing computes a date to read it. Everything
+ * else here is what the invoices say, for the screens that show a countdown.
+ */
 export interface Subscription {
   id: string;
-  status: "active" | "inactive" | "expired" | "cancelled";
-  starts_at: string;
-  expires_at: string | null;
+  active: boolean;
   billing_period: BillingPeriod | null;
-  on_trial: boolean;
-  upgrade_requested_at: string | null;
-  upgrade_requested_period: BillingPeriod | null;
-
-  // ---- paying, month by month ---------------------------------------------
-  /** The last day covered by what the gym has paid. null = never paid. */
+  lock_reason: LockReason;
+  /** The last day covered by an invoice. null = never paid. */
   paid_through: string | null;
-  /** Whether the period we are in is settled. */
   current_period_paid: boolean;
-  /** Past the paid period and past the three days of grace. */
-  payment_overdue: boolean;
-  /** Days left before access closes. null when nothing is ticking. */
+  /** Days left before the nightly sweep closes access. null = nothing ticking. */
   days_before_lock: number | null;
-  /** Why access is closed, or null when it is open. */
-  lock_reason: "suspended" | "trial_expired" | "term_ended" | "payment_overdue" | null;
+}
+
+/** One period of access, paid for and recorded. The gym downloads it. */
+export interface Invoice {
+  id: string;
+  number: string;
+  period_start: string;
+  period_end: string;
+  /** Frozen at issue — never today's tariff. */
+  amount: number;
+  currency: string;
+  billing_period: BillingPeriod;
+  issued_at: string;
+  issued_by: string | null;
+  notes: string | null;
 }

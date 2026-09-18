@@ -1,18 +1,26 @@
 import { Component, OnInit, computed, inject, signal } from "@angular/core";
-import { Observable } from "rxjs";
 import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AdminCompany, AdminCurrencyOption } from "../../../core/models/admin-company.model";
+import { Invoice } from "../../../core/models/subscription.model";
 import { AdminCompaniesService } from "../../../core/services/admin-companies.service";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ToastService } from "../../../core/services/toast.service";
+import { ConfirmService } from "../../../core/services/confirm.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
+
+/** One cell of the payment ledger: a month, and whether an invoice covers it. */
+interface LedgerCell {
+  label: string;
+  state: "paid" | "missed" | "current" | "future";
+  invoice: Invoice | null;
+}
 
 @Component({
   selector: "app-admin-company-detail",
@@ -26,181 +34,79 @@ export class AdminCompanyDetailComponent implements OnInit {
   private readonly service = inject(AdminCompaniesService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
   private readonly translate = inject(TranslateService);
 
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly company = signal<AdminCompany | null>(null);
+  readonly invoices = signal<Invoice[]>([]);
 
-  // subscription form
-  readonly status = signal<string>("active");
-  readonly expiresAt = signal<string>("");
-  // "" = still a free trial (no billing period), "monthly" | "yearly" = active plan
-  readonly billingPeriod = signal<string>("");
+  readonly billingPeriod = signal<string>("monthly");
   readonly savingSub = signal(false);
+  readonly savingInvoice = signal(false);
 
-  // tenant settings (currency + language)
   readonly currencyOptions = signal<AdminCurrencyOption[]>([]);
   readonly localeOptions = signal<string[]>([]);
   readonly currency = signal<string>("TND");
   readonly appLocale = signal<string>("fr");
   readonly savingSettings = signal(false);
 
-  // debt — displayed/edited in whole currency units, stored in cents
-  readonly debtAmount = signal<number>(0);
-  readonly savingDebt = signal(false);
-
   readonly impersonating = signal(false);
+  readonly ledgerYear = signal(new Date().getFullYear());
 
   private id!: string;
 
-  // ---- what needs deciding, said in one line ------------------------------
-  // The page used to make you read three controls and a date to work out
-  // whether a gym was fine, running out, or already locked out.
-  readonly askedAt = computed(() => this.company()?.subscription?.upgrade_requested_at ?? null);
-  readonly askedPeriod = computed(() => this.company()?.subscription?.upgrade_requested_period ?? null);
-
-  /** Whole days since they asked to carry on. */
-  readonly waitingDays = computed(() => {
-    const asked = this.askedAt();
-    if (!asked) return 0;
-    return Math.max(0, Math.floor((Date.now() - new Date(asked).getTime()) / 86_400_000));
-  });
-
-  /**
-   * The one thing this page is for, when there is one. `null` means nothing
-   * is pending and the banner stays off — a paying gym in good standing
-   * should not be shouted at.
-   */
-  readonly attention = computed<"asked" | "overdue" | "due" | "locked" | "ending" | null>(() => {
-    const c = this.company();
-    if (!c) return null;
-    const sub = c.subscription;
-    if (this.askedAt()) return "asked";
-    // Money owed outranks a deadline: it is the reason the door is shut and
-    // the one thing an admin can fix from here.
-    if (sub?.payment_overdue) return "overdue";
-    if (sub && !sub.on_trial && !sub.current_period_paid) return "due";
-    if (c.trial_locked) return "locked";
-    const days = c.trial_days_remaining;
-    if (days !== null && days <= 7 && !sub?.billing_period) return "ending";
-    return null;
-  });
-
-  // ---- the month's payment ------------------------------------------------
-  readonly savingPayment = signal(false);
-
+  // ---- the access, read not computed --------------------------------------
+  readonly accessOpen = computed(() => this.company()?.subscription?.active ?? false);
+  readonly lockReason = computed(() => this.company()?.subscription?.lock_reason ?? null);
   readonly paidThrough = computed(() => this.company()?.subscription?.paid_through ?? null);
   readonly currentPeriodPaid = computed(() => this.company()?.subscription?.current_period_paid ?? false);
   readonly daysBeforeLock = computed(() => this.company()?.subscription?.days_before_lock ?? null);
-  /** The payment controls mean nothing while a gym is still on its trial. */
-  readonly onPaidPlan = computed(() => {
-    const sub = this.company()?.subscription;
-    return !!sub && !sub.on_trial;
-  });
+  readonly arrears = computed(() => (this.company()?.arrears_cents ?? 0) / 100);
 
   /**
-   * Suspending replaces the four-state picker that used to sit on this
-   * page. The other three states are reached by the things that cause them
-   * — a trial running out, a month left unpaid — not by an admin choosing
-   * a word from a list.
+   * The one thing this page is for, when there is one. A gym that is open
+   * and paid up gets no banner at all.
    */
-  readonly suspended = computed(() => (this.company()?.subscription?.status ?? "active") !== "active");
+  readonly attention = computed<"suspended" | "unpaid" | "due" | null>(() => {
+    if (!this.company()) return null;
+    if (!this.accessOpen()) return this.lockReason() === "unpaid" ? "unpaid" : "suspended";
+    return this.currentPeriodPaid() ? null : "due";
+  });
 
-  toggleSuspended(): void {
-    if (this.savingSub()) return;
+  // ---- the ledger: every month of a year, and its invoice ------------------
+  readonly ledgerYears = computed(() => {
+    const now = new Date().getFullYear();
+    return [now - 1, now, now + 1];
+  });
 
-    const next = this.suspended() ? "active" : "cancelled";
-    this.savingSub.set(true);
-    this.service.updateSubscription(this.id, { status: next, expires_at: this.expiresAt() || null, billing_period: this.billingPeriod() || null }).subscribe({
-      next: (res) => {
-        this.savingSub.set(false);
-        this.hydrate(res.company);
-        this.toast.success(this.translate.instant(next === "active" ? "admin.access_restored" : "admin.access_suspended"));
-      },
-      error: (err) => {
-        this.savingSub.set(false);
-        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
-      },
+  readonly ledger = computed<LedgerCell[]>(() => {
+    const year = this.ledgerYear();
+    const today = new Date();
+    const labels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+
+    return labels.map((label, month) => {
+      // A month is covered when an invoice's period contains its first day —
+      // a yearly invoice therefore paints twelve cells at once.
+      const first = new Date(Date.UTC(year, month, 1));
+      const covering = this.invoices().find(
+        (i) => new Date(i.period_start) <= first && new Date(i.period_end) >= first
+      );
+      if (covering) return { label, state: "paid" as const, invoice: covering };
+
+      const isFuture = year > today.getFullYear() || (year === today.getFullYear() && month > today.getMonth());
+      if (isFuture) return { label, state: "future" as const, invoice: null };
+
+      const isCurrent = year === today.getFullYear() && month === today.getMonth();
+      return { label, state: isCurrent ? ("current" as const) : ("missed" as const), invoice: null };
     });
-  }
-
-  recordPayment(): void {
-    if (this.savingPayment()) return;
-    this.runPayment(this.service.recordPayment(this.id), "admin.payment_recorded");
-  }
-
-  undoPayment(): void {
-    if (this.savingPayment()) return;
-    this.runPayment(this.service.undoPayment(this.id), "admin.payment_undone");
-  }
-
-  private runPayment(call: Observable<{ company: AdminCompany }>, successKey: string): void {
-    this.savingPayment.set(true);
-    call.subscribe({
-      next: (res) => {
-        this.savingPayment.set(false);
-        this.hydrate(res.company);
-        this.toast.success(this.translate.instant(successKey));
-      },
-      error: (err) => {
-        this.savingPayment.set(false);
-        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
-      },
-    });
-  }
-
-  /**
-   * Activation in one action: their preferred period, no end date, active.
-   * Clearing expires_at is what unlocks them (see the backend's
-   * update_subscription) — the three controls below still do it by hand for
-   * anything unusual, like a fixed renewal date.
-   */
-  activate(): void {
-    const period = this.askedPeriod() || "monthly";
-    this.savingSub.set(true);
-    this.service.updateSubscription(this.id, { status: "active", expires_at: null, billing_period: period }).subscribe({
-      next: (res) => {
-        this.savingSub.set(false);
-        this.hydrate(res.company);
-        this.toast.success(this.translate.instant("admin.activated"));
-      },
-      error: (err) => {
-        this.savingSub.set(false);
-        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
-      },
-    });
-  }
-
-  // Summary tile: the current plan (or "free trial" while no billing period).
-  readonly formuleLabelKey = computed(() => {
-    const period = this.company()?.subscription?.billing_period;
-    if (period === "yearly") return "subscription.plan_yearly";
-    if (period === "monthly") return "subscription.plan_monthly";
-    return "admin.formule_trial";
   });
 
-  readonly subDirty = computed(() => {
-    const c = this.company();
-    if (!c) return false;
-    return (
-      this.status() !== (c.subscription?.status ?? "active") ||
-      this.expiresAt() !== (c.subscription?.expires_at?.slice(0, 10) ?? "") ||
-      this.billingPeriod() !== (c.subscription?.billing_period ?? "")
-    );
-  });
-
-  readonly settingsDirty = computed(() => {
-    const c = this.company();
-    if (!c) return false;
-    return this.currency() !== c.currency || this.appLocale() !== c.locale;
-  });
-
-  readonly debtDirty = computed(() => {
-    const c = this.company();
-    if (!c) return false;
-    return this.debtAmount() !== c.debt_cents / 100;
-  });
+  readonly ledgerPaidCount = computed(() => this.ledger().filter((c) => c.state === "paid").length);
+  readonly ledgerCollected = computed(() =>
+    this.ledger().reduce((sum, c) => sum + (c.invoice ? c.invoice.amount : 0), 0)
+  );
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get("id")!;
@@ -212,10 +118,11 @@ export class AdminCompanyDetailComponent implements OnInit {
     this.error.set(false);
     this.service.get(this.id).subscribe({
       next: (res) => {
-        this.currencyOptions.set(res.currency_options ?? []);
-        this.localeOptions.set(res.locale_options ?? []);
         this.hydrate(res.company);
+        this.currencyOptions.set(res.currency_options);
+        this.localeOptions.set(res.locale_options);
         this.loading.set(false);
+        this.loadInvoices();
       },
       error: () => {
         this.error.set(true);
@@ -224,23 +131,82 @@ export class AdminCompanyDetailComponent implements OnInit {
     });
   }
 
-  private hydrate(c: AdminCompany): void {
-    this.company.set(c);
-    this.status.set(c.subscription?.status ?? "active");
-    this.expiresAt.set(c.subscription?.expires_at?.slice(0, 10) ?? "");
-    this.billingPeriod.set(c.subscription?.billing_period ?? "");
-    this.currency.set(c.currency);
-    this.appLocale.set(c.locale);
-    this.debtAmount.set(c.debt_cents / 100);
+  private loadInvoices(): void {
+    this.service.invoices(this.id).subscribe({
+      next: (res) => this.invoices.set(res.invoices),
+      error: () => this.invoices.set([]),
+    });
   }
 
-  saveSubscription(): void {
+  private hydrate(company: AdminCompany): void {
+    this.company.set(company);
+    this.billingPeriod.set(company.subscription?.billing_period ?? "monthly");
+    this.currency.set(company.currency);
+    this.appLocale.set(company.locale);
+  }
+
+  // ---- the money arriving --------------------------------------------------
+  issueInvoice(): void {
+    if (this.savingInvoice()) return;
+
+    this.savingInvoice.set(true);
+    this.service.issueInvoice(this.id).subscribe({
+      next: (res) => {
+        this.savingInvoice.set(false);
+        this.hydrate(res.company);
+        this.loadInvoices();
+        this.toast.success(this.translate.instant("admin.invoice_issued", { number: res.invoice.number }));
+      },
+      error: (err) => {
+        this.savingInvoice.set(false);
+        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
+  }
+
+  async voidInvoice(invoice: Invoice): Promise<void> {
+    if (this.savingInvoice()) return;
+
+    const confirmed = await this.confirm.ask({
+      title: this.translate.instant("admin.void_invoice_title"),
+      body: this.translate.instant("admin.void_invoice_body", { number: invoice.number }),
+      danger: true,
+    });
+    if (!confirmed) return;
+
+    this.savingInvoice.set(true);
+    this.service.voidInvoice(this.id, invoice.id).subscribe({
+      next: (res) => {
+        this.savingInvoice.set(false);
+        this.hydrate(res.company);
+        this.loadInvoices();
+      },
+      error: (err) => {
+        this.savingInvoice.set(false);
+        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
+  }
+
+  // ---- access, and what an invoice covers ---------------------------------
+  toggleAccess(): void {
+    this.updateSubscription({ active: !this.accessOpen() }, this.accessOpen() ? "admin.access_suspended" : "admin.access_restored");
+  }
+
+  changeBillingPeriod(period: string): void {
+    this.billingPeriod.set(period);
+    this.updateSubscription({ billing_period: period }, "common.saved");
+  }
+
+  private updateSubscription(payload: Parameters<AdminCompaniesService["updateSubscription"]>[1], successKey: string): void {
+    if (this.savingSub()) return;
+
     this.savingSub.set(true);
-    this.service.updateSubscription(this.id, { status: this.status(), expires_at: this.expiresAt() || null, billing_period: this.billingPeriod() || null }).subscribe({
+    this.service.updateSubscription(this.id, payload).subscribe({
       next: (res) => {
         this.savingSub.set(false);
         this.hydrate(res.company);
-        this.toast.success(this.translate.instant("common.save"));
+        this.toast.success(this.translate.instant(successKey));
       },
       error: (err) => {
         this.savingSub.set(false);
@@ -255,7 +221,7 @@ export class AdminCompanyDetailComponent implements OnInit {
       next: (res) => {
         this.savingSettings.set(false);
         this.hydrate(res.company);
-        this.toast.success(this.translate.instant("common.save"));
+        this.toast.success(this.translate.instant("common.saved"));
       },
       error: (err) => {
         this.savingSettings.set(false);
@@ -264,27 +230,20 @@ export class AdminCompanyDetailComponent implements OnInit {
     });
   }
 
-  saveDebt(): void {
-    this.savingDebt.set(true);
-    this.service.updateDebt(this.id, Math.round(this.debtAmount() * 100)).subscribe({
-      next: (res) => {
-        this.savingDebt.set(false);
-        this.hydrate(res.company);
-        this.toast.success(this.translate.instant("common.save"));
-      },
-      error: (err) => {
-        this.savingDebt.set(false);
-        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
-      },
-    });
-  }
+  readonly settingsDirty = computed(() => {
+    const c = this.company();
+    if (!c) return false;
+    return this.currency() !== c.currency || this.appLocale() !== c.locale;
+  });
 
   impersonate(): void {
-    const c = this.company();
-    if (!c) return;
     this.impersonating.set(true);
-    this.service.impersonate(c.id).subscribe({
-      next: (res) => this.auth.startImpersonation(res, c.name),
+    const name = this.company()?.name ?? "";
+    this.service.impersonate(this.id).subscribe({
+      next: (res) => {
+        this.impersonating.set(false);
+        this.auth.startImpersonation(res, name);
+      },
       error: (err) => {
         this.impersonating.set(false);
         this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));

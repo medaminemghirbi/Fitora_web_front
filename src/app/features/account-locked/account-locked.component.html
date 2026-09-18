@@ -6,14 +6,7 @@
       <h1>{{ ("locked.title_" + reason()) | translate }}</h1>
       <p class="locked-body">{{ ("locked.body_" + reason()) | translate }}</p>
 
-      @if (requested()) {
-        <p class="locked-done"><i class="bi bi-check-lg"></i> {{ "locked.requested" | translate }}</p>
-      } @else {
-        <button type="button" class="btn btn-primary" [disabled]="requesting()" (click)="ask()">
-          @if (requesting()) { <app-spinner [size]="18" /> }
-          {{ "locked.ask" | translate }}
-        </button>
-      }
+      <a routerLink="/owner/subscription" class="btn btn-primary">{{ "locked.see_invoices" | translate }}</a>
 
       <p class="locked-hint">{{ "locked.hint" | translate }}</p>
     } @else {
