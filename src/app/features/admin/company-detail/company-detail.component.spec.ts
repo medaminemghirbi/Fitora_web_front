@@ -228,4 +228,21 @@ describe("AdminCompanyDetailComponent", () => {
       expect(service.updateSubscription).toHaveBeenCalledWith("c1", { billing_period: "yearly" });
     });
   });
+
+    // A fixed window around today left a long-standing gym's oldest invoices
+    // reachable by nothing at all.
+    it("offers every year its invoices touch, however far back", () => {
+      build({}, [
+        invoice({ id: "old", period_start: "2023-03-01", period_end: "2023-03-31" }),
+        invoice({ id: "new", period_start: "2026-09-01", period_end: "2026-09-30" }),
+      ]);
+
+      expect(component.ledgerYears()).toContain(2023);
+      expect(component.ledgerYears()).toContain(2026);
+    });
+
+    it("still offers the current year for a gym with no invoices at all", () => {
+      build({}, []);
+      expect(component.ledgerYears()).toEqual([new Date().getFullYear()]);
+    });
 });

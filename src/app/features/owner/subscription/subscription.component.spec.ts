@@ -143,4 +143,16 @@ describe("SubscriptionComponent", () => {
     build({ arrears_cents: 19_800 });
     expect(component.arrears()).toBe(198);
   });
+
+    it("lets a gym of several years open all of them", () => {
+      build({
+        invoices: [
+          invoice({ id: "old", period_start: "2024-05-01", period_end: "2024-05-31" }),
+          invoice({ id: "new", period_start: "2026-09-01", period_end: "2026-09-30" }),
+        ],
+      });
+
+      expect(component.ledgerYears()).toContain(2024);
+      expect(component.ledgerYears()).toContain(2026);
+    });
 });

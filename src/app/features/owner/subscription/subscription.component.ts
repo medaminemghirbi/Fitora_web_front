@@ -11,13 +11,7 @@ import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
-
-/** One month of the year, and the invoice covering it if there is one. */
-interface LedgerCell {
-  label: string;
-  state: "paid" | "missed" | "current" | "future";
-  invoice: Invoice | null;
-}
+import { LedgerCell, ledgerFor, ledgerYears as yearsFrom } from "../../../shared/utils/payment-ledger";
 
 /**
  * The gym's own view of its Fitora access.
@@ -61,32 +55,9 @@ export class SubscriptionComponent {
   readonly arrears = computed(() => (this.info()?.arrears_cents ?? 0) / 100);
   readonly currency = computed(() => this.info()?.currency ?? "TND");
 
-  readonly ledgerYears = computed(() => {
-    const now = new Date().getFullYear();
-    return [now - 1, now, now + 1];
-  });
-
-  readonly ledger = computed<LedgerCell[]>(() => {
-    const year = this.ledgerYear();
-    const today = new Date();
-    const labels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
-
-    return labels.map((label, month) => {
-      // A yearly invoice covers twelve of these at once — the cell asks
-      // whether any invoice's period contains its first day.
-      const first = new Date(Date.UTC(year, month, 1));
-      const covering = this.invoices().find(
-        (i) => new Date(i.period_start) <= first && new Date(i.period_end) >= first
-      );
-      if (covering) return { label, state: "paid" as const, invoice: covering };
-
-      const isFuture = year > today.getFullYear() || (year === today.getFullYear() && month > today.getMonth());
-      if (isFuture) return { label, state: "future" as const, invoice: null };
-
-      const isCurrent = year === today.getFullYear() && month === today.getMonth();
-      return { label, state: isCurrent ? ("current" as const) : ("missed" as const), invoice: null };
-    });
-  });
+  // Years come from the invoices, so a gym of four years can open all four.
+  readonly ledgerYears = computed(() => yearsFrom(this.invoices()));
+  readonly ledger = computed<LedgerCell[]>(() => ledgerFor(this.ledgerYear(), this.invoices()));
 
   readonly paidCount = computed(() => this.ledger().filter((c) => c.state === "paid").length);
 

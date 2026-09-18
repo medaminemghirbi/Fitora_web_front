@@ -14,13 +14,7 @@ import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
-
-/** One cell of the payment ledger: a month, and whether an invoice covers it. */
-interface LedgerCell {
-  label: string;
-  state: "paid" | "missed" | "current" | "future";
-  invoice: Invoice | null;
-}
+import { LedgerCell, ledgerFor, ledgerYears as yearsFrom } from "../../../shared/utils/payment-ledger";
 
 @Component({
   selector: "app-admin-company-detail",
@@ -76,32 +70,10 @@ export class AdminCompanyDetailComponent implements OnInit {
   });
 
   // ---- the ledger: every month of a year, and its invoice ------------------
-  readonly ledgerYears = computed(() => {
-    const now = new Date().getFullYear();
-    return [now - 1, now, now + 1];
-  });
-
-  readonly ledger = computed<LedgerCell[]>(() => {
-    const year = this.ledgerYear();
-    const today = new Date();
-    const labels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
-
-    return labels.map((label, month) => {
-      // A month is covered when an invoice's period contains its first day —
-      // a yearly invoice therefore paints twelve cells at once.
-      const first = new Date(Date.UTC(year, month, 1));
-      const covering = this.invoices().find(
-        (i) => new Date(i.period_start) <= first && new Date(i.period_end) >= first
-      );
-      if (covering) return { label, state: "paid" as const, invoice: covering };
-
-      const isFuture = year > today.getFullYear() || (year === today.getFullYear() && month > today.getMonth());
-      if (isFuture) return { label, state: "future" as const, invoice: null };
-
-      const isCurrent = year === today.getFullYear() && month === today.getMonth();
-      return { label, state: isCurrent ? ("current" as const) : ("missed" as const), invoice: null };
-    });
-  });
+  // Years come from the invoices, not from a window around today: a gym that
+  // has been a client for four years has invoices a fixed window cannot reach.
+  readonly ledgerYears = computed(() => yearsFrom(this.invoices()));
+  readonly ledger = computed<LedgerCell[]>(() => ledgerFor(this.ledgerYear(), this.invoices()));
 
   readonly ledgerPaidCount = computed(() => this.ledger().filter((c) => c.state === "paid").length);
   readonly ledgerCollected = computed(() =>
