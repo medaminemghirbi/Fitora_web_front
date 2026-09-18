@@ -38,6 +38,23 @@ describe("notification-text utils", () => {
       expect(body).toBe("Nouvelle fonctionnalité");
     });
 
+    it("composes an invoice_issued notification", () => {
+      const n = notif("invoice_issued", { number: "FIT-2026-0007", amount: "99.00", currency: "TND" });
+      const { title, body } = notificationText(translate, n);
+      expect(title).toContain("FIT-2026-0007");
+      expect(body).toContain("99.00");
+      expect(body).toContain("TND");
+    });
+
+    // An open tab can outlive the deploy that taught the backend a new kind.
+    // It has to render something rather than hand the template an undefined.
+    it("renders a generic notification for a kind this build never heard of", () => {
+      const n = notif("payment_received" as AppNotification["kind"], {});
+      const { title, body } = notificationText(translate, n);
+      expect(title).toBe("notifications.title");
+      expect(body).toBe("");
+    });
+
     it("falls back to an em dash for missing fields", () => {
       const n = notif("employee_birthday", { name: null });
       const { body } = notificationText(translate, n);
@@ -58,6 +75,11 @@ describe("notification-text utils", () => {
       expect(notificationCtaKey(notif("contract_expiring", {}))).toBe("notifications.open_contract");
       expect(notificationCtaKey(notif("employee_birthday", {}))).toBe("notifications.open_employee");
       expect(notificationCtaKey(notif("system_update", {}))).toBe("notifications.open_system_update");
+      expect(notificationCtaKey(notif("invoice_issued", {}))).toBe("notifications.open_invoice");
+    });
+
+    it("gives an unknown kind a generic button rather than a raw key", () => {
+      expect(notificationCtaKey(notif("payment_received" as AppNotification["kind"], {}))).toBe("notifications.open_generic");
     });
   });
 });

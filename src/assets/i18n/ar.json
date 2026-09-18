@@ -1162,7 +1162,14 @@
     "employee_birthday": {
       "title": "عيد ميلاد موظف",
       "body": "{{name}} يحتفل بعيد ميلاده اليوم."
-    }
+    },
+    "invoice_issued": {
+      "title": "الفاتورة {{number}}",
+      "body": "تمّ تسجيل دفعك البالغ {{amount}} {{currency}}. الفاتورة متاحة في مساحتك."
+    },
+    "open_invoice": "عرض فواتيري",
+    "open_generic": "فتح",
+    "title": "إشعار"
   },
   "modules": {
     "clients": {

@@ -1162,7 +1162,14 @@
     "employee_birthday": {
       "title": "Anniversaire d'un employé",
       "body": "{{name}} fête son anniversaire aujourd'hui."
-    }
+    },
+    "invoice_issued": {
+      "title": "Facture {{number}}",
+      "body": "Votre paiement de {{amount}} {{currency}} a été enregistré. La facture est disponible dans votre espace."
+    },
+    "open_invoice": "Voir mes factures",
+    "open_generic": "Ouvrir",
+    "title": "Notification"
   },
   "modules": {
     "clients": {

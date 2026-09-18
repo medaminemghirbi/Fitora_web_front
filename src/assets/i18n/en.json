@@ -1162,7 +1162,14 @@
     "employee_birthday": {
       "title": "An employee's birthday",
       "body": "{{name}} has a birthday today."
-    }
+    },
+    "invoice_issued": {
+      "title": "Invoice {{number}}",
+      "body": "Your payment of {{amount}} {{currency}} has been recorded. The invoice is available in your space."
+    },
+    "open_invoice": "See my invoices",
+    "open_generic": "Open",
+    "title": "Notification"
   },
   "modules": {
     "clients": {

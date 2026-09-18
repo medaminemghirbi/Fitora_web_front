@@ -5,6 +5,7 @@ const EMOJI: Record<NotificationKind, string> = {
   contract_expiring: "📋",
   employee_birthday: "🎂",
   system_update: "🚀",
+  invoice_issued: "🧾",
 };
 
 /**
@@ -32,6 +33,14 @@ const EMOJI: Record<NotificationKind, string> = {
               <rect x="26" y="4" width="4" height="4" fill="#8b5cf6" />
               <rect x="44" y="6" width="4" height="4" fill="#f59e0b" />
             </g>
+          </svg>
+        }
+        @case ("invoice_issued") {
+          <svg class="art-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M18 10h28v40l-5-4-5 4-5-4-5 4-5-4-3 2z" fill="#dcfce7" />
+            <path d="M24 22h16M24 30h16M24 38h10" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" />
+            <circle class="pulse" cx="45" cy="45" r="9" fill="#16a34a" />
+            <path d="M41 45l3 3 5-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
           </svg>
         }
         @case ("contract_expiring") {
@@ -68,6 +77,7 @@ const EMOJI: Record<NotificationKind, string> = {
       .art--mini { width: 40px; height: 40px; border-radius: 11px; }
       .art[data-kind="employee_birthday"] { background: linear-gradient(150deg, #fef3c7, #fde68a); }
       .art[data-kind="contract_expiring"] { background: linear-gradient(150deg, #e0e7ff, #c7d2fe); }
+      .art[data-kind="invoice_issued"] { background: linear-gradient(150deg, #dcfce7, #bbf7d0); }
       .art-svg { width: 76%; height: 76%; }
       .art-emoji {
         position: absolute;
