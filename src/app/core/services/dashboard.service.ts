@@ -41,6 +41,7 @@ export interface RecentClientItem {
 export interface AttentionRow {
   key: "expiring" | "unpaid" | "expired" | "sessions_without_coach";
   count: number;
+  /** null when there is no money in it, or when the login may not read it. */
   amount: number | null;
 }
 
@@ -49,7 +50,8 @@ export interface DashboardStats {
   active_contracts: number;
   todays_bookings: number;
   todays_attendance: number;
-  outstanding_payments: string;
+  /** null when the login may not read what the gym earns (see the `revenue` capability). */
+  outstanding_payments: string | null;
   todays_schedule: TodaysScheduleItem[];
   attention: AttentionRow[];
   contracts_expiring: ContractExpiringItem[];

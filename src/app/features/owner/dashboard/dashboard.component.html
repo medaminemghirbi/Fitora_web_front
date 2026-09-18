@@ -60,7 +60,9 @@
         <app-kpi-card [label]="'dashboard.active_contracts' | translate" [value]="d.stats.active_contracts" icon="bi-file-earmark-text" tone="info" />
         <app-kpi-card [label]="'dashboard.todays_bookings' | translate" [value]="d.stats.todays_bookings" icon="bi-journal-check" tone="warning" />
         <app-kpi-card [label]="'dashboard.todays_attendance' | translate" [value]="d.stats.todays_attendance" icon="bi-check2-circle" tone="success" />
-        <app-kpi-card [label]="'dashboard.outstanding_payments' | translate" [value]="d.stats.outstanding_payments | money: d.company.currency" icon="bi-exclamation-circle" tone="danger" />
+        @if (d.stats.outstanding_payments !== null) {
+          <app-kpi-card [label]="'dashboard.outstanding_payments' | translate" [value]="d.stats.outstanding_payments | money: d.company.currency" icon="bi-exclamation-circle" tone="danger" />
+        }
       </div>
 
       <div class="app-card dashboard-schedule-card">
@@ -114,7 +116,8 @@
           </div>
         </div>
 
-        <div class="app-card">
+        @if (d.stats.outstanding_payments !== null) {
+          <div class="app-card">
           <div class="app-card-header">
             <h3>{{ "dashboard.recent_payments" | translate }}</h3>
             <a routerLink="/owner/payments" class="dashboard-view-all">{{ "dashboard.view_all" | translate }}</a>
@@ -134,6 +137,7 @@
             }
           </div>
         </div>
+        }
       </div>
 
       <!-- De-emphasized utility row: export + activity log are occasional tasks, not daily-glance info. -->

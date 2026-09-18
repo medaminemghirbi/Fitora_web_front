@@ -530,7 +530,8 @@
     "perm_checkin": "تسجيل الحضور",
     "perm_locations": "ساعات العمل والموقع",
     "desc_data_exchange": "استورد المنخرطين والصيغ والجدول من ملف، أو صدّرها.",
-    "company_city": "المدينة"
+    "company_city": "المدينة",
+    "perm_revenue": "رقم المعاملات"
   },
   "contract": {
     "status_pending": "قيد الانتظار",

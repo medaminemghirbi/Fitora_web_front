@@ -222,4 +222,28 @@ describe("DashboardComponent", () => {
       expect(toast.toasts()[0].kind).toBe("error");
     });
   });
+
+  describe("a login that may not read what the gym earns", () => {
+    it("keeps the volumes and shows no figure in money", () => {
+      const withoutRevenue: DashboardResponse = {
+        ...response,
+        stats: {
+          ...response.stats,
+          outstanding_payments: null,
+          recent_payments: [],
+          attention: [{ key: "unpaid", count: 3, amount: null }],
+        },
+      };
+      dashboardService.get.and.returnValue(of(withoutRevenue));
+      component.load();
+      fixture.detectChanges();
+
+      const text: string = fixture.nativeElement.textContent;
+      expect(text).not.toContain("TND");
+      // The work is still theirs to chase; only the amount is withheld.
+      expect(component.attention()[0].count).toBe(3);
+      expect(component.attention()[0].amount).toBeNull();
+    });
+  });
 });
+

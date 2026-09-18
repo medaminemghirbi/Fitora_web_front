@@ -530,7 +530,8 @@
     "perm_checkin": "Pointage / présence",
     "perm_locations": "Horaires & lieu",
     "desc_data_exchange": "Importez vos adhérents, formules et planning depuis un fichier, ou exportez-les.",
-    "company_city": "Ville"
+    "company_city": "Ville",
+    "perm_revenue": "Chiffre d'affaires"
   },
   "contract": {
     "status_pending": "En attente",

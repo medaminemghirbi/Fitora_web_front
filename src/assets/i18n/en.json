@@ -530,7 +530,8 @@
     "perm_checkin": "Attendance check-in",
     "perm_locations": "Opening hours & location",
     "desc_data_exchange": "Import your members, plans and schedule from a file, or export them.",
-    "company_city": "City"
+    "company_city": "City",
+    "perm_revenue": "Revenue"
   },
   "contract": {
     "status_pending": "Pending",
