@@ -23,6 +23,7 @@ export const routes: Routes = [
     children: [
       { path: "", pathMatch: "full", loadComponent: () => import("./features/landing/landing.component").then((m) => m.LandingComponent) },
       { path: "connexion", loadComponent: () => import("./features/b2b/auth/pro-login.component").then((m) => m.ProLoginComponent) },
+      { path: "inscription", loadComponent: () => import("./features/b2b/auth/register.component").then((m) => m.RegisterComponent) },
       { path: "demo", data: { kind: "demo" }, loadComponent: () => import("./features/b2b/contact/request-access.component").then((m) => m.RequestAccessComponent) },
       { path: "devis", data: { kind: "quote" }, loadComponent: () => import("./features/b2b/contact/request-access.component").then((m) => m.RequestAccessComponent) },
       { path: "mot-de-passe-oublie", loadComponent: () => import("./features/auth/forgot-password.component").then((m) => m.ForgotPasswordComponent) },
@@ -134,9 +135,8 @@ export const routes: Routes = [
   { path: "auth/forgot-password", pathMatch: "full", redirectTo: "/mot-de-passe-oublie" },
   { path: "auth/demo", pathMatch: "full", redirectTo: "/demo" },
   { path: "auth/devis", pathMatch: "full", redirectTo: "/devis" },
-  // A gym is joined, never found: the directory and the member sign-up that
-  // fed it are not coming back.
-  { path: "inscription", pathMatch: "full", redirectTo: "" },
+  // A gym is joined, never found: the directory the member sign-up fed is
+  // not coming back. /inscription is the gym's own sign-up now.
   { path: "gyms", redirectTo: "" },
 
   { path: "**", redirectTo: "" },

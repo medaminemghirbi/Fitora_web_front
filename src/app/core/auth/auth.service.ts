@@ -23,6 +23,14 @@ interface AuthResponse {
   client?: Client;
 }
 
+export interface RegisterPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  locale?: string;
+}
+
 interface ImpersonatorStash {
   token: string;
   user: User;
@@ -75,6 +83,17 @@ export class AuthService {
 
   private syncSentryUser(user: User | null): void {
     Sentry.setUser(user ? { id: user.id, email: user.email, company_id: user.company_id ?? undefined, role: user.role } : null);
+  }
+
+  /**
+   * A gym opening its own account. Creates the owner's login and nothing
+   * else — the gym itself is named on the next screen, which is also where
+   * the 14 days start.
+   */
+  register(payload: RegisterPayload): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${API_BASE_URL}/auth/register`, { user: payload })
+      .pipe(tap((res) => this.setSession(res)));
   }
 
   login(email: string, password: string): Observable<AuthResponse> {

@@ -98,7 +98,13 @@
     "pro_login_title": "Your gym's back office",
     "pro_login_subtitle": "Sign in to manage your gym.",
     "pro_space": "Professional area",
-    "member_account_notice": "This is a member's account, not a gym's. Fitora is for gyms — talk to yours about your bookings."
+    "member_account_notice": "This is a member's account, not a gym's. Fitora is for gyms — talk to yours about your bookings.",
+    "register_title": "Create your account",
+    "register_subtitle": "Three fields, then you name your gym. 14 days of full access.",
+    "register_cta": "Create my account",
+    "register_trial_note": "14 days of full access. No card: after that you ask for activation from your own space.",
+    "password_min": "8 characters minimum.",
+    "email_invalid": "Invalid email address."
   },
   "nav": {
     "switch_company": "Switch company",
@@ -912,13 +918,13 @@
   "landing": {
     "nav_features": "Features",
     "nav_menu": "Menu",
-    "cta_start": "Book a demo",
+    "cta_start": "Free trial",
     "cta_start_free": "Start for free",
     "eyebrow": "Software for gyms",
     "hero_title_1": "Run your gym,",
     "hero_title_2": "not your spreadsheets.",
     "hero_subtitle": "Members, memberships, classes, bookings, check-in, staff and payroll — one platform built for gyms and studios.",
-    "hero_cta_primary": "Book a demo",
+    "hero_cta_primary": "Create my account — 14 days",
     "hero_cta_secondary": "Request a quote",
     "hero_note": "20 minutes · your own numbers · no commitment",
     "panel_today": "Today",

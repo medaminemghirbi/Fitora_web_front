@@ -1,7 +1,7 @@
 <app-auth-pro-shell
   [asideText]="'auth.no_account' | translate"
-  [asideLinkText]="'landing.hero_cta_secondary' | translate"
-  asideLink="/devis"
+  [asideLinkText]="'auth.register_cta' | translate"
+  asideLink="/inscription"
 >
   <h1 class="auth-title">{{ "auth.pro_login_title" | translate }}</h1>
   <p class="auth-subtitle">{{ "auth.pro_login_subtitle" | translate }}</p>
@@ -41,7 +41,7 @@
 
   <p class="auth-switch">
     {{ "auth.no_account" | translate }}
-    <a routerLink="/demo">{{ "landing.hero_cta_primary" | translate }}</a>
+    <a routerLink="/inscription">{{ "landing.hero_cta_primary" | translate }}</a>
   </p>
 </app-auth-pro-shell
 >

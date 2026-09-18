@@ -98,7 +98,13 @@
     "pro_login_title": "Le back-office de votre salle",
     "pro_login_subtitle": "Connectez-vous pour gérer votre salle.",
     "pro_space": "Espace professionnel",
-    "member_account_notice": "Ce compte est celui d'un adhérent, pas celui d'une salle. Fitora est réservé aux salles ; adressez-vous à la vôtre pour vos réservations."
+    "member_account_notice": "Ce compte est celui d'un adhérent, pas celui d'une salle. Fitora est réservé aux salles ; adressez-vous à la vôtre pour vos réservations.",
+    "register_title": "Créez votre compte",
+    "register_subtitle": "Trois champs, puis vous nommez votre salle. 14 jours d'accès complet.",
+    "register_cta": "Créer mon compte",
+    "register_trial_note": "14 jours d'accès complet. Aucune carte bancaire : passé ce délai, vous demandez l'activation depuis votre espace.",
+    "password_min": "8 caractères minimum.",
+    "email_invalid": "Adresse e-mail invalide."
   },
   "nav": {
     "switch_company": "Changer de société",
@@ -912,13 +918,13 @@
   "landing": {
     "nav_features": "Fonctionnalités",
     "nav_menu": "Menu",
-    "cta_start": "Réserver une démo",
+    "cta_start": "Essai gratuit",
     "cta_start_free": "Commencer gratuitement",
     "eyebrow": "Le logiciel des salles de sport",
     "hero_title_1": "Gérez votre salle,",
     "hero_title_2": "pas vos tableurs.",
     "hero_subtitle": "Adhérents, abonnements, cours, réservations, pointage, équipe et paie — une seule plateforme pensée pour les salles de sport et les studios.",
-    "hero_cta_primary": "Réserver une démo",
+    "hero_cta_primary": "Créer mon compte — 14 jours",
     "hero_cta_secondary": "Demander un devis",
     "hero_note": "20 minutes · sur vos propres chiffres · sans engagement",
     "panel_today": "Aujourd'hui",
