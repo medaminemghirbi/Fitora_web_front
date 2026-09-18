@@ -786,9 +786,6 @@
     "pricing_hint": "Le paiement se fait hors application — ces montants sont affichés à l'entreprise.",
     "included_title": "Fonctionnalités incluses",
     "included_subtitle": "Toutes les entreprises ont accès à toutes les fonctionnalités.",
-    "upgrade_requested": "Demande d'activation en attente",
-    "upgrade_requested_on": "Envoyée le {{date}}",
-    "upgrade_pref": "préférence : {{period}}",
     "billing_period": "Formule",
     "billing_period_trial": "Essai gratuit (aucune formule)",
     "billing_period_hint": "Définir une formule active l'abonnement payant et résout la demande de l'owner.",
@@ -801,7 +798,7 @@
     "leads": {
       "nav": "Demandes",
       "title": "Demandes d'accès",
-      "subtitle": "Chaque salle arrive par ici : une démo ou un devis, puis l'ouverture de son espace.",
+      "subtitle": "Tout le monde qui attend une réponse : les salles qui veulent entrer, et celles dont l'essai est fini.",
       "empty_title": "Aucune demande",
       "empty_body": "Les demandes de démo et de devis apparaîtront ici.",
       "gym": "Salle",
@@ -832,7 +829,16 @@
       "password_once": "Ce mot de passe n'est affiché qu'une fois : il n'est stocké nulle part où on puisse le relire.",
       "copy": "Copier",
       "copied": "Identifiants copiés.",
-      "credentials_clipboard": "Fitora — {{gym}}\nIdentifiant : {{email}}\nMot de passe provisoire : {{password}}\nAccès : 14 jours, puis activation à la demande."
+      "credentials_clipboard": "Fitora — {{gym}}\nIdentifiant : {{email}}\nMot de passe provisoire : {{password}}\nAccès : 14 jours, puis activation à la demande.",
+      "queue_activations": "Activations",
+      "queue_new": "Nouvelles salles",
+      "asked_for": "Demande",
+      "no_preference": "Sans préférence",
+      "waiting": "En attente",
+      "waiting_days": "{{days}} j",
+      "activate": "Activer",
+      "no_activations_title": "Aucune activation en attente",
+      "no_activations_body": "Les salles dont l'essai se termine apparaîtront ici dès qu'elles demandent à continuer."
     }
   },
   "staff": {

@@ -1,8 +1,11 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { DatePipe } from "@angular/common";
+import { RouterLink } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AdminLeadsService, Lead, LeadConversion, LeadStatus } from "../../../core/services/leads.service";
+import { AdminCompaniesService } from "../../../core/services/admin-companies.service";
+import { AdminCompany } from "../../../core/models/admin-company.model";
 import { ToastService } from "../../../core/services/toast.service";
 import { ConfirmService } from "../../../core/services/confirm.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
@@ -14,20 +17,22 @@ import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 
 /**
- * Fitora's inbox: every gym that asked for a demo or a quote, and the one
- * action that opens their account.
+ * Fitora's inbox: everyone waiting on an answer, in one place.
  *
- * Converting is the only way onto the platform — a gym cannot sign itself
- * up — so this screen is the front door. Opening an account starts the
- * gym's 14 days; what happens after that is the ordinary subscription
- * flow, where the owner asks for activation and an admin grants it from
- * the company's own page.
+ * Two queues, because a gym asks twice. First to get in — a demo or a
+ * quote, converted here into an account and its 14 days. Then, once the 14
+ * days run out, to carry on: that request used to surface only on the
+ * company's own page, where it was found by whoever happened to open it.
+ *
+ * Activations lead, because that is the one with money behind it and a gym
+ * already using the product at the other end.
  */
 @Component({
   selector: "app-admin-leads",
   standalone: true,
   imports: [
     DatePipe,
+    RouterLink,
     FormsModule,
     TranslateModule,
     EmptyStateComponent,
@@ -42,9 +47,17 @@ import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 })
 export class AdminLeadsComponent {
   private readonly service = inject(AdminLeadsService);
+  private readonly companies = inject(AdminCompaniesService);
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmService);
   private readonly translate = inject(TranslateService);
+
+  /** Which queue is on screen. Activations first — see the class comment. */
+  readonly queue = signal<"activations" | "leads">("activations");
+
+  readonly activations = signal<AdminCompany[]>([]);
+  readonly activationsLoading = signal(true);
+  readonly activationsError = signal(false);
 
   readonly loading = signal(true);
   readonly error = signal(false);
@@ -72,7 +85,34 @@ export class AdminLeadsComponent {
   );
 
   constructor() {
+    this.loadActivations();
     this.load();
+  }
+
+  showQueue(queue: "activations" | "leads"): void {
+    this.queue.set(queue);
+  }
+
+  loadActivations(): void {
+    this.activationsLoading.set(true);
+    this.activationsError.set(false);
+    this.companies.activationRequests().subscribe({
+      next: (res) => {
+        this.activations.set(res.companies);
+        this.activationsLoading.set(false);
+      },
+      error: () => {
+        this.activationsError.set(true);
+        this.activationsLoading.set(false);
+      },
+    });
+  }
+
+  /** How long a gym has been waiting, in whole days. */
+  waitingDays(company: AdminCompany): number {
+    const asked = company.subscription?.upgrade_requested_at;
+    if (!asked) return 0;
+    return Math.max(0, Math.floor((Date.now() - new Date(asked).getTime()) / 86_400_000));
   }
 
   load(): void {

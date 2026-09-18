@@ -22,6 +22,14 @@ export class AdminCompaniesService {
     return this.http.get<{ companies: AdminCompany[]; meta: PageMeta }>(`${API_BASE_URL}/admin/companies`, { params });
   }
 
+  /**
+   * The gyms asking to carry on past their trial, longest wait first.
+   * An inbox rather than a directory: it empties as they are answered.
+   */
+  activationRequests(): Observable<{ companies: AdminCompany[] }> {
+    return this.http.get<{ companies: AdminCompany[] }>(`${API_BASE_URL}/admin/companies/activation_requests`);
+  }
+
   get(id: string): Observable<{
     company: AdminCompany;
     currency_options: AdminCurrencyOption[];

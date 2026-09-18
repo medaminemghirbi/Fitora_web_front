@@ -55,21 +55,6 @@
     <div class="app-card">
       <div class="app-card-header"><h2>{{ "admin.subscription_access_title" | translate }}</h2></div>
       <div class="app-card-body ac-form">
-        @if (upgradeRequest(); as req) {
-          <div class="ac-upgrade-req">
-            <i class="bi bi-hourglass-split"></i>
-            <div>
-              <strong>{{ "admin.upgrade_requested" | translate }}</strong>
-              <span>
-                {{ "admin.upgrade_requested_on" | translate: { date: (req.at | date: "d MMM y") } }}
-                @if (req.period) {
-                  · {{ "admin.upgrade_pref" | translate: { period: ((req.period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate) } }}
-                }
-              </span>
-            </div>
-          </div>
-        }
-
         <div>
           <div class="form-label">{{ "admin.access_status" | translate }}</div>
           <div class="fx-segmented">

@@ -57,11 +57,6 @@ export class AdminCompanyDetailComponent implements OnInit {
 
   private id!: string;
 
-  readonly upgradeRequest = computed(() => {
-    const sub = this.company()?.subscription;
-    return sub?.upgrade_requested_at ? { at: sub.upgrade_requested_at, period: sub.upgrade_requested_period } : null;
-  });
-
   // Summary tile: the current plan (or "free trial" while no billing period).
   readonly formuleLabelKey = computed(() => {
     const period = this.company()?.subscription?.billing_period;

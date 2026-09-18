@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { provideRouter } from "@angular/router";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { AdminLeadsService, Lead } from "../../../core/services/leads.service";
+import { AdminCompaniesService } from "../../../core/services/admin-companies.service";
 import { ConfirmService } from "../../../core/services/confirm.service";
 import { AdminLeadsComponent } from "./leads.component";
 
@@ -12,6 +14,17 @@ describe("AdminLeadsComponent", () => {
   let component: AdminLeadsComponent;
   let service: jasmine.SpyObj<AdminLeadsService>;
   let confirm: ConfirmService;
+  let companies: jasmine.SpyObj<AdminCompaniesService>;
+
+  function waitingGym(id: string, askedAt: string, period: string | null = null) {
+    return {
+      id,
+      name: `Gym ${id}`,
+      city: "Sousse",
+      owner: { full_name: "Amine", email: "amine@gym.test" },
+      subscription: { upgrade_requested_at: askedAt, upgrade_requested_period: period },
+    } as never;
+  }
 
   const lead: Lead = {
     id: "l1",
@@ -47,12 +60,17 @@ describe("AdminLeadsComponent", () => {
       })
     );
 
+    companies = jasmine.createSpyObj<AdminCompaniesService>("AdminCompaniesService", ["activationRequests"]);
+    companies.activationRequests.and.returnValue(of({ companies: [] }));
+
     TestBed.configureTestingModule({
       imports: [AdminLeadsComponent, TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
         { provide: AdminLeadsService, useValue: service },
+        { provide: AdminCompaniesService, useValue: companies },
       ],
     });
 
@@ -130,4 +148,34 @@ describe("AdminLeadsComponent", () => {
     component.load();
     expect(component.error()).toBe(true);
   });
+
+  // Activation requests used to surface only on a company's own page, found
+  // by whoever happened to open it. They are an inbox now.
+  describe("the activations queue", () => {
+    it("opens on activations, not on new gyms", () => {
+      expect(component.queue()).toBe("activations");
+      expect(companies.activationRequests).toHaveBeenCalled();
+    });
+
+    it("counts the days a gym has been waiting", () => {
+      const threeDaysAgo = new Date(Date.now() - 3 * 86_400_000).toISOString();
+      expect(component.waitingDays(waitingGym("a", threeDaysAgo))).toBe(3);
+    });
+
+    it("reads zero for a gym with no request at all, rather than a date from 1970", () => {
+      expect(component.waitingDays({ subscription: null } as never)).toBe(0);
+    });
+
+    it("offers a retry rather than an empty queue when it will not load", () => {
+      companies.activationRequests.and.returnValue(throwError(() => new Error("nope")));
+      component.loadActivations();
+      expect(component.activationsError()).toBe(true);
+    });
+
+    it("switches to the other queue on request", () => {
+      component.showQueue("leads");
+      expect(component.queue()).toBe("leads");
+    });
+  });
 });
+

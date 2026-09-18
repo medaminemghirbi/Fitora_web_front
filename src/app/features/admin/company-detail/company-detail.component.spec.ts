@@ -95,22 +95,6 @@ describe("AdminCompanyDetailComponent", () => {
     expect(component.formuleLabelKey()).toBe("admin.formule_trial");
   });
 
-  it("upgradeRequest is null with no pending request", () => {
-    expect(component.upgradeRequest()).toBeNull();
-  });
-
-  it("upgradeRequest surfaces a pending upgrade", () => {
-    service.get.and.returnValue(
-      of({
-        company: { ...company, subscription: { ...company.subscription, upgrade_requested_at: "2026-01-01T00:00:00Z", upgrade_requested_period: "yearly" } } as never,
-        currency_options: [],
-        locale_options: [],
-      })
-    );
-    component.load();
-    expect(component.upgradeRequest()).toEqual({ at: "2026-01-01T00:00:00Z", period: "yearly" });
-  });
-
   it("subDirty/settingsDirty/debtDirty are false right after loading", () => {
     expect(component.subDirty()).toBe(false);
     expect(component.settingsDirty()).toBe(false);

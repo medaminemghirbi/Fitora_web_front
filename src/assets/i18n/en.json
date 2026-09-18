@@ -786,9 +786,6 @@
     "pricing_hint": "Payment happens outside the app — these amounts are shown to the company.",
     "included_title": "Included features",
     "included_subtitle": "Every company has access to every feature.",
-    "upgrade_requested": "Activation request pending",
-    "upgrade_requested_on": "Sent on {{date}}",
-    "upgrade_pref": "preference: {{period}}",
     "billing_period": "Plan",
     "billing_period_trial": "Free trial (no plan)",
     "billing_period_hint": "Setting a plan activates the paid subscription and resolves the owner's request.",
@@ -801,7 +798,7 @@
     "leads": {
       "nav": "Requests",
       "title": "Access requests",
-      "subtitle": "Every gym arrives here: a demo or a quote, then their space is opened.",
+      "subtitle": "Everyone waiting on an answer: gyms wanting in, and gyms whose trial is over.",
       "empty_title": "No requests",
       "empty_body": "Demo and quote requests will show up here.",
       "gym": "Gym",
@@ -832,7 +829,16 @@
       "password_once": "This password is shown once: it is not stored anywhere it can be read back.",
       "copy": "Copy",
       "copied": "Credentials copied.",
-      "credentials_clipboard": "Fitora — {{gym}}\nSign in with: {{email}}\nTemporary password: {{password}}\nAccess: 14 days, then activation on request."
+      "credentials_clipboard": "Fitora — {{gym}}\nSign in with: {{email}}\nTemporary password: {{password}}\nAccess: 14 days, then activation on request.",
+      "queue_activations": "Activations",
+      "queue_new": "New gyms",
+      "asked_for": "Asked for",
+      "no_preference": "No preference",
+      "waiting": "Waiting",
+      "waiting_days": "{{days}} d",
+      "activate": "Activate",
+      "no_activations_title": "No activations waiting",
+      "no_activations_body": "Gyms reaching the end of their trial show up here as soon as they ask to carry on."
     }
   },
   "staff": {
