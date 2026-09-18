@@ -820,7 +820,9 @@
     "closed_short": "Fermé",
     "subscription_access_title": "Accès & facturation",
     "tab_billing": "Facturation",
-    "tab_gym": "La salle"
+    "tab_gym": "La salle",
+    "record_payment": "Paiement reçu",
+    "attention_never": "Aucune période facturée — l'accès se fermera à la prochaine passe."
   },
   "staff": {
     "title": "Employés",

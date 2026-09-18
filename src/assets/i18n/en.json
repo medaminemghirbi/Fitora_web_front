@@ -820,7 +820,9 @@
     "closed_short": "Closed",
     "subscription_access_title": "Access & billing",
     "tab_billing": "Billing",
-    "tab_gym": "The gym"
+    "tab_gym": "The gym",
+    "record_payment": "Payment received",
+    "attention_never": "No period ever invoiced — access closes on the next sweep."
   },
   "staff": {
     "title": "Employees",

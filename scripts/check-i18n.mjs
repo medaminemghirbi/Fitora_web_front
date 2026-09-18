@@ -19,11 +19,38 @@ const SRC = join(ROOT, "src/app");
 const I18N = join(ROOT, "src/assets/i18n");
 const LOCALES = ["fr", "en", "ar"];
 
+const KEY = /["']([a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+)["']/g;
+
 const PATTERNS = [
-  /["']([a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+)["']\s*\|\s*translate/g,
   /\.instant\(\s*["']([a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+)["']/g,
   /(?:labelKey|descKey|titleKey|countKey|subtitleKey)\s*:\s*["']([a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+)["']/g,
 ];
+
+/**
+ * Every key inside a binding that ends in `| translate`.
+ *
+ * Matching the key directly against `| translate` misses a ternary — in
+ * `(a() ? "x" : "y") | translate` a bracket sits between the key and the
+ * pipe — and that is exactly how a raw `admin.record_payment` reached a
+ * button in production.
+ */
+function keysInTranslatedBindings(text) {
+  const found = [];
+  const bindings = text.match(/\{\{[^}]*\}\}|\[[a-zA-Z]+\]="[^"]*"/g) ?? [];
+
+  for (const binding of bindings) {
+    if (!/\|\s*translate/.test(binding)) continue;
+    KEY.lastIndex = 0;
+    let match;
+    while ((match = KEY.exec(binding)) !== null) {
+      // A literal ending in "_" is the front half of a key assembled at
+      // runtime ("bookings.status_" + status). Those cannot be checked here.
+      if (!match[1].endsWith("_")) found.push(match[1]);
+    }
+  }
+
+  return found;
+}
 
 function* walk(dir) {
   for (const entry of readdirSync(dir)) {
@@ -65,6 +92,9 @@ for (const file of walk(SRC)) {
     while ((match = pattern.exec(text)) !== null) {
       if (!seen.has(match[1])) seen.set(match[1], relative(ROOT, file));
     }
+  }
+  for (const key of keysInTranslatedBindings(text)) {
+    if (!seen.has(key)) seen.set(key, relative(ROOT, file));
   }
 }
 for (const [key, where] of seen) {

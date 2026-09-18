@@ -33,11 +33,17 @@
     @if (attention(); as what) {
       <section class="ac-attention" [attr.data-kind]="what">
         <div class="ac-attention-main">
-          <i class="bi" [class.bi-cash-coin]="what === 'due'" [class.bi-lock-fill]="what !== 'due'"></i>
+          <i
+            class="bi"
+            [class.bi-cash-coin]="what === 'due'"
+            [class.bi-receipt]="what === 'never'"
+            [class.bi-lock-fill]="what === 'unpaid' || what === 'suspended'"
+          ></i>
           <div>
             <strong>
               @switch (what) {
                 @case ("due") { {{ "admin.attention_due" | translate: { days: daysBeforeLock() } }} }
+                @case ("never") { {{ "admin.attention_never" | translate }} }
                 @case ("unpaid") { {{ "admin.attention_unpaid" | translate }} }
                 @case ("suspended") { {{ "admin.attention_suspended" | translate }} }
               }

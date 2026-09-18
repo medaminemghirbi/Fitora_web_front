@@ -820,7 +820,9 @@
     "closed_short": "مغلق",
     "subscription_access_title": "الوصول والفوترة",
     "tab_billing": "الفوترة",
-    "tab_gym": "القاعة"
+    "tab_gym": "القاعة",
+    "record_payment": "تمّ استلام الدفع",
+    "attention_never": "لم تُفوتر أيّ فترة — سيُغلق الوصول عند المرور التالي."
   },
   "staff": {
     "title": "الموظفون",

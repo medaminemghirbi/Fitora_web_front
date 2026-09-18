@@ -117,6 +117,15 @@ describe("AdminCompanyDetailComponent", () => {
       expect(component.attention()).toBe("due");
     });
 
+    // With no invoice there is no period to count down from, and the "due"
+    // message interpolated a null straight into the page as {{days}}.
+    it("says so plainly when nothing was ever invoiced, rather than counting from nothing", () => {
+      build({ subscription: { ...company.subscription!, current_period_paid: false, paid_through: null, days_before_lock: null } });
+
+      expect(component.attention()).toBe("never");
+      expect(fixture.nativeElement.textContent).not.toContain("{{days}}");
+    });
+
     it("reports the money when access closed for want of it", () => {
       build({ access_open: false, subscription: { ...company.subscription!, active: false, lock_reason: "unpaid" } });
       expect(component.attention()).toBe("unpaid");

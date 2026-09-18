@@ -75,10 +75,12 @@ export class AdminCompanyDetailComponent implements OnInit {
    * The one thing this page is for, when there is one. A gym that is open
    * and paid up gets no banner at all.
    */
-  readonly attention = computed<"suspended" | "unpaid" | "due" | null>(() => {
+  readonly attention = computed<"suspended" | "unpaid" | "never" | "due" | null>(() => {
     if (!this.company()) return null;
     if (!this.accessOpen()) return this.lockReason() === "unpaid" ? "unpaid" : "suspended";
-    return this.currentPeriodPaid() ? null : "due";
+    if (this.currentPeriodPaid()) return null;
+    // Nothing was ever invoiced, so there is no period to count down from.
+    return this.paidThrough() === null ? "never" : "due";
   });
 
   // ---- the ledger: every month of a year, and its invoice ------------------
