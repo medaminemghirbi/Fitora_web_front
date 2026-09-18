@@ -1032,24 +1032,6 @@ mark.fx-hl {
   .fx-num { font-variant-numeric: tabular-nums; }
 }
 
-// A count/label pill used in table cells (payment state, booking state…)
-.fx-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.15rem 0.55rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.72rem;
-  font-weight: 600;
-  white-space: nowrap;
-
-  &--success { background: var(--color-success-soft); color: var(--color-success); }
-  &--warning { background: var(--color-warning-soft); color: var(--color-warning); }
-  &--danger { background: var(--color-danger-soft); color: var(--color-danger); }
-  &--info { background: var(--color-info-soft); color: var(--color-info); }
-  &--muted { background: var(--color-surface-sunken); color: var(--color-text-secondary); }
-}
-
 // ---------------------------------------------------------------------------
 // Calendar toolbar — period nav, view switch and the page's actions in one row
 // ---------------------------------------------------------------------------
@@ -1191,72 +1173,6 @@ mark.fx-hl {
   .fx-session-tip { display: none; }
 }
 
-// ---------------------------------------------------------------------------
-// Gym cards — "my gyms" and the public directory
-// ---------------------------------------------------------------------------
-.fx-gym-list {
-  list-style: none;
-  margin: 0 0 var(--space-5);
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.fx-gym-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-
-  &-main {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    flex: 1;
-    min-width: 0;
-    color: inherit;
-    text-decoration: none;
-
-    &:hover { color: inherit; text-decoration: none; strong { text-decoration: underline; } }
-  }
-  &-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    min-width: 0;
-
-    strong { font-size: 0.95rem; }
-    span { font-size: 0.8rem; }
-    .fx-pill { align-self: flex-start; margin-top: 0.15rem; }
-  }
-}
-
-.fx-gym-mark {
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
-  border-radius: var(--radius-md);
-  color: #ffffff;
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fx-gym-search {
-  display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-
-  .form-control { flex: 1; }
-}
-
 .fx-section-title {
   font-family: var(--font-display);
   font-size: 1.05rem;
@@ -1264,94 +1180,7 @@ mark.fx-hl {
   margin: var(--space-5) 0 var(--space-3);
 }
 
-// ---------------------------------------------------------------------------
-// Gym switcher — which of my gyms the member screens are showing
-// ---------------------------------------------------------------------------
-.fx-gym-switcher {
-  display: flex;
-  gap: var(--space-2);
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: var(--space-1);
-  margin-bottom: var(--space-4);
-
-  &::-webkit-scrollbar { display: none; }
-}
-
-.fx-gym-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
-  min-height: 44px;
-  padding: 0 var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-
-  &:hover { background: var(--color-surface-hover); color: var(--color-text); }
-
-  &.is-active {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-on-primary);
-  }
-}
-
-.fx-gym-chip-dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
-
-// ---------------------------------------------------------------------------
-// A gym's public page
-// ---------------------------------------------------------------------------
-.fx-gym-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-6) var(--space-5) var(--space-8);
-}
-
-.fx-gym-hero {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-
-  &-text { flex: 1; min-width: 220px; }
-  &-text h1 { font-family: var(--font-display); font-size: var(--font-size-2xl); margin: 0 0 0.2rem; }
-  &-desc { margin: var(--space-3) 0 0; max-width: 60ch; color: var(--color-text-secondary); }
-
-  &-cta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: var(--space-2);
-    flex-shrink: 0;
-  }
-}
-
-.fx-gym-mark--lg {
-  width: 72px;
-  height: 72px;
-  border-radius: var(--radius-lg);
-  font-size: 2rem;
-}
-
 .fx-gym-activities,
-.fx-gym-contact {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
 .fx-gym-activities li {
   display: flex;
   justify-content: space-between;
@@ -1362,103 +1191,9 @@ mark.fx-hl {
   &:last-child { border-bottom: 0; padding-bottom: 0; }
 }
 
-.fx-gym-contact li {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  color: var(--color-text-secondary);
-
-  i { color: var(--color-muted); width: 1rem; text-align: center; }
+@media (max-width: 575.98px) {
 }
 
 @media (max-width: 575.98px) {
-  .fx-gym-hero-cta { align-items: stretch; width: 100%; }
 }
 
-.fx-gym-search-head {
-  margin-bottom: var(--space-4);
-
-  h1 { font-family: var(--font-display); font-size: var(--font-size-2xl); margin: 0 0 0.25rem; }
-  p { margin: 0; max-width: 56ch; }
-}
-
-@media (max-width: 575.98px) {
-  .fx-gym-search { flex-wrap: wrap; .btn { width: 100%; } }
-}
-
-// The "Autour de moi" row under the directory's search box.
-.fx-gym-near {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  margin-bottom: var(--space-4);
-
-  .btn-link { padding: 0; font-size: 0.8125rem; font-weight: 600; }
-}
-
-.fx-gym-distance {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-// ---------------------------------------------------------------------------
-// A gym's public schedule — the week ahead, day by day
-// ---------------------------------------------------------------------------
-.gp-schedule {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--space-5);
-}
-
-.gp-day {
-  h3 {
-    margin: 0 0 var(--space-3);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-text-secondary);
-  }
-
-  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-surface-sunken);
-    border-radius: var(--radius-md);
-  }
-}
-
-.gp-time {
-  flex-shrink: 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-primary);
-}
-
-.gp-what {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-
-  strong { font-size: 0.875rem; }
-  span { font-size: 0.75rem; }
-}
-
-.gp-join-note {
-  margin: var(--space-5) 0 0;
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-}

@@ -125,8 +125,15 @@ describe("ContractsComponent", () => {
     expect(component.hasFilters()).toBe(false);
   });
 
-  it("lists every contract status in the rail", () => {
-    expect(component.statusOptions.map((o) => o.value)).toEqual(["", "active", "pending", "expired", "cancelled"]);
+  it("lists the rail in the order a desk reads it: what is fine, what is running out, what has run out", () => {
+    expect(component.statusOptions.map((o) => o.value)).toEqual([
+      "",
+      "active",
+      "expiring",
+      "expired",
+      "pending",
+      "cancelled",
+    ]);
   });
 
   it("filterChips is empty with no active filters", () => {

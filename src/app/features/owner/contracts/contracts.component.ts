@@ -61,15 +61,20 @@ export class ContractsComponent implements OnInit {
   readonly search = signal("");
   private searchDebounce?: ReturnType<typeof setTimeout>;
 
-  // Only needed to populate the "Contrat" filter dropdown — managing types
-  // themselves now lives at Settings > Types de contrat.
+  // Only needed to populate the "Formule" filter dropdown — the catalogue
+  // itself lives at Abonnements > Formules.
   readonly plans = signal<ContractType[]>([]);
 
-  readonly statusOptions: { value: ContractStatus | ""; labelKey: string; countKey: string; color: string }[] = [
+  // Four colours across the whole app: green in order, orange worth
+  // watching, red needs doing, grey no longer applies. "Expire bientôt" is
+  // not a period state — it is active with a month to run — but it is the
+  // one a desk filters by most, so it sits in the rail beside the four.
+  readonly statusOptions: { value: ContractStatus | "expiring" | ""; labelKey: string; countKey: string; color: string }[] = [
     { value: "", labelKey: "clients.filter_all", countKey: "all", color: "var(--color-primary)" },
     { value: "active", labelKey: "contract.status_active", countKey: "active", color: "var(--color-success)" },
-    { value: "pending", labelKey: "contract.status_pending", countKey: "pending", color: "var(--color-info)" },
+    { value: "expiring", labelKey: "contract.status_expiring", countKey: "expiring", color: "var(--color-warning)" },
     { value: "expired", labelKey: "contract.status_expired", countKey: "expired", color: "var(--color-danger)" },
+    { value: "pending", labelKey: "contract.status_pending", countKey: "pending", color: "var(--color-info)" },
     { value: "cancelled", labelKey: "contract.status_cancelled", countKey: "cancelled", color: "var(--color-muted)" },
   ];
 

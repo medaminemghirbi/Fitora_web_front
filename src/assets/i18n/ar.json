@@ -310,9 +310,9 @@
     "empty_title": "لا يوجد أعضاء بعد",
     "empty_body": "أضف عميلك الأول لبدء إدارة العقود والحجوزات.",
     "filter_all": "الكل",
-    "filter_contract_active": "عقد نشط",
-    "filter_contract_expired": "عقد منتهٍ",
-    "filter_no_contract": "بدون عقد",
+    "filter_contract_active": "اشتراك جارٍ",
+    "filter_contract_expired": "اشتراك منتهٍ",
+    "filter_no_contract": "بدون اشتراك",
     "contract": "العقد",
     "no_contract": "لا يوجد عقد",
     "payment_status": "الدفع",
@@ -538,7 +538,8 @@
     "status_active": "نشط",
     "status_expired": "منتهي",
     "status_cancelled": "ملغى",
-    "expires": "ينتهي في"
+    "expires": "ينتهي في",
+    "status_expiring": "ينتهي قريبًا"
   },
   "contracts": {
     "title": "الاشتراكات",
@@ -555,7 +556,7 @@
     "filter_search_placeholder": "البحث عن عميل…",
     "filter_export": "تنزيل (Excel)",
     "filter_all_coaches": "جميع المدربين",
-    "filter_all_plans": "جميع العقود",
+    "filter_all_plans": "كل الصيغ",
     "search_placeholder": "العميل أو الصيغة…",
     "portfolio_value": "قيمة المحفظة",
     "average_basket": "متوسط السلة",
