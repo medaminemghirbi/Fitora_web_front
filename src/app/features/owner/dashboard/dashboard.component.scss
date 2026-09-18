@@ -12,18 +12,6 @@
   .dashboard-kpi-strip { grid-template-columns: repeat(2, 1fr); }
 }
 
-// ---------- main split: schedule (wide) + side column ----------
-.dashboard-main-split {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: var(--space-5);
-  align-items: start;
-}
-
-@media (max-width: 991.98px) {
-  .dashboard-main-split { grid-template-columns: 1fr; }
-}
-
 .dashboard-schedule-card .app-card-header { display: flex; align-items: center; justify-content: space-between; }
 
 .dashboard-view-all {
@@ -94,29 +82,71 @@
   flex-shrink: 0;
 }
 
-// ---------- side column: compact revenue + "needs attention" ----------
-.dashboard-side-col {
+// ---------- "needs attention": the first thing on the page ----------
+// Each row is a whole link, so the count, the label and the amount are all
+// part of the same target rather than three things next to a small "voir".
+.dashboard-attention {
+  border-inline-start: 3px solid var(--color-warning);
+}
+
+.dashboard-attention-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-attention-row {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem var(--space-5);
+  color: inherit;
+  text-decoration: none;
+  border-top: 1px solid var(--color-border);
+  transition: background 0.12s ease;
 
-  .app-card { margin-bottom: 0; }
+  &:hover,
+  &:focus-visible {
+    background: var(--color-surface-alt, rgba(0, 0, 0, 0.03));
+  }
+
+  > .bi {
+    font-size: 1rem;
+    flex-shrink: 0;
+    color: var(--color-warning);
+  }
+
+  &[data-tone="danger"] > .bi { color: var(--color-danger); }
 }
 
-.dashboard-attention-list li { align-items: center; gap: 0.6rem; }
+.dashboard-attention-list li:first-child .dashboard-attention-row { border-top: 0; }
 
-.dashboard-attention-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--color-text-secondary);
-
-  &.is-warning { background: var(--color-warning); }
-  &.is-accent { background: var(--color-accent); }
+.dashboard-attention-count {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.6rem;
 }
 
-.dashboard-attention-warning { color: var(--color-warning); }
+.dashboard-attention-label { flex: 1; min-width: 0; }
+
+.dashboard-attention-amount {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-danger);
+  white-space: nowrap;
+}
+
+.dashboard-attention-cta {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+  // The call to action is what the whole row already does — drop it rather
+  // than let it wrap under the label.
+  .dashboard-attention-cta { display: none; }
+}
 
 .dashboard-cols {
   display: grid;

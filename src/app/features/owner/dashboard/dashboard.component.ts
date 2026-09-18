@@ -1,11 +1,11 @@
-import { Component, signal } from "@angular/core";
+import { Component, computed, signal } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AuditLog } from "../../../core/models/audit-log.model";
 import { AuditLogsService } from "../../../core/services/audit-logs.service";
-import { DashboardResponse, DashboardService, TodaysScheduleItem } from "../../../core/services/dashboard.service";
+import { AttentionRow, DashboardResponse, DashboardService, TodaysScheduleItem } from "../../../core/services/dashboard.service";
 import { downloadBlob } from "../../../core/services/download.util";
 import { ReportPeriodType, ReportsService } from "../../../core/services/reports.service";
 import { ToastService } from "../../../core/services/toast.service";
@@ -100,9 +100,28 @@ export class DashboardComponent {
     return item.capacity > 0 ? Math.min(100, (item.confirmed_count / item.capacity) * 100) : 0;
   }
 
-  hasOutstanding(amount: string): boolean {
-    return parseFloat(amount) > 0;
-  }
+  /**
+   * The attention block: one line per kind of overdue work, each opening the
+   * screen that resolves it already filtered.
+   *
+   * The backend sends every row, including the empty ones, so that "nothing
+   * to do" is a fact this screen can state rather than an absence it has to
+   * infer. Only the non-empty ones are rendered.
+   */
+  private readonly attentionTargets: Record<AttentionRow["key"], { route: string; query: Record<string, string>; icon: string; tone: string }> = {
+    expiring: { route: "/owner/contracts", query: { status: "expiring" }, icon: "bi-hourglass-split", tone: "warning" },
+    unpaid: { route: "/owner/contracts", query: { payment: "unpaid" }, icon: "bi-cash-coin", tone: "danger" },
+    expired: { route: "/owner/contracts", query: { status: "expired" }, icon: "bi-x-octagon", tone: "danger" },
+    sessions_without_coach: { route: "/owner/calendar", query: {}, icon: "bi-person-dash", tone: "warning" },
+  };
+
+  readonly attention = computed(() =>
+    (this.data()?.stats.attention ?? [])
+      .filter((row) => row.count > 0)
+      .map((row) => ({ ...row, ...this.attentionTargets[row.key] }))
+  );
+
+  readonly allClear = computed(() => this.data() !== null && this.attention().length === 0);
 
   greetingKey(): string {
     const hour = new Date().getHours();

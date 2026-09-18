@@ -41,9 +41,13 @@ export interface ContractListResponse {
 export class ContractsService {
   constructor(private readonly http: HttpClient) {}
 
-  list(filters: { status?: ContractStatus; contract_type_id?: string; q?: string; page?: number } = {}): Observable<ContractListResponse> {
+  // `status` also takes "expiring" — not one of the four period states, but
+  // "active and running out within the month", which is what the dashboard
+  // links here for.
+  list(filters: { status?: ContractStatus | "expiring"; payment?: "unpaid" | "paid"; contract_type_id?: string; q?: string; page?: number } = {}): Observable<ContractListResponse> {
     const params: Record<string, string> = { page: String(filters.page ?? 1) };
     if (filters.status) params["status"] = filters.status;
+    if (filters.payment) params["payment"] = filters.payment;
     if (filters.contract_type_id) params["contract_type_id"] = filters.contract_type_id;
     if (filters.q) params["q"] = filters.q;
     return this.http.get<ContractListResponse>(`${API_BASE_URL}/contracts`, { params });

@@ -147,7 +147,15 @@
     "export_yearly": "سنوي",
     "export_month": "الشهر",
     "export_year": "السنة",
-    "export_button": "تصدير"
+    "export_button": "تصدير",
+    "attention_expiring": "اشتراكات تنتهي هذا الشهر",
+    "attention_unpaid": "اشتراكات غير مدفوعة",
+    "attention_expired": "اشتراكات منتهية بانتظار التجديد",
+    "attention_sessions_without_coach": "حصص اليوم بدون مدرّب",
+    "attention_cta_expiring": "تذكير",
+    "attention_cta_unpaid": "تحصيل",
+    "attention_cta_expired": "تجديد",
+    "attention_cta_sessions_without_coach": "إسناد"
   },
   "data_exchange": {
     "subtitle": "استورد أو صدّر بياناتك بصيغة CSV، وحدة بوحدة.",
@@ -539,7 +547,8 @@
     "portfolio_value": "قيمة المحفظة",
     "average_basket": "متوسط السلة",
     "unpaid_value": "المبلغ غير المدفوع",
-    "expiring_soon": "تنتهي خلال 30 يومًا"
+    "expiring_soon": "تنتهي خلال 30 يومًا",
+    "filter_unpaid": "غير مدفوعة"
   },
   "contract_types": {
     "new": "عقد جديد",

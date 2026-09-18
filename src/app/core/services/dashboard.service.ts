@@ -37,6 +37,13 @@ export interface RecentClientItem {
   joined_at: string;
 }
 
+/** One kind of overdue work. `key` names the screen it opens. */
+export interface AttentionRow {
+  key: "expiring" | "unpaid" | "expired" | "sessions_without_coach";
+  count: number;
+  amount: number | null;
+}
+
 export interface DashboardStats {
   total_clients: number;
   active_contracts: number;
@@ -44,6 +51,7 @@ export interface DashboardStats {
   todays_attendance: number;
   outstanding_payments: string;
   todays_schedule: TodaysScheduleItem[];
+  attention: AttentionRow[];
   contracts_expiring: ContractExpiringItem[];
   recent_payments: RecentPaymentItem[];
   recent_clients: RecentClientItem[];

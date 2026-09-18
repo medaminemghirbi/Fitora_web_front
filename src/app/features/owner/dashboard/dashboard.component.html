@@ -29,6 +29,33 @@
 
   @if (data(); as d) {
     <div class="fx-stack fx-dashboard">
+      <section class="app-card dashboard-attention" aria-labelledby="dash-attention-h">
+        <div class="app-card-header">
+          <h2 id="dash-attention-h">{{ "dashboard.needs_attention" | translate }}</h2>
+        </div>
+        @if (allClear()) {
+          <div class="app-card-body">
+            <app-empty-state [title]="'dashboard.nothing_pending' | translate" body="" icon="bi-check2-circle" />
+          </div>
+        } @else {
+          <ul class="dashboard-attention-list">
+            @for (row of attention(); track row.key) {
+              <li>
+                <a [routerLink]="row.route" [queryParams]="row.query" class="dashboard-attention-row" [attr.data-tone]="row.tone">
+                  <i class="bi" [class]="row.icon" aria-hidden="true"></i>
+                  <span class="dashboard-attention-count">{{ row.count }}</span>
+                  <span class="dashboard-attention-label">{{ ("dashboard.attention_" + row.key) | translate: { count: row.count } }}</span>
+                  @if (row.amount !== null) {
+                    <strong class="dashboard-attention-amount">{{ row.amount | money: d.company.currency }}</strong>
+                  }
+                  <span class="dashboard-attention-cta">{{ ("dashboard.attention_cta_" + row.key) | translate }} →</span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
       <div class="fx-kpi-grid dashboard-kpi-strip">
         <app-kpi-card [label]="'dashboard.total_clients' | translate" [value]="d.stats.total_clients" icon="bi-people" tone="primary" />
         <app-kpi-card [label]="'dashboard.active_contracts' | translate" [value]="d.stats.active_contracts" icon="bi-file-earmark-text" tone="info" />
@@ -37,63 +64,33 @@
         <app-kpi-card [label]="'dashboard.outstanding_payments' | translate" [value]="d.stats.outstanding_payments | money: d.company.currency" icon="bi-exclamation-circle" tone="danger" />
       </div>
 
-      <div class="dashboard-main-split">
-        <div class="app-card dashboard-schedule-card">
-          <div class="app-card-header">
-            <h2>{{ "dashboard.todays_schedule" | translate }}</h2>
-            <a routerLink="/owner/calendar" class="dashboard-view-all">{{ "dashboard.view_schedule" | translate }} →</a>
-          </div>
-          @if (d.stats.todays_schedule.length === 0) {
-            <div class="app-card-body">
-              <app-empty-state [title]="'dashboard.no_sessions_today' | translate" body="" icon="bi-calendar3" />
-            </div>
-          } @else {
-            <ul class="dashboard-schedule-list">
-              @for (item of d.stats.todays_schedule; track item.id) {
-                <li>
-                  <span class="dashboard-schedule-time">{{ item.starts_at | date: "HH:mm" }}</span>
-                  <span class="dashboard-schedule-name">
-                    {{ item.activity_emoji ? item.activity_emoji + " " : "" }}{{ item.activity_name }}
-                    <span class="fx-muted">· {{ item.coach_name || "—" }}</span>
-                  </span>
-                  <span class="dashboard-schedule-bar d-none d-sm-inline-block" [attr.aria-label]="item.confirmed_count + '/' + item.capacity">
-                    <span class="dashboard-schedule-bar-fill" [class.is-full]="fillPct(item) >= 100" [style.width.%]="fillPct(item)"></span>
-                  </span>
-                  <span class="fx-muted dashboard-schedule-count d-none d-sm-inline" dir="ltr">{{ item.confirmed_count }}/{{ item.capacity }}</span>
-                  <app-status-badge [status]="item.status">{{ ("bookings.status_" + item.status) | translate }}</app-status-badge>
-                </li>
-              }
-            </ul>
-          }
+      <div class="app-card dashboard-schedule-card">
+        <div class="app-card-header">
+          <h2>{{ "dashboard.todays_schedule" | translate }}</h2>
+          <a routerLink="/owner/calendar" class="dashboard-view-all">{{ "dashboard.view_schedule" | translate }} →</a>
         </div>
-
-        <div class="dashboard-side-col">
-          <div class="app-card">
-            <div class="app-card-header"><h3>{{ "dashboard.needs_attention" | translate }}</h3></div>
-            <div class="app-card-body">
-              @if (d.stats.contracts_expiring.length === 0 && !hasOutstanding(d.stats.outstanding_payments)) {
-                <app-empty-state [title]="'dashboard.nothing_pending' | translate" body="" icon="bi-check2-circle" />
-              } @else {
-                <ul class="fx-list dashboard-attention-list">
-                  @if (hasOutstanding(d.stats.outstanding_payments)) {
-                    <li>
-                      <span class="dashboard-attention-dot is-warning"></span>
-                      <span class="fx-list-main">{{ "dashboard.outstanding_payments" | translate }}</span>
-                      <strong class="dashboard-attention-warning">{{ d.stats.outstanding_payments | money: d.company.currency }}</strong>
-                    </li>
-                  }
-                  @for (item of d.stats.contracts_expiring; track item.id) {
-                    <li>
-                      <span class="dashboard-attention-dot is-accent"></span>
-                      <span class="fx-list-main">{{ item.client_name }} <span class="fx-muted">· {{ item.plan_name }}</span></span>
-                      <span class="fx-muted">{{ item.expires_at | date: "mediumDate" }}</span>
-                    </li>
-                  }
-                </ul>
-              }
-            </div>
+        @if (d.stats.todays_schedule.length === 0) {
+          <div class="app-card-body">
+            <app-empty-state [title]="'dashboard.no_sessions_today' | translate" body="" icon="bi-calendar3" />
           </div>
-        </div>
+        } @else {
+          <ul class="dashboard-schedule-list">
+            @for (item of d.stats.todays_schedule; track item.id) {
+              <li>
+                <span class="dashboard-schedule-time">{{ item.starts_at | date: "HH:mm" }}</span>
+                <span class="dashboard-schedule-name">
+                  {{ item.activity_emoji ? item.activity_emoji + " " : "" }}{{ item.activity_name }}
+                  <span class="fx-muted">· {{ item.coach_name || "—" }}</span>
+                </span>
+                <span class="dashboard-schedule-bar d-none d-sm-inline-block" [attr.aria-label]="item.confirmed_count + '/' + item.capacity">
+                  <span class="dashboard-schedule-bar-fill" [class.is-full]="fillPct(item) >= 100" [style.width.%]="fillPct(item)"></span>
+                </span>
+                <span class="fx-muted dashboard-schedule-count d-none d-sm-inline" dir="ltr">{{ item.confirmed_count }}/{{ item.capacity }}</span>
+                <app-status-badge [status]="item.status">{{ ("bookings.status_" + item.status) | translate }}</app-status-badge>
+              </li>
+            }
+          </ul>
+        }
       </div>
 
       <div class="dashboard-cols">

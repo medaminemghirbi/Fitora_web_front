@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
-import { provideRouter } from "@angular/router";
+import { ActivatedRoute, convertToParamMap, provideRouter } from "@angular/router";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { TranslateModule } from "@ngx-translate/core";
@@ -90,7 +90,7 @@ describe("ContractsComponent", () => {
     component.onSearchChange("amy");
     tick(1000);
     expect(component.page()).toBe(1);
-    expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, contract_type_id: undefined, q: "amy", page: 1 });
+    expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, payment: undefined, contract_type_id: undefined, q: "amy", page: 1 });
   }));
 
   it("onSearchChange cancels a pending debounce timer on rapid typing", fakeAsync(() => {
@@ -110,7 +110,7 @@ describe("ContractsComponent", () => {
   it("applyContractTypeFilter sets the plan filter and reloads from page 1", () => {
     component.applyContractTypeFilter("ct1");
     expect(component.contractTypeFilter()).toBe("ct1");
-    expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, contract_type_id: "ct1", q: undefined, page: 1 });
+    expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, payment: undefined, contract_type_id: "ct1", q: undefined, page: 1 });
   });
 
   it("onPageChange loads the requested page", () => {
@@ -159,3 +159,50 @@ describe("ContractsComponent", () => {
     expect(component.filterChips()).toEqual([]);
   });
 });
+
+// "Aujourd'hui" links here already filtered; the page has to arrive holding
+// that filter, not merely accept it once someone clicks the rail.
+describe("ContractsComponent — arriving from the dashboard", () => {
+  function buildWith(query: Record<string, string>): ContractsComponent {
+    TestBed.resetTestingModule();
+    const contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["list"]);
+    contractsService.list.and.returnValue(
+      of({ contracts: [], meta: { page: 1, per_page: 20, total: 0, total_pages: 0 }, counts: {}, plan_counts: {}, totals: { portfolio_value: 0, average_basket: 0, unpaid_value: 0, expiring_soon: 0 } })
+    );
+    const contractTypesService = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list"]);
+    contractTypesService.list.and.returnValue(of({ plans: [] }));
+
+    TestBed.configureTestingModule({
+      imports: [ContractsComponent, TranslateModule.forRoot()],
+      providers: [
+        provideHttpClientTesting(),
+        provideHttpClient(),
+        provideRouter([]),
+        { provide: ContractsService, useValue: contractsService },
+        { provide: ContractTypesService, useValue: contractTypesService },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(query) } } },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(ContractsComponent);
+    fixture.detectChanges();
+    return fixture.componentInstance;
+  }
+
+  it("opens already filtered to what runs out this month", () => {
+    const component = buildWith({ status: "expiring" });
+    expect(component.contractStatusFilter()).toBe("expiring");
+  });
+
+  it("opens already filtered to what nobody has paid for", () => {
+    const component = buildWith({ payment: "unpaid" });
+    expect(component.paymentFilter()).toBe("unpaid");
+    expect(component.filterChips().length).toBe(1);
+  });
+
+  it("ignores a payment value it does not recognise", () => {
+    const component = buildWith({ payment: "later" });
+    expect(component.paymentFilter()).toBe("");
+  });
+});
+

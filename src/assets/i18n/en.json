@@ -147,7 +147,15 @@
     "export_yearly": "Yearly",
     "export_month": "Month",
     "export_year": "Year",
-    "export_button": "Export"
+    "export_button": "Export",
+    "attention_expiring": "subscriptions expiring this month",
+    "attention_unpaid": "unpaid subscriptions",
+    "attention_expired": "expired subscriptions to renew",
+    "attention_sessions_without_coach": "sessions today with no coach",
+    "attention_cta_expiring": "Follow up",
+    "attention_cta_unpaid": "Take payment",
+    "attention_cta_expired": "Renew",
+    "attention_cta_sessions_without_coach": "Assign"
   },
   "data_exchange": {
     "subtitle": "Import or export your data as CSV, module by module.",
@@ -539,7 +547,8 @@
     "portfolio_value": "Portfolio value",
     "average_basket": "Average basket",
     "unpaid_value": "Unpaid amount",
-    "expiring_soon": "Expiring within 30 days"
+    "expiring_soon": "Expiring within 30 days",
+    "filter_unpaid": "Unpaid"
   },
   "contract_types": {
     "new": "New Contract",

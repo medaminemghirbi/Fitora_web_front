@@ -36,6 +36,12 @@ describe("DashboardComponent", () => {
       todays_schedule: [
         { id: "1", starts_at: new Date().toISOString(), activity_name: "EMS", activity_emoji: "⚡", coach_name: "Amine", company_name: "Sousse", confirmed_count: 1, capacity: 1, status: "scheduled" },
       ],
+      attention: [
+        { key: "expiring", count: 2, amount: null },
+        { key: "unpaid", count: 1, amount: 130 },
+        { key: "expired", count: 0, amount: null },
+        { key: "sessions_without_coach", count: 0, amount: null },
+      ],
       contracts_expiring: [],
       recent_payments: [],
       recent_clients: [],
@@ -116,14 +122,21 @@ describe("DashboardComponent", () => {
     });
   });
 
-  describe("hasOutstanding", () => {
-    it("is true for a positive amount", () => {
-      expect(component.hasOutstanding("65")).toBe(true);
+  describe("the attention block", () => {
+    it("drops the empty rows and points each survivor at the screen that resolves it", () => {
+      expect(component.attention().map((r) => r.key)).toEqual(["expiring", "unpaid"]);
+
+      const expiring = component.attention()[0];
+      expect(expiring.route).toBe("/owner/contracts");
+      expect(expiring.query).toEqual({ status: "expiring" });
+
+      const unpaid = component.attention()[1];
+      expect(unpaid.query).toEqual({ payment: "unpaid" });
+      expect(unpaid.amount).toBe(130);
     });
 
-    it("is false for zero", () => {
-      expect(component.hasOutstanding("0")).toBe(false);
-      expect(component.hasOutstanding("0.00")).toBe(false);
+    it("is not 'all clear' while there is still work", () => {
+      expect(component.allClear()).toBe(false);
     });
   });
 

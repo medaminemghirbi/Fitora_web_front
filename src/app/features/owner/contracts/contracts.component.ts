@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, signal } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { RouterLink } from "@angular/router";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Contract, ContractStatus } from "../../../core/models/contract.model";
 import { ContractType } from "../../../core/models/contract-type.model";
@@ -53,7 +53,10 @@ export class ContractsComponent implements OnInit {
   readonly contracts = signal<Contract[]>([]);
   readonly meta = signal<PageMeta | null>(null);
   readonly page = signal(1);
-  readonly contractStatusFilter = signal<ContractStatus | "">("");
+  // "expiring" is not one of the four period states — it means "active and
+  // running out within the month", resolved by the backend.
+  readonly contractStatusFilter = signal<ContractStatus | "expiring" | "">("");
+  readonly paymentFilter = signal<"unpaid" | "paid" | "">("");
   readonly contractTypeFilter = signal<string | "">("");
   readonly search = signal("");
   private searchDebounce?: ReturnType<typeof setTimeout>;
@@ -89,10 +92,20 @@ export class ContractsComponent implements OnInit {
     private readonly contractsService: ContractsService,
     private readonly contractTypesService: ContractTypesService,
     private readonly branding: BrandingService,
-    private readonly translate: TranslateService
+    private readonly translate: TranslateService,
+    private readonly route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    // "Aujourd'hui" links straight to the work: ?status=expiring,
+    // ?status=expired, ?payment=unpaid. Read once — this page is not
+    // re-entered without a fresh navigation.
+    const q = this.route.snapshot.queryParamMap;
+    const status = q.get("status");
+    if (status) this.contractStatusFilter.set(status as ContractStatus | "expiring");
+    const payment = q.get("payment");
+    if (payment === "unpaid" || payment === "paid") this.paymentFilter.set(payment);
+
     this.loadContracts();
     this.contractTypesService.list().subscribe((res) => this.plans.set(res.plans));
   }
@@ -103,6 +116,7 @@ export class ContractsComponent implements OnInit {
     this.contractsService
       .list({
         status: this.contractStatusFilter() || undefined,
+        payment: this.paymentFilter() || undefined,
         contract_type_id: this.contractTypeFilter() || undefined,
         q: this.search() || undefined,
         page: this.page(),
@@ -180,6 +194,16 @@ export class ContractsComponent implements OnInit {
     if (status) {
       const opt = this.statusOptions.find((o) => o.value === status);
       if (opt) chips.push({ label: this.translate.instant(opt.labelKey), clear: () => this.applyContractFilter("") });
+    }
+    if (this.paymentFilter()) {
+      chips.push({
+        label: this.translate.instant("contracts.filter_unpaid"),
+        clear: () => {
+          this.paymentFilter.set("");
+          this.page.set(1);
+          this.loadContracts();
+        },
+      });
     }
     const planId = this.contractTypeFilter();
     if (planId) {
