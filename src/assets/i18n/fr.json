@@ -1173,5 +1173,11 @@
   },
   "plans": {
     "subtitle": "Ce que vous vendez, et à quel tarif pour chaque activité."
+  },
+  "checkin": {
+    "search_placeholder": "Chercher un nom…",
+    "title": "Pointage",
+    "now": "En cours",
+    "open": "Pointer"
   }
 }

@@ -75,6 +75,19 @@
   &.is-full { background: var(--color-warning); }
 }
 
+// The session happening right now: the one row a desk is looking for.
+.dashboard-schedule-list > li.is-now {
+  background: var(--color-primary-soft, rgba(74, 42, 143, 0.06));
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.dashboard-schedule-checkin {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .dashboard-schedule-count {
   font-size: 0.76rem;
   font-variant-numeric: tabular-nums;

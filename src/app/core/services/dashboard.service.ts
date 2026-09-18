@@ -7,6 +7,7 @@ import { Company } from "../models/company.model";
 export interface TodaysScheduleItem {
   id: string;
   starts_at: string;
+  ends_at: string;
   activity_name: string;
   activity_emoji: string | null;
   coach_name: string | null;

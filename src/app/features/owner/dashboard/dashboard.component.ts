@@ -19,6 +19,8 @@ import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
 import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { KpiCardComponent } from "../../../shared/ui/kpi-card.component";
+import { CheckinPanelComponent } from "../../../shared/ui/checkin-panel.component";
+import { ModalComponent } from "../../../shared/components/modal.component";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 
@@ -36,6 +38,8 @@ import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
     StatusBadgeComponent,
     PageHeaderComponent,
     KpiCardComponent,
+    CheckinPanelComponent,
+    ModalComponent,
     SkeletonComponent,
     ErrorStateComponent,
     SetupChecklistComponent,
@@ -93,6 +97,36 @@ export class DashboardComponent {
 
   dismissSetup(): void {
     this.onboarding.dismiss().subscribe();
+  }
+
+  // ---- checking people in ------------------------------------------------
+  // The desk's most frequent action, and it used to mean finding the member
+  // first. From here it is the session that is open, and the person is found
+  // inside it by name.
+  readonly checkinSessionId = signal<string | null>(null);
+
+  /**
+   * The session happening right now, if any. Computed in the reader's own
+   * clock rather than the server's — which is why the payload carries both
+   * ends of each session and no "current" flag.
+   */
+  readonly currentSession = computed(() => {
+    const now = Date.now();
+    return (
+      this.data()?.stats.todays_schedule.find(
+        (s) => s.status !== "cancelled" && new Date(s.starts_at).getTime() <= now && new Date(s.ends_at).getTime() > now
+      ) ?? null
+    );
+  });
+
+  openCheckin(sessionId: string): void {
+    this.checkinSessionId.set(sessionId);
+  }
+
+  closeCheckin(): void {
+    this.checkinSessionId.set(null);
+    // Attendance changed, so today's counts did too.
+    this.load();
   }
 
   /** Fill ratio (0-100) for the schedule row's mini capacity bar. */

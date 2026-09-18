@@ -77,7 +77,7 @@
         } @else {
           <ul class="dashboard-schedule-list">
             @for (item of d.stats.todays_schedule; track item.id) {
-              <li>
+              <li [class.is-now]="currentSession()?.id === item.id">
                 <span class="dashboard-schedule-time">{{ item.starts_at | date: "HH:mm" }}</span>
                 <span class="dashboard-schedule-name">
                   {{ item.activity_emoji ? item.activity_emoji + " " : "" }}{{ item.activity_name }}
@@ -87,7 +87,15 @@
                   <span class="dashboard-schedule-bar-fill" [class.is-full]="fillPct(item) >= 100" [style.width.%]="fillPct(item)"></span>
                 </span>
                 <span class="fx-muted dashboard-schedule-count d-none d-sm-inline" dir="ltr">{{ item.confirmed_count }}/{{ item.capacity }}</span>
-                <app-status-badge [status]="item.status">{{ ("bookings.status_" + item.status) | translate }}</app-status-badge>
+                @if (currentSession()?.id === item.id) {
+                  <app-status-badge status="active">{{ "checkin.now" | translate }}</app-status-badge>
+                } @else {
+                  <app-status-badge [status]="item.status">{{ ("bookings.status_" + item.status) | translate }}</app-status-badge>
+                }
+                <button type="button" class="btn btn-sm btn-outline-secondary dashboard-schedule-checkin" (click)="openCheckin(item.id)">
+                  <i class="bi bi-check2-square"></i>
+                  <span class="d-none d-sm-inline">{{ "checkin.open" | translate }}</span>
+                </button>
               </li>
             }
           </ul>
@@ -219,3 +227,11 @@
     <div class="app-card"><div class="app-card-body"><app-error-state (retry)="load()" /></div></div>
   }
 </div>
+
+<!-- Opened from today's schedule: the session is already chosen, so the only
+     thing left to find is the person. -->
+<app-modal [open]="checkinSessionId() !== null" [title]="'checkin.title' | translate" (closed)="closeCheckin()">
+  @if (checkinSessionId(); as id) {
+    <app-checkin-panel [sessionId]="id" />
+  }
+</app-modal>

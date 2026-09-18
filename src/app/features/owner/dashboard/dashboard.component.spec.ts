@@ -34,7 +34,20 @@ describe("DashboardComponent", () => {
       todays_attendance: 2,
       outstanding_payments: "65",
       todays_schedule: [
-        { id: "1", starts_at: new Date().toISOString(), activity_name: "EMS", activity_emoji: "⚡", coach_name: "Amine", company_name: "Sousse", confirmed_count: 1, capacity: 1, status: "scheduled" },
+        // Started five minutes ago, running for another hour — this is the
+        // session "Aujourd'hui" should be offering to check people into.
+        {
+          id: "1",
+          starts_at: new Date(Date.now() - 5 * 60_000).toISOString(),
+          ends_at: new Date(Date.now() + 55 * 60_000).toISOString(),
+          activity_name: "EMS",
+          activity_emoji: "⚡",
+          coach_name: "Amine",
+          company_name: "Sousse",
+          confirmed_count: 1,
+          capacity: 1,
+          status: "scheduled",
+        },
       ],
       attention: [
         { key: "expiring", count: 2, amount: null },
@@ -243,6 +256,57 @@ describe("DashboardComponent", () => {
       // The work is still theirs to chase; only the amount is withheld.
       expect(component.attention()[0].count).toBe(3);
       expect(component.attention()[0].amount).toBeNull();
+    });
+  });
+
+  describe("the session happening now", () => {
+    it("is the one the clock is inside", () => {
+      expect(component.currentSession()?.id).toBe("1");
+    });
+
+    it("is nobody once it has finished", () => {
+      dashboardService.get.and.returnValue(
+        of({
+          ...response,
+          stats: {
+            ...response.stats,
+            todays_schedule: [
+              {
+                ...response.stats.todays_schedule[0],
+                starts_at: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+                ends_at: new Date(Date.now() - 2 * 3_600_000).toISOString(),
+              },
+            ],
+          },
+        })
+      );
+      component.load();
+      expect(component.currentSession()).toBeNull();
+    });
+
+    it("never offers a cancelled session, even mid-slot", () => {
+      dashboardService.get.and.returnValue(
+        of({
+          ...response,
+          stats: {
+            ...response.stats,
+            todays_schedule: [{ ...response.stats.todays_schedule[0], status: "cancelled" }],
+          },
+        })
+      );
+      component.load();
+      expect(component.currentSession()).toBeNull();
+    });
+
+    it("reloads the counts once check-in is closed, since attendance moved", () => {
+      component.openCheckin("1");
+      expect(component.checkinSessionId()).toBe("1");
+
+      dashboardService.get.calls.reset();
+      component.closeCheckin();
+
+      expect(component.checkinSessionId()).toBeNull();
+      expect(dashboardService.get).toHaveBeenCalled();
     });
   });
 });

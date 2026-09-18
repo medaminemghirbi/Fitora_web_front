@@ -1173,5 +1173,11 @@
   },
   "plans": {
     "subtitle": "What you sell, and the price of each activity on it."
+  },
+  "checkin": {
+    "search_placeholder": "Search a name…",
+    "title": "Check-in",
+    "now": "In progress",
+    "open": "Check in"
   }
 }
