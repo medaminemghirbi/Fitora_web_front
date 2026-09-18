@@ -14,8 +14,6 @@ import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
 
-const STATUSES = ["active", "inactive", "expired", "cancelled"] as const;
-
 @Component({
   selector: "app-admin-company-detail",
   standalone: true,
@@ -33,8 +31,6 @@ export class AdminCompanyDetailComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly company = signal<AdminCompany | null>(null);
-
-  readonly statuses = STATUSES;
 
   // subscription form
   readonly status = signal<string>("active");
@@ -102,6 +98,32 @@ export class AdminCompanyDetailComponent implements OnInit {
     const sub = this.company()?.subscription;
     return !!sub && !sub.on_trial;
   });
+
+  /**
+   * Suspending replaces the four-state picker that used to sit on this
+   * page. The other three states are reached by the things that cause them
+   * — a trial running out, a month left unpaid — not by an admin choosing
+   * a word from a list.
+   */
+  readonly suspended = computed(() => (this.company()?.subscription?.status ?? "active") !== "active");
+
+  toggleSuspended(): void {
+    if (this.savingSub()) return;
+
+    const next = this.suspended() ? "active" : "cancelled";
+    this.savingSub.set(true);
+    this.service.updateSubscription(this.id, { status: next, expires_at: this.expiresAt() || null, billing_period: this.billingPeriod() || null }).subscribe({
+      next: (res) => {
+        this.savingSub.set(false);
+        this.hydrate(res.company);
+        this.toast.success(this.translate.instant(next === "active" ? "admin.access_restored" : "admin.access_suspended"));
+      },
+      error: (err) => {
+        this.savingSub.set(false);
+        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
+  }
 
   recordPayment(): void {
     if (this.savingPayment()) return;

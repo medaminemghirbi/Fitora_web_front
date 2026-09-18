@@ -32,8 +32,9 @@ export class SubscriptionService {
     return this.http.get<SubscriptionInfo>(`${API_BASE_URL}/subscription`);
   }
 
-  requestUpgrade(period: BillingPeriod): Observable<SubscriptionInfo> {
-    return this.http.post<SubscriptionInfo>(`${API_BASE_URL}/subscription/request_upgrade`, { period });
+  /** Omit the period when the gym has no preference — the locked page does. */
+  requestUpgrade(period?: BillingPeriod): Observable<SubscriptionInfo> {
+    return this.http.post<SubscriptionInfo>(`${API_BASE_URL}/subscription/request_upgrade`, period ? { period } : {});
   }
 
   cancelUpgradeRequest(): Observable<SubscriptionInfo> {

@@ -40,10 +40,13 @@ export const routes: Routes = [
   },
 
   {
-    path: "trial-expired",
+    // The only page a locked gym sees. Outside /owner on purpose: it has no
+    // shell and no navigation, because the point is that the door is shut.
+    path: "account-locked",
     canActivate: [authGuard],
-    loadComponent: () => import("./features/trial-expired/trial-expired.component").then((m) => m.TrialExpiredComponent),
+    loadComponent: () => import("./features/account-locked/account-locked.component").then((m) => m.AccountLockedComponent),
   },
+  { path: "trial-expired", pathMatch: "full", redirectTo: "/account-locked" },
   {
     path: "owner/setup-company",
     canActivate: [authGuard, roleGuard("owner"), noCompanyGuard],

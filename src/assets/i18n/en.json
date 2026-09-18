@@ -730,10 +730,8 @@
     "included": "Included",
     "subscription_total": "Subscription total",
     "subscription_title": "Subscription",
-    "access_status": "Access status",
     "expires_at": "Expiry date",
     "expires_at_hint": "Leave blank for ongoing access with no deadline.",
-    "payment_off_app": "Payment happens outside the app. Adjust the access status once payment is received.",
     "debt_title": "Balance / debt",
     "debt_hint": "What the company currently owes Fitora — shown to the owner on their subscription page.",
     "approve": "Approve",
@@ -801,7 +799,6 @@
     "attention_locked": "Trial over — access is locked.",
     "attention_ending": "The trial ends in {{days}} day(s).",
     "attention_pref": "Prefers: {{period}}",
-    "attention_no_pref": "No period preference",
     "attention_price": "{{monthly}}/month · {{yearly}}/year",
     "activate_now": "Activate",
     "activated": "Access activated.",
@@ -827,7 +824,11 @@
     "record_payment": "Payment received",
     "undo_payment": "Undo",
     "payment_recorded": "Payment recorded.",
-    "payment_undone": "Payment undone."
+    "payment_undone": "Payment undone.",
+    "suspend_access": "Suspend access",
+    "restore_access": "Restore access",
+    "access_suspended": "Access suspended.",
+    "access_restored": "Access restored."
   },
   "staff": {
     "title": "Employees",
@@ -1120,13 +1121,6 @@
     "faq_q_9": "Can my coaches use Fitora on mobile?",
     "faq_a_9": "Yes, every coach gets mobile access to follow their schedule and check members in."
   },
-  "trial": {
-    "owner_title": "Your free trial has ended",
-    "owner_body": "Your 14-day free trial is over. To keep using Fitora, your account needs to be unlocked by our team.",
-    "owner_hint": "Contact the Fitora team to continue — an admin will unlock your account directly.",
-    "staff_title": "This account is locked",
-    "staff_body": "Your Company's free trial has ended. Only the account owner can unlock it. Contact them to continue."
-  },
   "palette": {
     "trigger": "Search",
     "placeholder": "Search a client, an action…",
@@ -1281,5 +1275,20 @@
     "attendance": "My attendance",
     "attendance_rate_hint": "Of the sessions you booked, the ones you came to.",
     "no_attendance": "No sessions attended yet"
+  },
+  "locked": {
+    "title_trial_expired": "Your trial has ended",
+    "body_trial_expired": "Your 14 days are up. Ask for activation and our team opens your access — payment is settled directly with us.",
+    "title_payment_overdue": "This month was not settled",
+    "body_payment_overdue": "Access closed three days after the period you paid for ran out. It reopens as soon as payment reaches us.",
+    "title_term_ended": "Your subscription has reached its end date",
+    "body_term_ended": "The covered period is over. Ask for a renewal to reopen your access.",
+    "title_suspended": "Your access is suspended",
+    "body_suspended": "This access was suspended by the Fitora team. Get in touch to find out why.",
+    "ask": "Ask for activation",
+    "requested": "Request sent — we will come back to you shortly.",
+    "hint": "Your data is untouched. Nothing is deleted while an account is closed.",
+    "staff_title": "Your gym's access is closed",
+    "staff_body": "Only the owner can reopen it. Let them know so you can get back to work."
   }
 }

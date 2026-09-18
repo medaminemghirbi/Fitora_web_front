@@ -31,7 +31,14 @@ export const ownerAreaGuard: CanActivateFn = () => {
   if (user.role === "admin") return router.createUrlTree(["/admin/companies"]);
 
   return config.ensureLoaded().pipe(
-    map(() => (auth.coachShellApplies() ? router.createUrlTree(["/coach/today"]) : true)),
+    map(() => {
+      // A locked gym gets one page and no navigation. Caught here rather
+      // than waiting for a request to come back 402, so nobody watches a
+      // screen load and then empty itself.
+      if (config.subscription()?.locked) return router.createUrlTree(["/account-locked"]);
+
+      return auth.coachShellApplies() ? router.createUrlTree(["/coach/today"]) : true;
+    }),
     catchError(() => of(true))
   );
 };

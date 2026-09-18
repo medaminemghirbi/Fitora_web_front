@@ -14,7 +14,7 @@ describe("staff.guard", () => {
     coachShellApplies: jasmine.Spy;
     hasPermission: jasmine.Spy;
   };
-  let configStub: { ensureLoaded: jasmine.Spy; ready: jasmine.Spy };
+  let configStub: { subscription: jasmine.Spy; ensureLoaded: jasmine.Spy; ready: jasmine.Spy };
   let router: jasmine.SpyObj<Router>;
   let tree: UrlTree;
 
@@ -29,6 +29,7 @@ describe("staff.guard", () => {
     configStub = {
       ensureLoaded: jasmine.createSpy().and.returnValue(of(null)),
       ready: jasmine.createSpy().and.returnValue(true),
+      subscription: jasmine.createSpy().and.returnValue({ locked: false }),
     };
     tree = {} as UrlTree;
     router = jasmine.createSpyObj<Router>("Router", ["createUrlTree"]);
@@ -233,4 +234,30 @@ describe("staff.guard", () => {
       expect(router.createUrlTree).toHaveBeenCalledWith(["/member/home"]);
     });
   });
+
+  // A locked gym gets one page and no navigation — caught here rather than
+  // waiting for a request to come back 402 and empty a loaded screen.
+  describe("a gym whose access is closed", () => {
+    it("never reaches the owner area", async () => {
+      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      configStub.subscription.and.returnValue({ locked: true });
+
+      const result = TestBed.runInInjectionContext(() => ownerAreaGuard({} as never, {} as never));
+      const resolved = isObservable(result) ? await firstValueFrom(result) : result;
+
+      expect(resolved).toBe(tree);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/account-locked"]);
+    });
+
+    it("lets an unlocked gym straight through", async () => {
+      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      configStub.subscription.and.returnValue({ locked: false });
+
+      const result = TestBed.runInInjectionContext(() => ownerAreaGuard({} as never, {} as never));
+      const resolved = isObservable(result) ? await firstValueFrom(result) : result;
+
+      expect(resolved).toBe(true);
+    });
+  });
 });
+

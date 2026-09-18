@@ -730,10 +730,8 @@
     "included": "Inclus",
     "subscription_total": "Total de l'abonnement",
     "subscription_title": "Abonnement",
-    "access_status": "Statut d'accès",
     "expires_at": "Date d'expiration",
     "expires_at_hint": "Laissez vide pour un accès permanent, sans échéance.",
-    "payment_off_app": "Le paiement se fait hors application. Ajustez le statut d'accès une fois le règlement reçu.",
     "debt_title": "Solde / dette",
     "debt_hint": "Ce que l'entreprise doit actuellement à Fitora — affiché à l'owner sur sa page d'abonnement.",
     "approve": "Approuver",
@@ -801,7 +799,6 @@
     "attention_locked": "Essai terminé — l'accès est bloqué.",
     "attention_ending": "L'essai se termine dans {{days}} jour(s).",
     "attention_pref": "Préférence : {{period}}",
-    "attention_no_pref": "Sans préférence de période",
     "attention_price": "{{monthly}}/mois · {{yearly}}/an",
     "activate_now": "Activer",
     "activated": "Accès activé.",
@@ -827,7 +824,11 @@
     "record_payment": "Paiement reçu",
     "undo_payment": "Annuler",
     "payment_recorded": "Paiement enregistré.",
-    "payment_undone": "Paiement annulé."
+    "payment_undone": "Paiement annulé.",
+    "suspend_access": "Suspendre l'accès",
+    "restore_access": "Rétablir l'accès",
+    "access_suspended": "Accès suspendu.",
+    "access_restored": "Accès rétabli."
   },
   "staff": {
     "title": "Employés",
@@ -1120,13 +1121,6 @@
     "faq_q_9": "Mes coachs peuvent-ils utiliser Fitora sur mobile ?",
     "faq_a_9": "Oui, chaque coach dispose d'un accès mobile pour suivre son planning et pointer les présences."
   },
-  "trial": {
-    "owner_title": "Votre essai gratuit est terminé",
-    "owner_body": "Vos 14 jours d'essai gratuit sont écoulés. Pour continuer à utiliser Fitora, votre compte doit être débloqué par notre équipe.",
-    "owner_hint": "Contactez l'équipe Fitora pour poursuivre — votre compte sera débloqué directement par un administrateur.",
-    "staff_title": "Ce compte est verrouillé",
-    "staff_body": "L'essai gratuit de votre société est terminé. Seul le propriétaire du compte peut le débloquer. Contactez-le pour continuer."
-  },
   "palette": {
     "trigger": "Rechercher",
     "placeholder": "Rechercher un client, une action…",
@@ -1281,5 +1275,20 @@
     "attendance": "Ma présence",
     "attendance_rate_hint": "Des séances réservées auxquelles vous êtes venu.",
     "no_attendance": "Aucune séance suivie pour l'instant"
+  },
+  "locked": {
+    "title_trial_expired": "Votre essai est terminé",
+    "body_trial_expired": "Vos 14 jours sont écoulés. Demandez l'activation et notre équipe ouvre votre accès — le paiement se règle directement avec nous.",
+    "title_payment_overdue": "Ce mois n'a pas été réglé",
+    "body_payment_overdue": "L'accès s'est fermé trois jours après la fin de la période payée. Il rouvre dès que le règlement nous parvient.",
+    "title_term_ended": "Votre abonnement est arrivé à échéance",
+    "body_term_ended": "La période couverte est terminée. Demandez le renouvellement pour rouvrir votre accès.",
+    "title_suspended": "Votre accès est suspendu",
+    "body_suspended": "Cet accès a été suspendu par l'équipe Fitora. Contactez-nous pour en connaître la raison.",
+    "ask": "Demander l'activation",
+    "requested": "Demande envoyée — nous revenons vers vous rapidement.",
+    "hint": "Vos données sont intactes. Rien n'est supprimé pendant qu'un compte est fermé.",
+    "staff_title": "L'accès de votre salle est fermé",
+    "staff_body": "Seul le gérant peut le rouvrir. Prévenez-le pour reprendre le travail."
   }
 }

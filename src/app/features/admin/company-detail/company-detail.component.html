@@ -57,14 +57,13 @@
             } @else {
               @if (askedPeriod(); as period) {
                 {{ "admin.attention_pref" | translate: { period: ((period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate) } }}
-              } @else {
-                {{ "admin.attention_no_pref" | translate }}
+                ·
               }
+              {{ "admin.attention_price" | translate: {
+                    monthly: ((c.monthly_subscription_cents / 100) | money: c.currency),
+                    yearly: ((c.annual_subscription_cents / 100) | money: c.currency)
+                  } }}
             }
-            · {{ "admin.attention_price" | translate: {
-                  monthly: ((c.monthly_subscription_cents / 100) | money: c.currency),
-                  yearly: ((c.annual_subscription_cents / 100) | money: c.currency)
-                } }}
           </span>
         </div>
       </div>
@@ -146,17 +145,6 @@
         </div>
       </div>
       <div class="app-card-body ac-form">
-        <div>
-          <div class="form-label">{{ "admin.access_status" | translate }}</div>
-          <div class="fx-segmented">
-            @for (s of statuses; track s) {
-              <button type="button" [class.is-active]="status() === s" (click)="status.set(s)">
-                {{ ("subscription.status_" + s) | translate }}
-              </button>
-            }
-          </div>
-        </div>
-
         <div class="ac-form-row">
           <div>
             <label for="ac-period">{{ "admin.billing_period" | translate }}</label>
@@ -174,18 +162,17 @@
           </div>
         </div>
 
-        <div class="ac-note">
-          <i class="bi bi-info-circle"></i>
-          {{ "admin.payment_off_app" | translate }}
-        </div>
       </div>
-      @if (subDirty()) {
-        <div class="ac-card-foot">
+      <div class="ac-card-foot ac-card-foot--split">
+        <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="savingSub()" (click)="toggleSuspended()">
+          {{ (suspended() ? "admin.restore_access" : "admin.suspend_access") | translate }}
+        </button>
+        @if (subDirty()) {
           <button type="button" class="btn btn-sm btn-primary" [disabled]="savingSub()" (click)="saveSubscription()">
             {{ (savingSub() ? "common.saving" : "common.save") | translate }}
           </button>
-        </div>
-      }
+        }
+      </div>
     </div>
 
     <!-- Right: what is owed, then the tenant's own settings -->
