@@ -3,14 +3,13 @@
     [title]="(greetingKey() | translate) + ', ' + (auth.currentUser()?.first_name || '') + ' 👋'"
     [description]="'dashboard.subtitle' | translate"
   >
-    @if (auth.currentUser()?.role === "owner") {
-      <a routerLink="/owner/clients" class="btn btn-outline-secondary d-none d-sm-inline-flex">
-        <i class="bi bi-people"></i> {{ "nav.clients" | translate }}
-      </a>
-      <a routerLink="/owner/contracts" class="btn btn-primary">
-        <i class="bi bi-file-earmark-text"></i> {{ "nav.subscriptions" | translate }}
-      </a>
-    }
+    <!-- The two things a desk does all day, reachable without navigating. -->
+    <a routerLink="/owner/payments" [queryParams]="{ action: 'new' }" class="btn btn-outline-secondary d-none d-sm-inline-flex">
+      <i class="bi bi-cash-coin"></i> {{ "payments.record" | translate }}
+    </a>
+    <a routerLink="/owner/clients" [queryParams]="{ action: 'new' }" class="btn btn-primary">
+      <i class="bi bi-person-plus"></i> {{ "clients.new" | translate }}
+    </a>
   </app-page-header>
 
   @if (showSetupCard) {

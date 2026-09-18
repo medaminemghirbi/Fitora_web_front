@@ -17,6 +17,22 @@ export interface ClientFilters {
   per_page?: number;
 }
 
+/** The plan half of a one-shot sign-up. Prices are the gym's, never sent. */
+export interface EnrolmentSubscription {
+  contract_type_id: string;
+  activity_id: string;
+  starts_on?: string;
+  discount?: number;
+  collect_payment?: boolean;
+  payment_method?: string;
+}
+
+export interface EnrolmentResponse {
+  client: Client;
+  contract: Contract | null;
+  payment: Payment | null;
+}
+
 export type ClientPayload = Partial<
   Pick<
     Client,
@@ -70,8 +86,15 @@ export class ClientsService {
     return this.http.get<ClientShowResponse>(`${API_BASE_URL}/clients/${id}`);
   }
 
-  create(payload: ClientPayload): Observable<{ client: Client }> {
-    return this.http.post<{ client: Client }>(`${API_BASE_URL}/clients`, { client: payload });
+  /**
+   * Signs someone up. With a `subscription` the gym also sells them a plan,
+   * and optionally takes the money, in the same request — the backend puts
+   * all three in one transaction, so a member never survives a refused sale.
+   */
+  create(payload: ClientPayload, subscription?: EnrolmentSubscription): Observable<EnrolmentResponse> {
+    const body: Record<string, unknown> = { client: payload };
+    if (subscription) body["subscription"] = subscription;
+    return this.http.post<EnrolmentResponse>(`${API_BASE_URL}/clients`, body);
   }
 
   update(id: string, payload: ClientPayload): Observable<{ client: Client }> {

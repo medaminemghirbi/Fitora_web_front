@@ -4,7 +4,12 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Client } from "../../../core/models/client.model";
-import { ClientsService, ClientStatusFilter } from "../../../core/services/clients.service";
+import { ClientsService, ClientStatusFilter, EnrolmentSubscription } from "../../../core/services/clients.service";
+import { ContractTypesService } from "../../../core/services/contract-types.service";
+import { ActivitiesService } from "../../../core/services/activities.service";
+import { ContractType } from "../../../core/models/contract-type.model";
+import { Activity } from "../../../core/models/activity.model";
+import { BrandingService } from "../../../core/services/branding.service";
 import { PageMeta } from "../../../core/services/sessions.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
@@ -22,6 +27,8 @@ import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
 import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
+import { WizardStepsComponent } from "../../../shared/ui/wizard-steps.component";
+import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 
 @Component({
   selector: "app-clients-list",
@@ -43,6 +50,8 @@ import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/st
     ErrorStateComponent,
     FilterRailComponent,
     StatusFilterComponent,
+    WizardStepsComponent,
+    MoneyPipe,
   ],
   templateUrl: "./clients-list.component.html",
 })
@@ -83,6 +92,24 @@ export class ClientsListComponent implements OnInit {
 
   private searchDebounce?: ReturnType<typeof setTimeout>;
 
+  // ---- the sign-up wizard -------------------------------------------------
+  // Three steps, because that is what actually happens at a front desk:
+  // who are you, what are you buying, are you paying now. Only the first is
+  // compulsory — a walk-in who wants to think about it is still a member.
+  readonly step = signal(0);
+  readonly moreDetails = signal(false);
+  readonly plans = signal<ContractType[]>([]);
+  readonly activities = signal<Activity[]>([]);
+
+  readonly subscriptionForm = this.fb.nonNullable.group({
+    activity_id: [""],
+    contract_type_id: [""],
+    starts_on: [new Date().toISOString().slice(0, 10)],
+    discount: [0],
+    collect_payment: [true],
+    payment_method: ["cash"],
+  });
+
   readonly createForm = this.fb.nonNullable.group({
     first_name: ["", Validators.required],
     last_name: ["", Validators.required],
@@ -98,6 +125,9 @@ export class ClientsListComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     private readonly clientsService: ClientsService,
+    private readonly contractTypesService: ContractTypesService,
+    private readonly activitiesService: ActivitiesService,
+    private readonly branding: BrandingService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly toast: ToastService,
@@ -195,24 +225,135 @@ export class ClientsListComponent implements OnInit {
 
   openCreate(): void {
     this.createForm.reset();
+    this.subscriptionForm.reset({
+      activity_id: "",
+      contract_type_id: "",
+      starts_on: new Date().toISOString().slice(0, 10),
+      discount: 0,
+      collect_payment: true,
+      payment_method: "cash",
+    });
+    this.step.set(0);
+    this.moreDetails.set(false);
     this.formError.set(null);
     this.createModalOpen.set(true);
+    this.loadCatalogue();
   }
 
   closeCreateModal(): void {
     this.createModalOpen.set(false);
   }
 
+  // Loaded when the wizard opens rather than with the page: most visits to
+  // the member list never sell anything.
+  private loadCatalogue(): void {
+    if (this.activities().length > 0) return;
+
+    this.activitiesService.list().subscribe((res) => this.activities.set(res.activities.filter((a) => a.active)));
+    this.contractTypesService.list().subscribe((res) => this.plans.set(res.plans.filter((p) => p.active)));
+  }
+
+  readonly currency = computed(() => this.branding.branding()?.currency ?? "TND");
+
+  readonly wizardSteps = computed(() => [
+    this.translate.instant("clients.step_identity"),
+    this.translate.instant("clients.step_subscription"),
+    this.translate.instant("clients.step_payment"),
+  ]);
+
+  /** The plans that actually price the chosen activity — the rest aren't sold for it. */
+  readonly plansForActivity = computed(() => {
+    const activityId = this.selectedActivityId();
+    if (!activityId) return [];
+    return this.plans().filter((p) => p.activity_prices.some((row) => row.activity_id === activityId));
+  });
+
+  // Mirrors of the two selects, so the computeds below react to them: a
+  // reactive form control is not a signal.
+  readonly selectedActivityId = signal("");
+  readonly selectedPlanId = signal("");
+  readonly discount = signal(0);
+
+  readonly basePrice = computed(() => {
+    const plan = this.plans().find((p) => p.id === this.selectedPlanId());
+    return plan?.activity_prices.find((row) => row.activity_id === this.selectedActivityId())?.price ?? null;
+  });
+
+  readonly total = computed(() => {
+    const base = this.basePrice();
+    return base === null ? null : Math.max(base - (this.discount() || 0), 0);
+  });
+
+  onActivityChange(id: string): void {
+    this.selectedActivityId.set(id);
+    this.subscriptionForm.patchValue({ activity_id: id });
+    // A plan that does not price the new activity cannot stay selected.
+    if (!this.plansForActivity().some((p) => p.id === this.selectedPlanId())) {
+      this.selectedPlanId.set("");
+      this.subscriptionForm.patchValue({ contract_type_id: "" });
+    }
+  }
+
+  onPlanChange(id: string): void {
+    this.selectedPlanId.set(id);
+    this.subscriptionForm.patchValue({ contract_type_id: id });
+  }
+
+  onDiscountChange(value: number): void {
+    this.discount.set(value || 0);
+    this.subscriptionForm.patchValue({ discount: value || 0 });
+  }
+
+  /** True once the step's own requirements are met — never for a later step. */
+  canAdvance(): boolean {
+    if (this.step() === 0) return this.createForm.valid;
+    if (this.step() === 1) return !this.selectedPlanId() || this.total() !== null;
+    return true;
+  }
+
+  next(): void {
+    if (this.step() === 0 && this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
+      return;
+    }
+    // Nothing was bought, so there is nothing to collect: skip step 3.
+    if (this.step() === 1 && !this.selectedPlanId()) {
+      this.submitCreate();
+      return;
+    }
+    this.step.set(Math.min(this.step() + 1, 2));
+  }
+
+  back(): void {
+    this.step.set(Math.max(this.step() - 1, 0));
+  }
+
+  goToStep(index: number): void {
+    if (index < this.step()) this.step.set(index);
+  }
+
   submitCreate(): void {
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
+      this.step.set(0);
       return;
     }
 
     this.saving.set(true);
     this.formError.set(null);
 
-    this.clientsService.create(this.createForm.getRawValue()).subscribe({
+    const subscription: EnrolmentSubscription | undefined = this.selectedPlanId()
+      ? {
+          contract_type_id: this.selectedPlanId(),
+          activity_id: this.selectedActivityId(),
+          starts_on: this.subscriptionForm.getRawValue().starts_on,
+          discount: this.discount(),
+          collect_payment: this.subscriptionForm.getRawValue().collect_payment,
+          payment_method: this.subscriptionForm.getRawValue().payment_method,
+        }
+      : undefined;
+
+    this.clientsService.create(this.createForm.getRawValue(), subscription).subscribe({
       next: (res) => {
         this.saving.set(false);
         this.createModalOpen.set(false);

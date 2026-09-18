@@ -173,9 +173,12 @@
     <div class="alert alert-danger">{{ formError() }}</div>
   }
 
-  <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate>
-    <div class="fx-form-section">
-      <div class="fx-form-section-title">{{ "clients.section_personal" | translate }}</div>
+  <app-wizard-steps [steps]="wizardSteps()" [current]="step()" [label]="'clients.new' | translate" />
+
+  <form [formGroup]="createForm" (ngSubmit)="next()" novalidate>
+    <!-- 1 — who they are. Two fields; the rest is filed under "plus d'infos"
+         because a desk taking a name and a number should not meet nine. -->
+    @if (step() === 0) {
       <div class="row">
         <div class="col-6 mb-3">
           <label for="cl-first">{{ "coaches.first_name" | translate }} *</label>
@@ -190,45 +193,156 @@
         <label for="cl-phone">{{ "auth.phone" | translate }} *</label>
         <input id="cl-phone" class="form-control" formControlName="phone" dir="ltr" />
       </div>
-      <div class="mb-3">
-        <label for="cl-email">{{ "auth.email" | translate }} ({{ "common.optional" | translate }})</label>
-        <input id="cl-email" type="email" class="form-control" formControlName="email" dir="ltr" />
-      </div>
-      <div class="row">
-        <div class="col-6 mb-3">
-          <label for="cl-dob">{{ "clients.date_of_birth" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="cl-dob" type="date" class="form-control" formControlName="date_of_birth" />
-        </div>
-        <div class="col-6 mb-3">
-          <label for="cl-gender">{{ "clients.gender" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="cl-gender" class="form-control" formControlName="gender" />
-        </div>
-      </div>
-    </div>
 
-    <div class="fx-form-section">
-      <div class="fx-form-section-title">{{ "clients.section_emergency" | translate }}</div>
-      <div class="row">
-        <div class="col-6 mb-3">
-          <label for="cl-ec-name">{{ "clients.emergency_contact_name" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="cl-ec-name" class="form-control" formControlName="emergency_contact_name" />
-        </div>
-        <div class="col-6 mb-3">
-          <label for="cl-ec-phone">{{ "clients.emergency_contact_phone" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="cl-ec-phone" class="form-control" formControlName="emergency_contact_phone" dir="ltr" />
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="cl-notes">{{ "clients.notes" | translate }} ({{ "common.optional" | translate }})</label>
-        <textarea id="cl-notes" class="form-control" rows="2" formControlName="notes"></textarea>
-      </div>
-    </div>
-
-    <div class="d-flex justify-content-end gap-2 mt-4">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeCreateModal()">{{ "common.cancel" | translate }}</button>
-      <button type="submit" class="btn btn-primary" [disabled]="saving()">
-        {{ (saving() ? "common.saving" : "common.save") | translate }}
+      <button type="button" class="btn btn-link px-0" (click)="moreDetails.set(!moreDetails())" [attr.aria-expanded]="moreDetails()">
+        <i class="bi" [class.bi-chevron-down]="!moreDetails()" [class.bi-chevron-up]="moreDetails()"></i>
+        {{ "clients.more_details" | translate }}
       </button>
+
+      @if (moreDetails()) {
+        <div class="mb-3">
+          <label for="cl-email">{{ "auth.email" | translate }}</label>
+          <input id="cl-email" type="email" class="form-control" formControlName="email" dir="ltr" />
+          <div class="form-text">{{ "clients.email_identifies_hint" | translate }}</div>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label for="cl-dob">{{ "clients.date_of_birth" | translate }}</label>
+            <input id="cl-dob" type="date" class="form-control" formControlName="date_of_birth" />
+          </div>
+          <div class="col-6 mb-3">
+            <label for="cl-gender">{{ "clients.gender" | translate }}</label>
+            <input id="cl-gender" class="form-control" formControlName="gender" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label for="cl-ec-name">{{ "clients.emergency_contact_name" | translate }}</label>
+            <input id="cl-ec-name" class="form-control" formControlName="emergency_contact_name" />
+          </div>
+          <div class="col-6 mb-3">
+            <label for="cl-ec-phone">{{ "clients.emergency_contact_phone" | translate }}</label>
+            <input id="cl-ec-phone" class="form-control" formControlName="emergency_contact_phone" dir="ltr" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="cl-notes">{{ "clients.notes" | translate }}</label>
+          <textarea id="cl-notes" class="form-control" rows="2" formControlName="notes"></textarea>
+        </div>
+      }
+    }
+
+    <!-- 2 — what they are buying. Activity first, because it decides which
+         plans exist and what they cost. -->
+    @if (step() === 1) {
+      <div class="mb-3">
+        <label for="cl-activity">{{ "clients.abo_activity" | translate }}</label>
+        <select id="cl-activity" class="form-select" [value]="selectedActivityId()" (change)="onActivityChange($any($event.target).value)">
+          <option value="">{{ "clients.no_subscription_yet" | translate }}</option>
+          @for (a of activities(); track a.id) {
+            <option [value]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
+          }
+        </select>
+      </div>
+
+      @if (selectedActivityId()) {
+        <div class="mb-3">
+          <label for="cl-plan">{{ "clients.abo_formula" | translate }}</label>
+          <select id="cl-plan" class="form-select" [value]="selectedPlanId()" (change)="onPlanChange($any($event.target).value)">
+            <option value="">—</option>
+            @for (p of plansForActivity(); track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select>
+          @if (plansForActivity().length === 0) {
+            <div class="form-text text-warning">{{ "clients.no_plan_for_activity" | translate }}</div>
+          }
+        </div>
+
+        @if (selectedPlanId()) {
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label for="cl-start">{{ "contracts.start_date" | translate }}</label>
+              <input
+                id="cl-start"
+                type="date"
+                class="form-control"
+                [value]="subscriptionForm.controls.starts_on.value"
+                (change)="subscriptionForm.patchValue({ starts_on: $any($event.target).value })"
+              />
+            </div>
+            <div class="col-6 mb-3">
+              <label for="cl-discount">{{ "contracts.discount" | translate }}</label>
+              <input id="cl-discount" type="number" min="0" class="form-control" [value]="discount()" (input)="onDiscountChange(+$any($event.target).value)" />
+            </div>
+          </div>
+
+          <div class="fx-summary-row">
+            <span>{{ "clients.total_due" | translate }}</span>
+            <strong>{{ total() | money: currency() }}</strong>
+          </div>
+        }
+      }
+    }
+
+    <!-- 3 — money. The amount is settled; the only question is whether it is
+         changing hands now. -->
+    @if (step() === 2) {
+      <div class="fx-summary-row">
+        <span>{{ "clients.total_due" | translate }}</span>
+        <strong>{{ total() | money: currency() }}</strong>
+      </div>
+
+      <div class="form-check my-3">
+        <input
+          id="cl-collect"
+          type="checkbox"
+          class="form-check-input"
+          [checked]="subscriptionForm.controls.collect_payment.value"
+          (change)="subscriptionForm.patchValue({ collect_payment: $any($event.target).checked })"
+        />
+        <label for="cl-collect" class="form-check-label">{{ "clients.collect_now" | translate }}</label>
+      </div>
+
+      @if (subscriptionForm.controls.collect_payment.value) {
+        <div class="mb-3">
+          <label for="cl-method">{{ "payments.method" | translate }}</label>
+          <select
+            id="cl-method"
+            class="form-select"
+            [value]="subscriptionForm.controls.payment_method.value"
+            (change)="subscriptionForm.patchValue({ payment_method: $any($event.target).value })"
+          >
+            <option value="cash">{{ "payments.method_cash" | translate }}</option>
+            <option value="bank_transfer">{{ "payments.method_bank_transfer" | translate }}</option>
+            <option value="other">{{ "payments.method_other" | translate }}</option>
+          </select>
+        </div>
+      } @else {
+        <p class="form-text">{{ "clients.pay_later_hint" | translate }}</p>
+      }
+    }
+
+    <div class="d-flex justify-content-between gap-2 mt-4">
+      @if (step() > 0) {
+        <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ "common.back" | translate }}</button>
+      } @else {
+        <button type="button" class="btn btn-outline-secondary" (click)="closeCreateModal()">{{ "common.cancel" | translate }}</button>
+      }
+
+      @if (step() < 2) {
+        <button type="submit" class="btn btn-primary" [disabled]="!canAdvance()">
+          @if (step() === 1 && !selectedPlanId()) {
+            {{ (saving() ? "common.saving" : "clients.finish_without_plan") | translate }}
+          } @else {
+            {{ "common.next" | translate }}
+          }
+        </button>
+      } @else {
+        <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitCreate()">
+          {{ (saving() ? "common.saving" : "clients.finish") | translate }}
+        </button>
+      }
     </div>
   </form>
 </app-modal>

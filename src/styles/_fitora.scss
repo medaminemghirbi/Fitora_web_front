@@ -189,6 +189,23 @@ label { font-weight: 500; font-size: 0.8125rem; color: var(--color-text); margin
   margin-bottom: var(--space-3);
 }
 
+// The settled figure at the foot of a form — what is owed, what a period
+// costs. Emphasised because it is the line someone reads back aloud.
+.fx-summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt, rgba(0, 0, 0, 0.03));
+
+  > strong {
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 // Input with a leading icon (search fields)
 .fx-input-icon {
   position: relative;

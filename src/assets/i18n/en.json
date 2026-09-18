@@ -373,7 +373,19 @@
     "abo_no_price_link": "Set it in the plan settings",
     "filter_status": "Filter by status",
     "stat_total": "Members",
-    "abo_price": "Catalogue price"
+    "abo_price": "Catalogue price",
+    "step_identity": "Identity",
+    "step_subscription": "Subscription",
+    "step_payment": "Payment",
+    "more_details": "More details",
+    "email_identifies_hint": "The email identifies the person. If they already train at another Fitora gym, their record follows them.",
+    "no_subscription_yet": "No subscription for now",
+    "no_plan_for_activity": "No plan has a price for this activity. Set one in Subscriptions → Plans.",
+    "total_due": "Total due",
+    "collect_now": "Take payment now",
+    "pay_later_hint": "The subscription is created unpaid and will show up under \\u201cNeeds your attention\\u201d.",
+    "finish": "Finish",
+    "finish_without_plan": "Save without a subscription"
   },
   "subscription": {
     "title": "Fitora Subscription",

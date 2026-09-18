@@ -373,7 +373,19 @@
     "abo_no_price_link": "حدّده في إعدادات الصيغ",
     "filter_status": "تصفية حسب الحالة",
     "stat_total": "المنخرطون",
-    "abo_price": "سعر القائمة"
+    "abo_price": "سعر القائمة",
+    "step_identity": "الهوية",
+    "step_subscription": "الاشتراك",
+    "step_payment": "التحصيل",
+    "more_details": "تفاصيل إضافية",
+    "email_identifies_hint": "البريد الإلكتروني يعرّف الشخص. إن كان يتمرّن في قاعة فيتورا أخرى، يتبعه ملفّه.",
+    "no_subscription_yet": "بدون اشتراك حاليًا",
+    "no_plan_for_activity": "لا توجد صيغة بسعر لهذا النشاط. حدّد سعرًا في الاشتراكات ← الصيغ.",
+    "total_due": "المبلغ المستحقّ",
+    "collect_now": "التحصيل الآن",
+    "pay_later_hint": "سيُنشأ الاشتراك غير مدفوع وسيظهر ضمن «ما يستدعي انتباهك».",
+    "finish": "إنهاء",
+    "finish_without_plan": "حفظ بدون اشتراك"
   },
   "subscription": {
     "title": "اشتراك Fitora",

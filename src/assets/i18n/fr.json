@@ -373,7 +373,19 @@
     "abo_no_price_link": "Le définir dans les formules",
     "filter_status": "Filtrer par statut",
     "stat_total": "Adhérents",
-    "abo_price": "Prix catalogue"
+    "abo_price": "Prix catalogue",
+    "step_identity": "Identité",
+    "step_subscription": "Abonnement",
+    "step_payment": "Encaissement",
+    "more_details": "Plus d'infos",
+    "email_identifies_hint": "L'e-mail identifie la personne. Si elle s'entraîne déjà dans une autre salle Fitora, son dossier la suit.",
+    "no_subscription_yet": "Sans abonnement pour l'instant",
+    "no_plan_for_activity": "Aucune formule n'a de tarif pour cette activité. Fixez-en un dans Abonnements → Formules.",
+    "total_due": "Total à régler",
+    "collect_now": "Encaisser maintenant",
+    "pay_later_hint": "L'abonnement sera créé comme non réglé et apparaîtra dans « Ce qui demande votre attention ».",
+    "finish": "Terminer",
+    "finish_without_plan": "Enregistrer sans abonnement"
   },
   "subscription": {
     "title": "Abonnement Fitora",
