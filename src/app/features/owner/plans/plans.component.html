@@ -13,7 +13,9 @@
                    [placeholder]="'common.search' | translate" />
           </div>
         }
-        <button type="button" class="btn btn-primary btn-sm" (click)="openCreatePlan()">
+        <button type="button" class="btn btn-primary btn-sm" (click)="openCreatePlan()"
+                [disabled]="activities().length === 0"
+                [attr.title]="activities().length === 0 ? ('contract_types.no_activities' | translate) : null">
           <i class="bi bi-plus-lg"></i> {{ "contract_types.new" | translate }}
         </button>
       </div>
@@ -97,7 +99,12 @@
         <legend class="form-label mb-1">{{ "contract_types.activity_prices" | translate }} *</legend>
         <p class="small text-muted-token">{{ "contract_types.activity_prices_hint" | translate }}</p>
         @if (activities().length === 0) {
-          <p class="small text-muted-token mb-0">{{ "contract_types.no_activities" | translate }}</p>
+          <!-- Nothing to price. Saying so beside a field that cannot be
+               filled left people to discover it on submit, from a message
+               asking for something this screen never offered. -->
+          <div class="alert alert-warning mb-0">
+            {{ "contract_types.no_activities" | translate }}
+          </div>
         } @else {
           <div class="fx-price-grid">
             @for (activity of activities(); track activity.id) {
@@ -140,7 +147,9 @@
       </div>
       <div class="d-flex justify-content-end gap-2">
         <button type="button" class="btn btn-outline-secondary" (click)="closePlanModal()">{{ "common.cancel" | translate }}</button>
-        <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ (saving() ? "common.saving" : "common.save") | translate }}</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving() || activities().length === 0">
+          {{ (saving() ? "common.saving" : "common.save") | translate }}
+        </button>
       </div>
     </form>
   </app-modal>

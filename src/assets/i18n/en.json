@@ -648,7 +648,7 @@
     "activity_prices_hint": "Set a price for each activity this plan covers. Leave a field empty and the plan isn't sold for that activity.",
     "no_prices_yet": "No price set yet",
     "not_offered": "Not offered",
-    "no_activities": "Create an activity first to set its price.",
+    "no_activities": "No activities yet. Add one in the Activities column on the right — a plan is always sold for a particular activity.",
     "needs_a_price": "Set a price for at least one activity."
   },
   "payments": {

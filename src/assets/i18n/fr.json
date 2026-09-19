@@ -648,7 +648,7 @@
     "activity_prices_hint": "Fixez un tarif pour chaque activité couverte par cette formule. Un champ vide signifie que la formule n'est pas vendue pour cette activité.",
     "no_prices_yet": "Aucun tarif défini",
     "not_offered": "Non proposée",
-    "no_activities": "Créez d'abord une activité pour définir son tarif.",
+    "no_activities": "Aucune activité pour l'instant. Créez-en une dans la colonne « Activités », à droite : une formule se vend toujours pour une activité précise.",
     "needs_a_price": "Définissez un tarif pour au moins une activité."
   },
   "payments": {

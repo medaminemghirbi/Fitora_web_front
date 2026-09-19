@@ -145,4 +145,33 @@ describe("PlansComponent", () => {
     component.submitPlan();
     expect(component.formError()).toBeTruthy();
   });
+
+  describe("a gym with no activities yet", () => {
+    beforeEach(() => {
+      component.activities.set([]);
+      fixture.detectChanges();
+    });
+
+    it("does not open a form nobody can complete", () => {
+      const newPlan = fixture.nativeElement.querySelector(".app-card-header button.btn-primary") as HTMLButtonElement;
+
+      expect(newPlan.disabled).toBe(true);
+    });
+
+    it("says what to do instead of asking for a price there is no field for", () => {
+      component.planModalOpen.set(true);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector(".alert-warning")).toBeTruthy();
+      expect(fixture.nativeElement.querySelectorAll(".fx-price-grid-row").length).toBe(0);
+    });
+
+    it("cannot be submitted into the dead end", () => {
+      component.planModalOpen.set(true);
+      fixture.detectChanges();
+
+      const save = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+      expect(save.disabled).toBe(true);
+    });
+  });
 });
