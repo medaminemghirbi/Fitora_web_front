@@ -903,7 +903,15 @@
     "access_none": "بدون دخول",
     "filter_access": "تصفية حسب الدخول",
     "stat_total": "أعضاء الفريق",
-    "stat_coaches": "المدربون"
+    "stat_coaches": "المدربون",
+    "access_everything": "وصول كامل",
+    "access_nothing": "بدون وصول",
+    "access_revenue": "المداخيل",
+    "access_payments": "التحصيل",
+    "access_clients": "الأعضاء",
+    "access_sessions": "الجدول",
+    "access_bookings": "الحجوزات",
+    "access_checkin": "الحضور"
   },
   "coach": {
     "today": "اليوم",

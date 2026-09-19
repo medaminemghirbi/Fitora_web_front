@@ -104,6 +104,13 @@
               </app-status-badge>
             </div>
 
+            <!-- What the role is called, and then what it actually lets
+                 them do. The name alone sent people to the permissions
+                 editor to find out. -->
+            @if (permissionSummary(m); as access) {
+              <p class="team-access-summary">{{ access }}</p>
+            }
+
             <div class="team-chips">
               <span class="badge text-bg-secondary">{{ m.roleName }}</span>
               @if (m.hasMobile) {

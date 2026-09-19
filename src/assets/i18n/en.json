@@ -903,7 +903,15 @@
     "access_none": "No login",
     "filter_access": "Filter by access",
     "stat_total": "Team members",
-    "stat_coaches": "Practitioners"
+    "stat_coaches": "Practitioners",
+    "access_everything": "Full access",
+    "access_nothing": "No access",
+    "access_revenue": "Revenue",
+    "access_payments": "Payments",
+    "access_clients": "Members",
+    "access_sessions": "Schedule",
+    "access_bookings": "Bookings",
+    "access_checkin": "Check-in"
   },
   "coach": {
     "today": "Today",

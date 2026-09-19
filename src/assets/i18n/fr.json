@@ -903,7 +903,15 @@
     "access_none": "Sans accès",
     "filter_access": "Filtrer par accès",
     "stat_total": "Membres",
-    "stat_coaches": "Praticiens"
+    "stat_coaches": "Praticiens",
+    "access_everything": "Accès complet",
+    "access_nothing": "Aucun accès",
+    "access_revenue": "Recettes",
+    "access_payments": "Encaissement",
+    "access_clients": "Membres",
+    "access_sessions": "Planning",
+    "access_bookings": "Réservations",
+    "access_checkin": "Pointage"
   },
   "coach": {
     "today": "Aujourd'hui",

@@ -415,4 +415,34 @@ describe("TeamComponent", () => {
       expect(toast.toasts()[0].kind).toBe("error");
     });
   });
+
+  describe("what a role lets someone do", () => {
+    function staffWith(permissions: string[]) {
+      return { staff: { permissions } } as never;
+    }
+
+    it("says nothing for a coach, who has no back-office role to describe", () => {
+      expect(component.permissionSummary({ staff: null } as never)).toBe("");
+    });
+
+    it("names what differs, in the order it matters", () => {
+      const summary = component.permissionSummary(staffWith(["clients", "checkin", "payments"]));
+
+      // Money first, attendance last — the order the constant declares, not
+      // the order the backend happened to send.
+      expect(summary).toBe("team.access_payments · team.access_clients · team.access_checkin");
+    });
+
+    it("says 'everything' rather than listing all of them", () => {
+      const summary = component.permissionSummary(
+        staffWith(["revenue", "payments", "clients", "sessions", "bookings", "checkin", "reports"])
+      );
+
+      expect(summary).toBe("team.access_everything");
+    });
+
+    it("says so plainly when a role grants nothing worth naming", () => {
+      expect(component.permissionSummary(staffWith(["reports"]))).toBe("team.access_nothing");
+    });
+  });
 });

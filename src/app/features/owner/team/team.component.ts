@@ -51,6 +51,13 @@ export interface TeamMember {
   staffMemberId: string | null;
 }
 
+/**
+ * The capabilities worth naming on a row, most consequential first. The
+ * catalogue has eleven; listing all of them would be unreadable, and most
+ * never differ between two real roles.
+ */
+const PERMISSION_ORDER = ["revenue", "payments", "clients", "sessions", "bookings", "checkin"] as const;
+
 @Component({
   selector: "app-team",
   standalone: true,
@@ -128,6 +135,29 @@ export class TeamComponent implements OnInit {
 
     return [...fromCoaches, ...fromStaff].sort((a, b) => a.name.localeCompare(b.name));
   });
+
+  /**
+   * What a role lets someone do, in plain words.
+   *
+   * A row that says "Réception" tells you the role's name and nothing about
+   * its powers; finding those out meant opening the permissions editor. This
+   * names the three or four things that actually differ between roles, in
+   * the order they matter, and says "tout" rather than listing eleven.
+   */
+  permissionSummary(member: TeamMember): string {
+    if (!member.staff) return "";
+
+    const held = member.staff.permissions;
+    if (PERMISSION_ORDER.every((key) => held.includes(key))) {
+      return this.translate.instant("team.access_everything");
+    }
+
+    const named = PERMISSION_ORDER.filter((key) => held.includes(key)).map((key) =>
+      this.translate.instant("team.access_" + key)
+    );
+
+    return named.length > 0 ? named.join(" · ") : this.translate.instant("team.access_nothing");
+  }
 
   readonly search = signal("");
   readonly page = signal(1);
