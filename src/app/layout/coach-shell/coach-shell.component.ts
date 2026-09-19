@@ -1,5 +1,5 @@
-import { Component, HostListener, signal } from "@angular/core";
-import { RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
+import { Component, HostListener, computed, signal } from "@angular/core";
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
 import { AuthService } from "../../core/auth/auth.service";
 import { BrandingService } from "../../core/services/branding.service";
@@ -23,14 +23,33 @@ export class CoachShellComponent {
   readonly sidebarOpen = signal(false);
   readonly userMenuOpen = signal(false);
 
-  readonly navItems: NavItem[] = [{ path: "/coach/today", icon: "bi-calendar-check", labelKey: "coach.today" }];
+  readonly navItems: NavItem[] = [
+    { path: "/coach/today", icon: "bi-calendar-check", labelKey: "coach.today" },
+    { path: "/coach/members", icon: "bi-people", labelKey: "coach.members.title" },
+  ];
+
+  /** The current URL, so the top bar can name the page it is showing. */
+  private readonly url = signal("");
+
+  /**
+   * The title of whichever nav item is active. Was hardcoded to "Today",
+   * which stopped being true the moment the shell had a second page.
+   */
+  readonly titleKey = computed(
+    () => this.navItems.find((item) => this.url().startsWith(item.path))?.labelKey ?? "coach.today"
+  );
 
   constructor(
     readonly auth: AuthService,
     readonly theme: ThemeService,
-    readonly branding: BrandingService
+    readonly branding: BrandingService,
+    private readonly router: Router
   ) {
     this.branding.load();
+    this.url.set(this.router.url);
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) this.url.set(event.urlAfterRedirects);
+    });
   }
 
   toggleSidebar(): void {

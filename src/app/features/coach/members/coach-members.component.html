@@ -1,0 +1,67 @@
+<div class="coach-members-search">
+  <i class="bi bi-search" aria-hidden="true"></i>
+  <input
+    type="search"
+    class="form-control"
+    autocomplete="off"
+    #search
+    [attr.aria-label]="'coach.members.search_label' | translate"
+    [placeholder]="'coach.members.search_placeholder' | translate"
+    (input)="onSearch(search.value)"
+  />
+</div>
+
+@if (loading()) {
+  <app-skeleton variant="table" [rows]="6" [cols]="2" />
+} @else if (error()) {
+  <app-error-state [body]="error()!" (retry)="load()" />
+} @else if (members().length === 0) {
+  @if (query()) {
+    <app-empty-state
+      icon="bi-search"
+      [title]="'coach.members.no_match_title' | translate"
+      [body]="'coach.members.no_match_body' | translate: { term: query() }"
+    />
+  } @else {
+    <app-empty-state
+      icon="bi-people"
+      [title]="'coach.members.none_title' | translate"
+      [body]="'coach.members.none_body' | translate"
+    />
+  }
+} @else {
+  <p class="coach-members-count">{{ "coach.members.count" | translate: { count: total() } }}</p>
+
+  <ul class="coach-member-list">
+    @for (member of members(); track member.id) {
+      <li class="coach-member">
+        <app-avatar [name]="member.full_name" [size]="40" />
+
+        <div class="coach-member-body">
+          <strong>{{ member.full_name }}</strong>
+          <small>
+            @if (member.next_session_at) {
+              {{ "coach.members.next" | translate: { when: (member.next_session_at | date: "EEE d MMM, HH:mm") } }}
+            } @else if (member.last_seen_at) {
+              {{ "coach.members.last_seen" | translate: { when: (member.last_seen_at | date: "d MMM") } }}
+            } @else {
+              {{ "coach.members.not_yet" | translate }}
+            }
+          </small>
+        </div>
+
+        <!-- A coach's one useful action on a member: get hold of them. -->
+        <div class="coach-member-actions">
+          @if (isLapsed(member)) {
+            <span class="coach-member-flag">{{ "coach.members.lapsed" | translate }}</span>
+          }
+          @if (member.phone) {
+            <a class="icon-btn" [href]="'tel:' + member.phone" [attr.aria-label]="'coach.members.call' | translate: { name: member.full_name }">
+              <i class="bi bi-telephone"></i>
+            </a>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+}

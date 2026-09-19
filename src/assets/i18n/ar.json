@@ -883,7 +883,22 @@
     "attendance_present": "حاضر",
     "attendance_absent": "غائب",
     "attendance_late": "متأخر",
-    "attendance_no_show": "غياب"
+    "attendance_no_show": "غياب",
+    "members": {
+      "title": "أعضائي",
+      "search_label": "البحث في أعضائي",
+      "search_placeholder": "الاسم أو الهاتف أو البريد…",
+      "count": "{{count}} عضو",
+      "next": "الحصة القادمة {{when}}",
+      "last_seen": "آخر حضور {{when}}",
+      "not_yet": "لم يحضر بعد",
+      "lapsed": "غائب",
+      "call": "الاتصال بـ {{name}}",
+      "none_title": "لا يوجد أعضاء بعد",
+      "none_body": "سيظهر هنا الأعضاء المسجلون في حصصك.",
+      "no_match_title": "لا نتائج",
+      "no_match_body": "لا يوجد عضو مطابق لـ «{{term}}»."
+    }
   },
   "audit": {
     "staff": {

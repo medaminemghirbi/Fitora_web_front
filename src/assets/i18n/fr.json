@@ -883,7 +883,22 @@
     "attendance_present": "Présent",
     "attendance_absent": "Absent",
     "attendance_late": "En retard",
-    "attendance_no_show": "Absence"
+    "attendance_no_show": "Absence",
+    "members": {
+      "title": "Mes membres",
+      "search_label": "Rechercher parmi mes membres",
+      "search_placeholder": "Nom, téléphone ou e-mail…",
+      "count": "{{count}} membre(s)",
+      "next": "Prochaine séance {{when}}",
+      "last_seen": "Vu(e) le {{when}}",
+      "not_yet": "Pas encore venu(e)",
+      "lapsed": "Absent(e)",
+      "call": "Appeler {{name}}",
+      "none_title": "Aucun membre pour l'instant",
+      "none_body": "Les membres inscrits à vos séances apparaîtront ici.",
+      "no_match_title": "Aucun résultat",
+      "no_match_body": "Aucun de vos membres ne correspond à « {{term}} »."
+    }
   },
   "audit": {
     "staff": {

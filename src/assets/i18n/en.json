@@ -883,7 +883,22 @@
     "attendance_present": "Present",
     "attendance_absent": "Absent",
     "attendance_late": "Late",
-    "attendance_no_show": "No-show"
+    "attendance_no_show": "No-show",
+    "members": {
+      "title": "My members",
+      "search_label": "Search my members",
+      "search_placeholder": "Name, phone or email…",
+      "count": "{{count}} member(s)",
+      "next": "Next session {{when}}",
+      "last_seen": "Last seen {{when}}",
+      "not_yet": "Hasn't been yet",
+      "lapsed": "Away",
+      "call": "Call {{name}}",
+      "none_title": "No members yet",
+      "none_body": "People booked onto your sessions will show up here.",
+      "no_match_title": "No results",
+      "no_match_body": "None of your members match “{{term}}”."
+    }
   },
   "audit": {
     "staff": {

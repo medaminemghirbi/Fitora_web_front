@@ -106,6 +106,7 @@ export const routes: Routes = [
     loadComponent: () => import("./layout/coach-shell/coach-shell.component").then((m) => m.CoachShellComponent),
     children: [
       { path: "today", loadComponent: () => import("./features/coach/today/today.component").then((m) => m.CoachTodayComponent) },
+      { path: "members", loadComponent: () => import("./features/coach/members/coach-members.component").then((m) => m.CoachMembersComponent) },
       { path: "", pathMatch: "full", redirectTo: "today" },
     ],
   },
