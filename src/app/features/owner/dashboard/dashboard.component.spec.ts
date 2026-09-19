@@ -50,10 +50,10 @@ describe("DashboardComponent", () => {
         },
       ],
       attention: [
-        { key: "expiring", count: 2, amount: null },
-        { key: "unpaid", count: 1, amount: 130 },
-        { key: "expired", count: 0, amount: null },
-        { key: "sessions_without_coach", count: 0, amount: null },
+        { key: "expiring", count: 2, amount: null, detail: null },
+        { key: "unpaid", count: 1, amount: 130, detail: null },
+        { key: "expired", count: 0, amount: null, detail: null },
+        { key: "sessions_without_coach", count: 0, amount: null, detail: null },
       ],
       contracts_expiring: [],
       recent_payments: [],
@@ -113,12 +113,55 @@ describe("DashboardComponent", () => {
     expect(component.auditLogsLoading()).toBe(false);
   });
 
-  it("renders the KPI cards", () => {
-    expect(fixture.nativeElement.querySelectorAll("app-kpi-card").length).toBe(5);
+  it("puts the figures on one line rather than in a wall of cards", () => {
+    // Five KPI cards took a third of the page to say what five numbers say.
+    expect(fixture.nativeElement.querySelectorAll("app-kpi-card").length).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll(".dash-numbers > div").length).toBeGreaterThan(0);
   });
 
   it("renders today's schedule rows", () => {
-    expect(fixture.nativeElement.querySelectorAll(".dashboard-schedule-list li").length).toBe(1);
+    expect(fixture.nativeElement.querySelectorAll(".dash-day li").length).toBe(1);
+  });
+
+  it("leads with what needs attention, before the day and before the figures", () => {
+    const order = [...fixture.nativeElement.querySelectorAll(".dash-attention, .dash-day, .dash-numbers")].map(
+      (el: Element) => el.className.split(" ")[0]
+    );
+
+    expect(order.indexOf("dash-attention")).toBeLessThan(order.indexOf("dash-day"));
+    expect(order.indexOf("dash-day")).toBeLessThan(order.indexOf("dash-numbers"));
+  });
+
+  it("names the coach on a session that has one", () => {
+    expect(fixture.nativeElement.textContent).toContain("Amine");
+  });
+
+  it("says a session is short a coach in words, not only by colour", () => {
+    const current = component.data()!;
+    component.data.set({
+      ...current,
+      stats: {
+        ...current.stats,
+        todays_schedule: [{ ...current.stats.todays_schedule[0], coach_name: null }],
+      },
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain("dashboard.no_coach");
+  });
+
+  it("shows the detail line under an attention row when the payload carries one", () => {
+    const current = component.data()!;
+    component.data.set({
+      ...current,
+      stats: {
+        ...current.stats,
+        attention: [{ key: "unpaid", count: 4, amount: 340, detail: { kind: "oldest_days", count: 23 } }],
+      },
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".dash-attention-detail")).toBeTruthy();
   });
 
   describe("fillPct", () => {
@@ -186,16 +229,17 @@ describe("DashboardComponent", () => {
     expect(onboardingService.dismiss).toHaveBeenCalled();
   });
 
-  it("greetingKey depends on the time of day", () => {
+  it("knows which of today's sessions are already over", () => {
     const clock = jasmine.clock();
     clock.install();
     try {
-      clock.mockDate(new Date(2026, 0, 1, 8));
-      expect(component.greetingKey()).toBe("dashboard.greeting_morning");
       clock.mockDate(new Date(2026, 0, 1, 14));
-      expect(component.greetingKey()).toBe("dashboard.greeting_afternoon");
-      clock.mockDate(new Date(2026, 0, 1, 20));
-      expect(component.greetingKey()).toBe("dashboard.greeting_evening");
+
+      const done = { ends_at: new Date(2026, 0, 1, 13).toISOString() } as never;
+      const running = { ends_at: new Date(2026, 0, 1, 15).toISOString() } as never;
+
+      expect(component.hasEnded(done)).toBe(true);
+      expect(component.hasEnded(running)).toBe(false);
     } finally {
       clock.uninstall();
     }
@@ -244,7 +288,7 @@ describe("DashboardComponent", () => {
           ...response.stats,
           outstanding_payments: null,
           recent_payments: [],
-          attention: [{ key: "unpaid", count: 3, amount: null }],
+          attention: [{ key: "unpaid", count: 3, amount: null, detail: null }],
         },
       };
       dashboardService.get.and.returnValue(of(withoutRevenue));

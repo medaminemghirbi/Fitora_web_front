@@ -38,12 +38,23 @@ export interface RecentClientItem {
   joined_at: string;
 }
 
+/**
+ * A second line under an attention row, so the number is not the only thing
+ * it says. `kind` names the sentence to translate; `count` fills its one
+ * placeholder. null when there is nothing worth adding.
+ */
+export interface AttentionDetail {
+  kind: "expiring_today" | "oldest_days";
+  count: number;
+}
+
 /** One kind of overdue work. `key` names the screen it opens. */
 export interface AttentionRow {
   key: "expiring" | "unpaid" | "expired" | "sessions_without_coach";
   count: number;
   /** null when there is no money in it, or when the login may not read it. */
   amount: number | null;
+  detail: AttentionDetail | null;
 }
 
 export interface DashboardStats {

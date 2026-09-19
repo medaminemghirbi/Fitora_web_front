@@ -17,8 +17,6 @@ import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
-import { KpiCardComponent } from "../../../shared/ui/kpi-card.component";
 import { CheckinPanelComponent } from "../../../shared/ui/checkin-panel.component";
 import { ModalComponent } from "../../../shared/components/modal.component";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
@@ -36,8 +34,6 @@ import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
     EmptyStateComponent,
     SpinnerComponent,
     StatusBadgeComponent,
-    PageHeaderComponent,
-    KpiCardComponent,
     CheckinPanelComponent,
     ModalComponent,
     SkeletonComponent,
@@ -48,6 +44,9 @@ import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
   styleUrl: "./dashboard.component.scss",
 })
 export class DashboardComponent {
+  /** Fixed at construction so the date in the header cannot drift mid-session. */
+  readonly now = new Date();
+
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly data = signal<DashboardResponse | null>(null);
@@ -135,6 +134,15 @@ export class DashboardComponent {
   }
 
   /**
+   * Already over. A finished session keeps its place in the day — it answers
+   * "did anyone check in this morning?" — but it offers no check-in button
+   * and reports what happened instead of how full it is.
+   */
+  hasEnded(item: TodaysScheduleItem): boolean {
+    return new Date(item.ends_at).getTime() <= Date.now();
+  }
+
+  /**
    * The attention block: one line per kind of overdue work, each opening the
    * screen that resolves it already filtered.
    *
@@ -156,13 +164,6 @@ export class DashboardComponent {
   );
 
   readonly allClear = computed(() => this.data() !== null && this.attention().length === 0);
-
-  greetingKey(): string {
-    const hour = new Date().getHours();
-    if (hour < 12) return "dashboard.greeting_morning";
-    if (hour < 18) return "dashboard.greeting_afternoon";
-    return "dashboard.greeting_evening";
-  }
 
   exportReport(): void {
     const periodType = this.exportPeriodType();

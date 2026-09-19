@@ -128,10 +128,6 @@
     "plans": "Plans"
   },
   "dashboard": {
-    "greeting_morning": "Good morning",
-    "greeting_afternoon": "Good afternoon",
-    "greeting_evening": "Good evening",
-    "subtitle": "Here's what's happening today.",
     "total_clients": "Total Clients",
     "active_contracts": "Active Contracts",
     "todays_bookings": "Today's Bookings",
@@ -141,11 +137,8 @@
     "no_sessions_today": "No sessions scheduled today.",
     "contracts_expiring": "Contracts Expiring",
     "nothing_expiring": "Nothing expiring soon",
-    "recent_payments": "Recent Payments",
-    "recent_clients": "Recent Clients",
     "needs_attention": "Needs attention",
     "nothing_pending": "Nothing needs attention right now",
-    "view_all": "View all",
     "view_schedule": "View full schedule",
     "recent_activity": "Recent activity",
     "no_recent_activity": "No recent activity",
@@ -163,7 +156,13 @@
     "attention_cta_expiring": "Follow up",
     "attention_cta_unpaid": "Take payment",
     "attention_cta_expired": "Renew",
-    "attention_cta_sessions_without_coach": "Assign"
+    "attention_cta_sessions_without_coach": "Assign",
+    "today": "Today",
+    "no_coach": "no coach",
+    "session_done": "Done · {{count}} attended",
+    "figures": "Gym figures",
+    "attention_detail_expiring_today": "{{count}} of them run out today",
+    "attention_detail_oldest_days": "The oldest is {{count}} days old"
   },
   "data_exchange": {
     "subtitle": "Import or export your data as CSV, module by module.",

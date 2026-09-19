@@ -128,10 +128,6 @@
     "plans": "Formules"
   },
   "dashboard": {
-    "greeting_morning": "Bonjour",
-    "greeting_afternoon": "Bon après-midi",
-    "greeting_evening": "Bonsoir",
-    "subtitle": "Voici ce qui se passe aujourd'hui.",
     "total_clients": "Total clients",
     "active_contracts": "Contrats actifs",
     "todays_bookings": "Réservations du jour",
@@ -141,12 +137,9 @@
     "no_sessions_today": "Aucune séance prévue aujourd'hui.",
     "contracts_expiring": "Contrats bientôt expirés",
     "nothing_expiring": "Rien à signaler",
-    "recent_payments": "Paiements récents",
-    "recent_clients": "Clients récents",
     "recent_activity": "Activité récente",
     "needs_attention": "À traiter",
     "nothing_pending": "Rien à traiter pour le moment",
-    "view_all": "Voir tout",
     "view_schedule": "Voir tout le planning",
     "no_recent_activity": "Aucune activité récente",
     "export_title": "Exporter un rapport",
@@ -163,7 +156,13 @@
     "attention_cta_expiring": "Relancer",
     "attention_cta_unpaid": "Encaisser",
     "attention_cta_expired": "Renouveler",
-    "attention_cta_sessions_without_coach": "Affecter"
+    "attention_cta_sessions_without_coach": "Affecter",
+    "today": "Aujourd'hui",
+    "no_coach": "sans coach",
+    "session_done": "Terminée · {{count}} présents",
+    "figures": "Chiffres de la salle",
+    "attention_detail_expiring_today": "dont {{count}} arrivent à terme aujourd'hui",
+    "attention_detail_oldest_days": "Le plus ancien remonte à {{count}} jours"
   },
   "data_exchange": {
     "subtitle": "Importez ou exportez vos données en CSV, par module.",

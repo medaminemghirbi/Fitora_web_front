@@ -128,10 +128,6 @@
     "plans": "الصيغ"
   },
   "dashboard": {
-    "greeting_morning": "صباح الخير",
-    "greeting_afternoon": "مساء الخير",
-    "greeting_evening": "مساء الخير",
-    "subtitle": "إليك ما يحدث اليوم.",
     "total_clients": "إجمالي العملاء",
     "active_contracts": "العقود النشطة",
     "todays_bookings": "حجوزات اليوم",
@@ -141,11 +137,8 @@
     "no_sessions_today": "لا توجد حصص مجدولة اليوم.",
     "contracts_expiring": "عقود قاربت على الانتهاء",
     "nothing_expiring": "لا يوجد ما يستدعي الانتباه",
-    "recent_payments": "المدفوعات الأخيرة",
-    "recent_clients": "العملاء الجدد",
     "needs_attention": "يحتاج إلى معالجة",
     "nothing_pending": "لا شيء يحتاج إلى معالجة الآن",
-    "view_all": "عرض الكل",
     "view_schedule": "عرض كامل الجدول",
     "recent_activity": "النشاط الأخير",
     "no_recent_activity": "لا يوجد نشاط حديث",
@@ -163,7 +156,13 @@
     "attention_cta_expiring": "تذكير",
     "attention_cta_unpaid": "تحصيل",
     "attention_cta_expired": "تجديد",
-    "attention_cta_sessions_without_coach": "إسناد"
+    "attention_cta_sessions_without_coach": "إسناد",
+    "today": "اليوم",
+    "no_coach": "بدون مدرّب",
+    "session_done": "انتهت · {{count}} حاضرون",
+    "figures": "أرقام القاعة",
+    "attention_detail_expiring_today": "منها {{count}} تنتهي اليوم",
+    "attention_detail_oldest_days": "أقدمها يعود إلى {{count}} يومًا"
   },
   "data_exchange": {
     "subtitle": "استورد أو صدّر بياناتك بصيغة CSV، وحدة بوحدة.",
