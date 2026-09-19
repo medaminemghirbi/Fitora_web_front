@@ -10,13 +10,22 @@
 // ---------------------------------------------------------------------------
 // Forms
 // ---------------------------------------------------------------------------
+// These declare the whole control. They used to set only the parts that
+// differed from Bootstrap's — `border-color` with no `border`, a colour with
+// no `display` or `width` — which left every field borderless and
+// browser-width once Bootstrap was removed. A select had no arrow and a
+// checkbox no box, for the same reason.
 .form-control,
 .form-select {
-  font-size: 0.875rem;
+  display: block;
+  width: 100%;
   padding: 0.5rem 0.75rem;
-  background-color: var(--color-surface);
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
   color: var(--color-text);
-  border-color: var(--color-border-strong);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 
@@ -25,27 +34,102 @@
   &:hover:not(:disabled):not(:focus) { border-color: var(--color-muted); }
 
   &:focus {
+    outline: none;
     border-color: var(--color-primary);
     box-shadow: var(--shadow-focus);
     background-color: var(--color-surface);
     color: var(--color-text);
   }
 
-  &:disabled { background-color: var(--color-surface-sunken); color: var(--color-muted); }
+  &:disabled {
+    background-color: var(--color-surface-sunken);
+    color: var(--color-muted);
+    cursor: not-allowed;
+  }
+}
+
+// The select's own arrow, drawn rather than borrowed. `appearance: none`
+// removes the platform one, so something has to take its place.
+.form-select {
+  padding-inline-end: 2rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%235a5175' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 15px;
+  cursor: pointer;
+}
+
+// Right-to-left puts the arrow on the other side.
+[dir="rtl"] .form-select {
+  padding-inline-end: 2rem;
+  background-position: left 0.65rem center;
+}
+
+textarea.form-control {
+  min-height: 5rem;
+  resize: vertical;
 }
 
 .form-control-sm,
-.form-select-sm { font-size: 0.8125rem; padding: 0.35rem 0.6rem; }
+.form-select-sm {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8125rem;
+}
+
+.form-select-sm { padding-inline-end: 1.8rem; }
 
 .form-label,
-label { font-weight: 500; font-size: 0.8125rem; color: var(--color-text); margin-bottom: 0.35rem; }
+label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
 
-.form-text { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+.form-text {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
 
+// A real box, drawn here: the platform checkbox cannot be themed, and
+// Bootstrap's was what gave this one its size and its tick.
 .form-check-input {
-  border-color: var(--color-border-strong);
-  &:checked { background-color: var(--color-primary); border-color: var(--color-primary); }
-  &:focus { box-shadow: var(--shadow-focus); border-color: var(--color-primary); }
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  appearance: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+
+  &[type="radio"] { border-radius: 50%; }
+
+  &:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 11px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 8.5 3.5 3.5L13 5'/%3E%3C/svg%3E");
+  }
+
+  &[type="radio"]:checked {
+    background-size: 7px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='4' fill='%23fff'/%3E%3C/svg%3E");
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-color: var(--color-primary);
+  }
+
+  &:disabled { background: var(--color-surface-sunken); cursor: not-allowed; }
 }
 
 .invalid-feedback { display: block; font-size: var(--font-size-xs); color: var(--color-danger); }
