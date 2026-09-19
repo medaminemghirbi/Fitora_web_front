@@ -3,117 +3,173 @@
 // ----------------------------------------------------------------------------
 // Every button in the product: one hierarchy, one height, one radius.
 //
-// Split out of _fitora.scss, which had grown to 1208 lines and was the reason
-// screens drifted: nobody could see what was already there.
+// These declare real properties. They used to set `--bs-btn-*` custom
+// properties instead — Bootstrap's variables, read by Bootstrap's own .btn
+// rules. When Bootstrap was removed, nothing was left to read them, so every
+// button lost its background, padding and border while still looking like
+// valid CSS. The class-existence check could not catch it: the selector was
+// there, its declarations simply addressed a framework that had gone.
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// Buttons — one consistent hierarchy, one height, one radius
+// The shared shape — one height, one radius, one weight
 // ---------------------------------------------------------------------------
 .btn {
-  --bs-btn-font-size: 0.875rem;
-  --bs-btn-font-weight: 600;
-  --bs-btn-padding-y: 0.5rem;
-  --bs-btn-padding-x: 0.9rem;
-  --bs-btn-border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
   line-height: 1.25rem;
+  color: var(--color-text);
   white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
   transition: background var(--transition-fast), border-color var(--transition-fast),
     color var(--transition-fast), box-shadow var(--transition-fast);
 
   i { font-size: 1rem; line-height: 1; }
 
+  &:hover { text-decoration: none; }
   &:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+  &:disabled,
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 .btn-sm {
-  --bs-btn-font-size: 0.8125rem;
-  --bs-btn-padding-y: 0.35rem;
-  --bs-btn-padding-x: 0.65rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8125rem;
 }
 
 .btn-lg {
-  --bs-btn-font-size: 0.9375rem;
-  --bs-btn-padding-y: 0.65rem;
-  --bs-btn-padding-x: 1.15rem;
+  padding: 0.65rem 1.15rem;
+  font-size: 0.9375rem;
 }
 
+// ---------------------------------------------------------------------------
+// The one loud button on a page
+// ---------------------------------------------------------------------------
 .btn-primary {
-  --bs-btn-bg: var(--color-primary);
-  --bs-btn-border-color: var(--color-primary);
-  --bs-btn-color: var(--color-on-primary);
-  --bs-btn-hover-bg: var(--color-primary-hover);
-  --bs-btn-hover-border-color: var(--color-primary-hover);
-  --bs-btn-hover-color: var(--color-on-primary);
-  --bs-btn-active-bg: var(--color-primary-active);
-  --bs-btn-active-border-color: var(--color-primary-active);
-  --bs-btn-active-color: var(--color-on-primary);
-  --bs-btn-disabled-bg: var(--color-primary);
-  --bs-btn-disabled-border-color: var(--color-primary);
-  --bs-btn-disabled-color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
   box-shadow: var(--shadow-xs);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: var(--color-on-primary);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--color-primary-active);
+    border-color: var(--color-primary-active);
+  }
 }
 
 .btn-outline-primary {
-  --bs-btn-color: var(--color-primary);
-  --bs-btn-border-color: var(--color-primary-border);
-  --bs-btn-hover-bg: var(--color-primary-soft);
-  --bs-btn-hover-border-color: var(--color-primary);
-  --bs-btn-hover-color: var(--color-primary);
-  --bs-btn-active-bg: var(--color-primary-soft);
-  --bs-btn-active-border-color: var(--color-primary);
-  --bs-btn-active-color: var(--color-primary);
+  border-color: var(--color-primary-border);
+  color: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &:active:not(:disabled) { background: var(--color-primary-soft); }
 }
 
-// Neutral / secondary action — the default "quiet" button
+// ---------------------------------------------------------------------------
+// The quiet default — what most buttons on a page are
+// ---------------------------------------------------------------------------
 .btn-outline-secondary,
 .btn-secondary {
-  --bs-btn-color: var(--color-text);
-  --bs-btn-bg: var(--color-surface);
-  --bs-btn-border-color: var(--color-border-strong);
-  --bs-btn-hover-bg: var(--color-surface-hover);
-  --bs-btn-hover-color: var(--color-text);
-  --bs-btn-hover-border-color: var(--color-border-strong);
-  --bs-btn-active-bg: var(--color-surface-sunken);
-  --bs-btn-active-color: var(--color-text);
-  --bs-btn-active-border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
   box-shadow: var(--shadow-xs);
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+  }
+
+  &:active:not(:disabled) { background: var(--color-surface-sunken); }
 }
 
+// ---------------------------------------------------------------------------
+// Destructive
+// ---------------------------------------------------------------------------
 .btn-danger {
-  --bs-btn-bg: var(--color-danger);
-  --bs-btn-border-color: var(--color-danger);
-  --bs-btn-color: #fff;
-  --bs-btn-hover-bg: #b91c1c;
-  --bs-btn-hover-border-color: #b91c1c;
-  --bs-btn-hover-color: #fff;
-  --bs-btn-active-bg: #991b1b;
-  --bs-btn-active-border-color: #991b1b;
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff;
+  }
+
+  &:active:not(:disabled) {
+    background: #991b1b;
+    border-color: #991b1b;
+  }
 }
 
 .btn-outline-danger {
-  --bs-btn-color: var(--color-danger);
-  --bs-btn-border-color: var(--color-danger-soft);
-  --bs-btn-hover-bg: var(--color-danger-soft);
-  --bs-btn-hover-border-color: var(--color-danger);
-  --bs-btn-hover-color: var(--color-danger);
+  border-color: var(--color-danger-soft);
+  color: var(--color-danger);
+
+  &:hover:not(:disabled) {
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
 }
 
+.btn-warning {
+  background: var(--color-warning-soft);
+  border-color: transparent;
+  color: var(--color-warning);
+
+  &:hover:not(:disabled) {
+    background: var(--color-warning);
+    color: var(--color-on-primary);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Buttons that are not shaped like buttons
+// ---------------------------------------------------------------------------
 .btn-link {
-  --bs-btn-color: var(--color-primary);
-  --bs-btn-hover-color: var(--color-primary-hover);
-  --bs-btn-font-weight: 600;
-  text-decoration: none;
+  padding-inline: 0.25rem;
+  border-color: transparent;
+  color: var(--color-primary);
+
+  &:hover:not(:disabled) { color: var(--color-primary-hover); }
 }
 
-// Ghost / toolbar icon button
+// Ghost / toolbar icon button.
 .btn-ghost {
   background: transparent;
-  border: 1px solid transparent;
+  border-color: transparent;
   color: var(--color-text-secondary);
-  &:hover { background: var(--color-surface-hover); color: var(--color-text); }
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+  }
 }

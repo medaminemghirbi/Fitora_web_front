@@ -11,12 +11,12 @@
 // Tables — premium SaaS data grid
 // ---------------------------------------------------------------------------
 .table {
-  --bs-table-color: var(--color-text);
-  --bs-table-bg: transparent;
-  --bs-table-border-color: var(--color-border);
-  --bs-table-hover-bg: var(--color-surface-hover);
-  --bs-table-hover-color: var(--color-text);
+  // The rules below do the work; these were Bootstrap's variables, left
+  // behind when it went and read by nothing since.
+  width: 100%;
   margin-bottom: 0;
+  border-collapse: collapse;
+  color: var(--color-text);
   font-size: 0.875rem;
 
   > :not(caption) > * > * { padding: 0.85rem 1rem; }

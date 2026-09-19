@@ -116,6 +116,34 @@ function isDefined(name) {
   );
 }
 
+// ---- nothing may still address a framework that is gone ---------------------
+// Buttons were styled entirely through `--bs-btn-*`: Bootstrap's variables,
+// read by Bootstrap's own rules. Removing Bootstrap left every one of those
+// declarations valid CSS addressed to nobody, and the app shipped buttons with
+// no background or padding. The class check could not see it — the selector
+// was there, its declarations simply had no reader.
+const bootstrapVars = [];
+
+for (const file of files) {
+  if (![".scss", ".css"].includes(extname(file))) continue;
+
+  // Comments explain why these are gone, so they must not count as uses.
+  const source = readFileSync(file, "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/(^|\s)\/\/[^\n]*/g, " ");
+
+  for (const match of source.matchAll(/--bs-[\w-]+/g)) {
+    bootstrapVars.push(`${match[0]}  — ${file.replace(SRC, "src")}`);
+  }
+}
+
+if (bootstrapVars.length > 0) {
+  console.error(`css: ${bootstrapVars.length} Bootstrap variable(s) remain, and nothing reads them:\n`);
+  for (const line of [...new Set(bootstrapVars)].sort()) console.error(`  ${line}`);
+  console.error("\nDeclare the real property instead.");
+  process.exit(1);
+}
+
 // ---- the difference --------------------------------------------------------
 const missing = [...used.entries()].filter(([name]) => !isDefined(name));
 
