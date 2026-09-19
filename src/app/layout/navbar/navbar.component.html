@@ -1,4 +1,8 @@
-<header class="app-navbar">
+<!-- app-navbar-menu carries no styling: it is the hook onDocClick() reads
+     with closest(), to tell a click inside the menu from one outside it.
+     Removing it as an unstyled class made every click count as outside, so a
+     dropdown closed in the same tick it opened. -->
+<header class="app-navbar app-navbar-menu">
   <div class="app-navbar-inner">
     <a [routerLink]="brandHome" class="app-navbar-brand" [class.d-lg-none]="!showBrand">
       <span class="app-navbar-mark">

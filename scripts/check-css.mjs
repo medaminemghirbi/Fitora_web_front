@@ -109,11 +109,46 @@ const prefixes = [...defined].filter((name) => name.endsWith("-*")).map((name) =
 
 function isDefined(name) {
   if (defined.has(name)) return true;
+  // A behaviour hook earns its place by being read in code, not by having a
+  // rule. The guard above makes sure it is still in the markup.
+  if (hooks.has(name)) return true;
   if (prefixes.some((prefix) => name.startsWith(prefix))) return true;
 
   return [...suffixes].some(
     (suffix) => name.endsWith(suffix) && defined.has(name.slice(0, -suffix.length))
   );
+}
+
+// ---- a class TypeScript reaches for must still be in the markup -------------
+// `closest(".app-navbar-menu")` is how the navbar tells a click inside the
+// menu from one outside it. That class carries no styling, so removing it as
+// an unstyled leftover looked safe — and every click then counted as outside,
+// closing a dropdown in the same tick it opened.
+//
+// A class can earn its place by being a behaviour hook rather than a style.
+// This checks the other direction from everything below: not "does the rule
+// exist" but "does the element the code looks for still exist".
+const hooks = new Map();
+
+for (const file of files) {
+  if (extname(file) !== ".ts" || file.endsWith(".spec.ts")) continue;
+
+  const source = readFileSync(file, "utf8");
+  for (const match of source.matchAll(/(?:closest|querySelector(?:All)?)\(\s*["'`]\.([\w-]+)/g)) {
+    if (!hooks.has(match[1])) hooks.set(match[1], file.replace(SRC, "src"));
+  }
+}
+
+// `used` holds the classes taken out of class attributes, so a mention in a
+// comment does not count — searching the raw text let the comment explaining
+// this very hook satisfy its own check.
+const orphanedHooks = [...hooks.entries()].filter(([name]) => !used.has(name));
+
+if (orphanedHooks.length > 0) {
+  console.error(`css: ${orphanedHooks.length} class(es) the code looks for are in no template:\n`);
+  for (const [name, file] of orphanedHooks.sort()) console.error(`  .${name}  — read by ${file}`);
+  console.error("\nA behaviour hook needs the element to carry it, rule or no rule.");
+  process.exit(1);
 }
 
 // ---- nothing may still address a framework that is gone ---------------------
