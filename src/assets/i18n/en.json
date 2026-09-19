@@ -281,7 +281,8 @@
     "cancel_session": "Cancel session",
     "cancel_session_body": "Clients booked into this session will need to be notified separately.",
     "session_ended": "This session has ended.",
-    "legend": "Legend"
+    "legend": "Legend",
+    "no_coach": "No coach"
   },
   "bookings": {
     "title": "Bookings",

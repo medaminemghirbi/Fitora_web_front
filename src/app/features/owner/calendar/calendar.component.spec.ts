@@ -575,4 +575,58 @@ describe("CalendarComponent", () => {
       expect(revert).toHaveBeenCalled();
     });
   });
+
+  describe("a session nobody is running", () => {
+    function render(session: Record<string, unknown>) {
+      const arg = {
+        event: { extendedProps: { session } },
+        view: { type: "timeGridWeek" },
+        timeText: "18:00",
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (component as any).renderEvent(arg).domNodes[0] as HTMLElement;
+    }
+
+    const base = {
+      id: "s1", coach_id: "c1", coach_name: "Leila", activity_name: "Pilates",
+      activity_emoji: null, confirmed_count: 4, capacity: 10, status: "scheduled",
+      starts_at: new Date(Date.now() + 86_400_000).toISOString(),
+      ends_at: new Date(Date.now() + 90_000_000).toISOString(),
+    };
+
+    it("names the coach when there is one", () => {
+      const el = render(base);
+
+      expect(el.classList).not.toContain("is-uncoached");
+      expect(el.textContent).toContain("Leila");
+    });
+
+    it("says so on the block, rather than leaving a gap where a name goes", () => {
+      const el = render({ ...base, coach_id: null, coach_name: null });
+
+      expect(el.classList).toContain("is-uncoached");
+      expect(el.querySelector(".fx-ev-coach.is-missing")).toBeTruthy();
+    });
+
+    it("marks the session that is running right now", () => {
+      const el = render({
+        ...base,
+        starts_at: new Date(Date.now() - 60_000).toISOString(),
+        ends_at: new Date(Date.now() + 60_000).toISOString(),
+      });
+
+      expect(el.classList).toContain("is-now");
+    });
+
+    it("does not mark a cancelled session as running, even mid-slot", () => {
+      const el = render({
+        ...base,
+        status: "cancelled",
+        starts_at: new Date(Date.now() - 60_000).toISOString(),
+        ends_at: new Date(Date.now() + 60_000).toISOString(),
+      });
+
+      expect(el.classList).not.toContain("is-now");
+    });
+  });
 });

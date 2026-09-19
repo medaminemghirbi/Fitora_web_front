@@ -281,7 +281,8 @@
     "cancel_session": "إلغاء الحصة",
     "cancel_session_body": "سيتوجب إخطار العملاء المسجلين في هذه الحصة بشكل منفصل.",
     "session_ended": "هذه الحصة انتهت.",
-    "legend": "المفتاح"
+    "legend": "المفتاح",
+    "no_coach": "بدون مدرّب"
   },
   "bookings": {
     "title": "الحجوزات",

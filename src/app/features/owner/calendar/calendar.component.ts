@@ -371,12 +371,24 @@ export class CalendarComponent implements OnInit {
    * string) so a coach or activity name can never be read as markup — the
    * month view gets a single compact line, where there is no room for more.
    */
+  /** Happening right now, in the reader's own clock. */
+  private isRunning(session: Session): boolean {
+    const now = Date.now();
+    return (
+      session.status === "scheduled" &&
+      new Date(session.starts_at).getTime() <= now &&
+      new Date(session.ends_at).getTime() > now
+    );
+  }
+
   private renderEvent(arg: EventContentArg): { domNodes: Node[] } {
     const session = arg.event.extendedProps["session"] as Session;
     const compact = arg.view.type === "dayGridMonth";
 
     const root = document.createElement("div");
     root.className = compact ? "fx-ev fx-ev--compact" : "fx-ev";
+    if (!session.coach_id) root.classList.add("is-uncoached");
+    if (this.isRunning(session)) root.classList.add("is-now");
 
     const time = document.createElement("span");
     time.className = "fx-ev-time";
@@ -388,10 +400,21 @@ export class CalendarComponent implements OnInit {
     title.textContent = `${session.activity_emoji ? session.activity_emoji + " " : ""}${session.activity_name}`;
     root.appendChild(title);
 
-    if (!compact && session.coach_name) {
+    // A session nobody is running is a problem, and the calendar is where it
+    // gets fixed — so it says so here rather than only on the dashboard.
+    // Silently omitting the coach line made the gap invisible at exactly the
+    // moment someone could act on it.
+    if (!compact) {
       const coach = document.createElement("span");
-      coach.className = "fx-ev-coach";
-      coach.textContent = session.coach_name;
+
+      if (session.coach_name) {
+        coach.className = "fx-ev-coach";
+        coach.textContent = session.coach_name;
+      } else {
+        coach.className = "fx-ev-coach is-missing";
+        coach.textContent = this.translate.instant("calendar.no_coach");
+      }
+
       root.appendChild(coach);
     }
 

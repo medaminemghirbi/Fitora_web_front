@@ -281,7 +281,8 @@
     "cancel_session": "Annuler la séance",
     "cancel_session_body": "Les clients inscrits à cette séance devront être prévenus séparément.",
     "session_ended": "Cette séance est terminée.",
-    "legend": "Légende"
+    "legend": "Légende",
+    "no_coach": "Sans coach"
   },
   "bookings": {
     "title": "Réservations",
