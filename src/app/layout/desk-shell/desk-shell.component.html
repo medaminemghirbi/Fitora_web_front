@@ -1,0 +1,103 @@
+<div class="desk-shell">
+  <header class="desk-topbar">
+    <a routerLink="/desk/dashboard" class="desk-brand">
+      <span class="desk-brand-mark">
+        @if (branding.logoUrl(); as logoUrl) {
+          <img [src]="logoUrl" alt="" />
+        } @else {
+          <i class="bi bi-lightning-charge-fill"></i>
+        }
+      </span>
+      <span class="desk-brand-text">{{ "desk.title" | translate }}</span>
+    </a>
+
+    <!-- The whole point of this shell. Autofocused, because at a counter the
+         next thing that happens is nearly always someone's name. -->
+    <div class="desk-search">
+      <i class="bi bi-search desk-search-icon" aria-hidden="true"></i>
+      <input
+        type="search"
+        class="desk-search-input"
+        autocomplete="off"
+        #searchInput
+        [attr.aria-label]="'desk.search_label' | translate"
+        [placeholder]="'desk.search_placeholder' | translate"
+        [value]="query()"
+        (input)="onSearch(searchInput.value)"
+      />
+      @if (query()) {
+        <button type="button" class="desk-search-clear" (click)="clear()" [attr.aria-label]="'common.clear' | translate">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      }
+
+      @if (resultsOpen()) {
+        <div class="desk-results">
+          @if (searching()) {
+            <p class="desk-results-empty">{{ "common.loading" | translate }}</p>
+          } @else if (results().length === 0) {
+            <p class="desk-results-empty">{{ "desk.no_match" | translate: { term: query() } }}</p>
+          } @else {
+            @for (client of results(); track client.id) {
+              <button type="button" class="desk-result" (click)="open(client)">
+                <app-avatar [name]="client.full_name" [size]="36" />
+                <span class="desk-result-body">
+                  <strong>{{ client.full_name }}</strong>
+                  <small>
+                    @if (client.current_contract; as contract) {
+                      {{ contract.plan.name }}
+                    } @else {
+                      {{ "desk.no_subscription" | translate }}
+                    }
+                  </small>
+                </span>
+                @if (!client.active) {
+                  <span class="badge text-bg-secondary">{{ "common.inactive" | translate }}</span>
+                }
+              </button>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <div class="desk-topbar-actions">
+      <button type="button" class="icon-btn" (click)="theme.toggle()" [attr.aria-label]="'common.toggle_theme' | translate">
+        <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
+      </button>
+
+      <div class="dropdown-wrap">
+        <button type="button" class="user-menu-trigger" (click)="userMenuOpen.set(!userMenuOpen())" [attr.aria-label]="auth.currentUser()?.full_name || ''">
+          <app-avatar [name]="auth.currentUser()?.full_name || ''" [size]="32" />
+        </button>
+        @if (userMenuOpen()) {
+          <div class="dropdown-menu-custom dropdown-menu-end">
+            <div class="dropdown-user-info">
+              <strong>{{ auth.currentUser()?.full_name }}</strong>
+              <span>{{ auth.currentUser()?.email }}</span>
+            </div>
+            <button type="button" class="dropdown-item-custom" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i> {{ "auth.logout" | translate }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  <main class="desk-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Bottom rail rather than a sidebar: on a counter tablet the reachable
+       part of the screen is the bottom, and there are few enough destinations
+       that they all fit. -->
+  <nav class="desk-rail" [attr.aria-label]="'desk.nav.label' | translate">
+    @for (item of navItems; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active" class="desk-rail-link">
+        <i class="bi" [class]="item.icon"></i>
+        <span>{{ item.labelKey | translate }}</span>
+      </a>
+    }
+  </nav>
+</div>

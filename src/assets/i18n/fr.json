@@ -1294,5 +1294,43 @@
     "title_unpaid": "Période impayée",
     "body_unpaid": "La période que vous aviez réglée est terminée. L'accès s'est fermé trois jours plus tard ; il rouvre dès que votre règlement nous parvient.",
     "see_invoices": "Voir mes factures"
+  },
+  "desk": {
+    "title": "Accueil",
+    "search_label": "Rechercher un membre",
+    "search_placeholder": "Nom, e-mail ou téléphone…",
+    "no_match": "Aucun membre pour « {{term}} »",
+    "no_subscription": "Sans abonnement",
+    "on_now": "En cours",
+    "nothing_on_title": "Rien en ce moment",
+    "nothing_on_body": "Aucune séance n'est en cours. La prochaine apparaîtra ici.",
+    "check_people_in": "Pointer les présences",
+    "booked_today": "Réservations aujourd'hui",
+    "checked_in_today": "Présences aujourd'hui",
+    "still_to_come": "À venir aujourd'hui",
+    "day_done_title": "Journée terminée",
+    "day_done_body": "Plus aucune séance prévue aujourd'hui.",
+    "full": "Complet",
+    "spots_left": "{{count}} place(s)",
+    "expiring_soon": "Abonnements à renouveler",
+    "expired": "Expiré",
+    "expires_today": "Expire aujourd'hui",
+    "expires_in_days": "Dans {{count}} j",
+    "new_members": "Nouveaux membres",
+    "nav": {
+      "label": "Navigation accueil",
+      "today": "Aujourd'hui",
+      "checkin": "Pointage",
+      "members": "Membres",
+      "schedule": "Planning",
+      "subscriptions": "Abonnements",
+      "payments": "Paiements"
+    },
+    "checkin": {
+      "pick_session": "Choisir une séance",
+      "other_session": "Autre séance",
+      "no_sessions_title": "Aucune séance aujourd'hui",
+      "no_sessions_body": "Il n'y a rien à pointer pour le moment."
+    }
   }
 }

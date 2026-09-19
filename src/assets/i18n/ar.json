@@ -1294,5 +1294,43 @@
     "title_unpaid": "فترة غير مدفوعة",
     "body_unpaid": "انتهت الفترة التي دفعتها. أُغلق الوصول بعد ثلاثة أيّام؛ ويُفتح بمجرّد وصول دفعك.",
     "see_invoices": "عرض فواتيري"
+  },
+  "desk": {
+    "title": "الاستقبال",
+    "search_label": "البحث عن عضو",
+    "search_placeholder": "الاسم أو البريد أو الهاتف…",
+    "no_match": "لا يوجد عضو مطابق لـ «{{term}}»",
+    "no_subscription": "بدون اشتراك",
+    "on_now": "جارية الآن",
+    "nothing_on_title": "لا شيء الآن",
+    "nothing_on_body": "لا توجد حصة جارية. ستظهر الحصة القادمة هنا.",
+    "check_people_in": "تسجيل الحضور",
+    "booked_today": "حجوزات اليوم",
+    "checked_in_today": "حضور اليوم",
+    "still_to_come": "القادم اليوم",
+    "day_done_title": "انتهى اليوم",
+    "day_done_body": "لا توجد حصص أخرى اليوم.",
+    "full": "مكتملة",
+    "spots_left": "{{count}} مكان متبقٍ",
+    "expiring_soon": "اشتراكات على وشك الانتهاء",
+    "expired": "منتهٍ",
+    "expires_today": "ينتهي اليوم",
+    "expires_in_days": "خلال {{count}} يوم",
+    "new_members": "أعضاء جدد",
+    "nav": {
+      "label": "تنقل الاستقبال",
+      "today": "اليوم",
+      "checkin": "الحضور",
+      "members": "الأعضاء",
+      "schedule": "الجدول",
+      "subscriptions": "الاشتراكات",
+      "payments": "المدفوعات"
+    },
+    "checkin": {
+      "pick_session": "اختر حصة",
+      "other_session": "حصة أخرى",
+      "no_sessions_title": "لا توجد حصص اليوم",
+      "no_sessions_body": "لا يوجد ما يمكن تسجيل الحضور له الآن."
+    }
   }
 }

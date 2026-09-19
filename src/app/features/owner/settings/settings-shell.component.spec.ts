@@ -23,7 +23,8 @@ describe("SettingsShellComponent", () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { currentUser: () => ({ role, staff_role: null }), hasPermission: () => true } },
+        { provide: AuthService, useValue: { currentUser: () => ({ role, staff_role: null }),
+ is_coach: false, hasPermission: () => true } },
         {
           provide: ActivatedRoute,
           useValue: { paramMap: paramMap$, snapshot: { queryParamMap: convertToParamMap({}), paramMap: convertToParamMap({}) } },

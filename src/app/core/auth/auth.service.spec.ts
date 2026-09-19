@@ -24,6 +24,7 @@ describe("AuthService", () => {
   const owner: User = {
     id: "u1", first_name: "S", last_name: "O", full_name: "S O", email: "s@x.test", phone: null,
     role: "owner", locale: "fr", email_verified: true, company_id: "c1", staff_role: null,
+ is_coach: false,
   };
 
   const memberClient: Client = {
@@ -237,7 +238,7 @@ describe("AuthService", () => {
     });
 
     it("sends a coach-kind staff login to /coach/today", () => {
-      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "coach" }));
+      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "coach", is_coach: true }));
       const auth = buildService();
       expect(auth.homeRouteForCurrentUser()).toBe("/coach/today");
     });
@@ -267,8 +268,8 @@ describe("AuthService", () => {
     // it true. Covered in "throws away a member session left over".
   });
 
-  it("coachShellApplies mirrors staff_role === 'coach'", () => {
-    localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "coach" }));
+  it("coachShellApplies follows is_coach, not the role's name", () => {
+    localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "coach", is_coach: true }));
     const auth = buildService();
     expect(auth.coachShellApplies()).toBe(true);
   });

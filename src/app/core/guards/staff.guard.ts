@@ -65,6 +65,45 @@ export function capabilityGuard(permission: string): CanActivateFn {
   };
 }
 
+/**
+ * Entry guard for the front desk.
+ *
+ * The desk is for the people who work it: staff who can check members in and
+ * book them. Not coaches (whose own shell is their day, and who hold only
+ * `checkin`), and not the owner, whose shell is a superset of this one —
+ * sending an owner here would hide half their product behind a back button.
+ *
+ * `checkin` alone is not enough: a coach has it. The test is checking people
+ * in AND booking them, which is the desk's actual job.
+ */
+export const deskAreaGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const config = inject(ConfigurationService);
+  const router = inject(Router);
+  const user = auth.currentUser();
+
+  if (!user) return elsewhereFor(auth, router);
+
+  return config.ensureLoaded().pipe(
+    map(() => {
+      if (config.subscription()?.locked) return router.createUrlTree(["/account-locked"]);
+      if (user.role !== "staff" || user.is_coach) {
+        return router.createUrlTree([auth.homeRouteForCurrentUser()]);
+      }
+
+      // Before the permission list has loaded, let them through rather than
+      // bouncing them somewhere they will have to navigate back from — the
+      // backend refuses anything they may not do regardless.
+      if (!config.ready()) return true;
+
+      return auth.hasPermission("checkin") && auth.hasPermission("bookings")
+        ? true
+        : router.createUrlTree([auth.homeRouteForCurrentUser()]);
+    }),
+    catchError(() => of(true))
+  );
+};
+
 // The Settings area is configuration — the owner, or a staff role the owner
 // has explicitly granted a catalogue capability. A plain receptionist has
 // nothing to configure and is bounced home.
@@ -112,7 +151,10 @@ export function staffRoleGuard(role: StaffRole): CanActivateFn {
     const user = auth.currentUser();
 
     if (!user) return elsewhereFor(auth, router);
-    if (user.role !== "staff" || user.staff_role !== role) {
+    // "coach" is about coaching, not about what the role is named — a coach
+    // on a custom role still belongs in the coach shell.
+    const holdsRole = role === "coach" ? user.is_coach : user.staff_role === role;
+    if (user.role !== "staff" || !holdsRole) {
       return router.createUrlTree([auth.homeRouteForCurrentUser()]);
     }
     return config.ensureLoaded().pipe(

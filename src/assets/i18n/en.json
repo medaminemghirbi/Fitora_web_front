@@ -1294,5 +1294,43 @@
     "title_unpaid": "Period unpaid",
     "body_unpaid": "The period you paid for has run out. Access closed three days later; it reopens as soon as your payment reaches us.",
     "see_invoices": "See my invoices"
+  },
+  "desk": {
+    "title": "Front desk",
+    "search_label": "Search for a member",
+    "search_placeholder": "Name, email or phone…",
+    "no_match": "No member matching “{{term}}”",
+    "no_subscription": "No subscription",
+    "on_now": "On now",
+    "nothing_on_title": "Nothing on right now",
+    "nothing_on_body": "No session is under way. The next one will show up here.",
+    "check_people_in": "Check people in",
+    "booked_today": "Booked today",
+    "checked_in_today": "Checked in today",
+    "still_to_come": "Still to come today",
+    "day_done_title": "That's the day",
+    "day_done_body": "No more sessions scheduled today.",
+    "full": "Full",
+    "spots_left": "{{count}} left",
+    "expiring_soon": "Memberships running out",
+    "expired": "Expired",
+    "expires_today": "Expires today",
+    "expires_in_days": "In {{count}}d",
+    "new_members": "New members",
+    "nav": {
+      "label": "Front desk navigation",
+      "today": "Today",
+      "checkin": "Check-in",
+      "members": "Members",
+      "schedule": "Schedule",
+      "subscriptions": "Subscriptions",
+      "payments": "Payments"
+    },
+    "checkin": {
+      "pick_session": "Pick a session",
+      "other_session": "Another session",
+      "no_sessions_title": "No sessions today",
+      "no_sessions_body": "There is nothing to check anyone into right now."
+    }
   }
 }

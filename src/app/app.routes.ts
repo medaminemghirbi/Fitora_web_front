@@ -3,7 +3,7 @@ import { authGuard } from "./core/guards/auth.guard";
 import { guestGuard } from "./core/guards/guest.guard";
 import { noCompanyGuard, companyGuard } from "./core/guards/company.guard";
 import { roleGuard } from "./core/guards/role.guard";
-import { capabilityGuard, ownerAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
+import { capabilityGuard, deskAreaGuard, ownerAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
 import { memberGuard } from "./core/guards/member.guard";
 
 /**
@@ -83,6 +83,20 @@ export const routes: Routes = [
       { path: "settings/:section", canActivate: [settingsAccessGuard], loadComponent: () => import("./features/owner/settings/settings-shell.component").then((m) => m.SettingsShellComponent) },
       // The marketplace is gone — every feature is included in the subscription.
       { path: "modules", pathMatch: "full", redirectTo: "subscription" },
+      { path: "", pathMatch: "full", redirectTo: "dashboard" },
+    ],
+  },
+  // The front desk. Its own shell rather than a filtered owner shell: the
+  // desk's job is a different shape from running the gym, and hiding menu
+  // items from a layout built for someone else is not the same as building
+  // the one this job needs.
+  {
+    path: "desk",
+    canActivate: [authGuard, deskAreaGuard, companyGuard],
+    loadComponent: () => import("./layout/desk-shell/desk-shell.component").then((m) => m.DeskShellComponent),
+    children: [
+      { path: "dashboard", loadComponent: () => import("./features/desk/dashboard/desk-dashboard.component").then((m) => m.DeskDashboardComponent) },
+      { path: "checkin", loadComponent: () => import("./features/desk/checkin/desk-checkin.component").then((m) => m.DeskCheckinComponent) },
       { path: "", pathMatch: "full", redirectTo: "dashboard" },
     ],
   },

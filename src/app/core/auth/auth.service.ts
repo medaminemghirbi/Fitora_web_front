@@ -186,9 +186,13 @@ export class AuthService {
     if (this.isClient()) return "/member/home";
     const user = this.currentUserSignal();
     if (user?.role === "admin") return "/admin/companies";
-    // A "coach"-role staff uses the dedicated coach shell ("My schedule" /
-    // attendance).
-    if (user?.staff_role === "coach") return "/coach/today";
+    // Anyone who coaches uses the dedicated coach shell ("My schedule" /
+    // attendance) — whatever their role happens to be called.
+    if (user?.is_coach) return "/coach/today";
+    // Staff who check people in and book them work the front desk, which has
+    // a shell of its own. The owner is deliberately not sent here: their
+    // shell already does all of this and more.
+    if (this.deskShellApplies()) return "/desk/dashboard";
     // A freshly-signed-up owner lands on the "Premiers pas" guide until the
     // foundational setup is done (or they skip it).
     const setup = this.config.setup();
@@ -198,9 +202,22 @@ export class AuthService {
     return "/owner/dashboard";
   }
 
-  // Whether a "coach"-role staff should use the dedicated coach shell.
+  // Whether this login should use the dedicated coach shell.
   coachShellApplies(): boolean {
-    return this.currentUserSignal()?.staff_role === "coach";
+    return this.currentUserSignal()?.is_coach === true;
+  }
+
+  /**
+   * Whether this login works the front desk.
+   *
+   * Checking people in AND booking them — `checkin` alone is a coach. Mirrors
+   * deskAreaGuard, which is what actually enforces it.
+   */
+  deskShellApplies(): boolean {
+    const user = this.currentUserSignal();
+    if (!user || user.role !== "staff" || user.is_coach) return false;
+
+    return this.hasPermission("checkin") && this.hasPermission("bookings");
   }
 
   // Re-fetches the current user — used after an action that changes something

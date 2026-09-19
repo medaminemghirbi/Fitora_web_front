@@ -1,6 +1,15 @@
 // ============================================================================
-// FITORA — application layout (sidebar + topbar + workspace + cards)
-// No AdminLTE package / jQuery: plain flexbox, Angular CDK handles overlays.
+// APP SHELL CHROME
+// ----------------------------------------------------------------------------
+// The frame an authenticated area is rendered inside: the sidebar, the top
+// bar, the content well, and the small controls that live in them (icon
+// buttons, dropdown menus, the user menu).
+//
+// Was _adminlte.scss. The name was left over from the admin template this
+// started as, and had stopped describing the contents — nothing here is
+// AdminLTE any more, and the product should not look like an admin template.
+// The shell-specific rules will move into the shell components themselves in
+// the redesign; the shared controls will become primitives.
 // ============================================================================
 
 .app-shell {

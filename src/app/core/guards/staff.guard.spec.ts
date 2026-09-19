@@ -4,7 +4,7 @@ import { firstValueFrom, isObservable, of, throwError } from "rxjs";
 import { AuthService } from "../auth/auth.service";
 import { ConfigurationService } from "../configuration/configuration.service";
 import { User } from "../models/user.model";
-import { capabilityGuard, ownerAreaGuard, settingsAccessGuard, staffManagerGuard, staffRoleGuard } from "./staff.guard";
+import { capabilityGuard, deskAreaGuard, ownerAreaGuard, settingsAccessGuard, staffManagerGuard, staffRoleGuard } from "./staff.guard";
 
 describe("staff.guard", () => {
   let authStub: {
@@ -74,7 +74,7 @@ describe("staff.guard", () => {
     });
 
     it("bounces a coach-kind staff login to /coach/today", async () => {
-      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach" } as User);
+      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach", is_coach: true } as User);
       authStub.coachShellApplies.and.returnValue(true);
       expect(await resolve(run())).toBe(tree);
       expect(router.createUrlTree).toHaveBeenCalledWith(["/coach/today"]);
@@ -191,31 +191,31 @@ describe("staff.guard", () => {
     });
 
     it("bounces home a staff login of the wrong kind", async () => {
-      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "receptionist" } as User);
+      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "receptionist", is_coach: false } as User);
       expect(await resolve(run())).toBe(tree);
       expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
     });
 
     it("bounces home a non-staff user even with a matching staff_role field", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner", staff_role: "coach" } as User);
+      authStub.currentUser.and.returnValue({ role: "owner", staff_role: "coach", is_coach: true } as User);
       expect(await resolve(run())).toBe(tree);
     });
 
     it("lets a coach into the coach shell once the coach module applies", async () => {
-      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach" } as User);
+      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach", is_coach: true } as User);
       authStub.coachShellApplies.and.returnValue(true);
       expect(await resolve(run())).toBe(true);
     });
 
     it("sends a coach-kind login without the coach module to the owner dashboard", async () => {
-      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach" } as User);
+      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach", is_coach: true } as User);
       authStub.coachShellApplies.and.returnValue(false);
       expect(await resolve(run())).toBe(tree);
       expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
     });
 
     it("fails open (allows through) when the bootstrap load errors", async () => {
-      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach" } as User);
+      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach", is_coach: true } as User);
       configStub.ensureLoaded.and.returnValue(throwError(() => new Error("network")));
       expect(await resolve(run())).toBe(true);
     });
@@ -259,5 +259,80 @@ describe("staff.guard", () => {
       expect(resolved).toBe(true);
     });
   });
-});
 
+  describe("deskAreaGuard", () => {
+    function run() {
+      return TestBed.runInInjectionContext(() => deskAreaGuard({} as never, {} as never));
+    }
+
+    function deskStaff() {
+      authStub.currentUser.and.returnValue({ role: "staff", is_coach: false } as User);
+      authStub.hasPermission.and.callFake((p: string) => p === "checkin" || p === "bookings");
+    }
+
+    it("redirects to login with no user", async () => {
+      authStub.currentUser.and.returnValue(null);
+
+      expect(await resolve(run())).toBe(tree);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/connexion"]);
+    });
+
+    it("lets in staff who can check people in and book them", async () => {
+      deskStaff();
+
+      expect(await resolve(run())).toBe(true);
+    });
+
+    it("turns away staff who can check in but not book — that is a coach", async () => {
+      authStub.currentUser.and.returnValue({ role: "staff", is_coach: false } as User);
+      authStub.hasPermission.and.callFake((p: string) => p === "checkin");
+
+      expect(await resolve(run())).toBe(tree);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+    });
+
+    it("turns away a coach even when their role grants both", async () => {
+      authStub.currentUser.and.returnValue({ role: "staff", is_coach: true } as User);
+      authStub.hasPermission.and.returnValue(true);
+
+      expect(await resolve(run())).toBe(tree);
+    });
+
+    it("turns away an owner — their own shell is a superset of the desk", async () => {
+      authStub.currentUser.and.returnValue({ role: "owner", is_coach: false } as User);
+      authStub.hasPermission.and.returnValue(true);
+
+      expect(await resolve(run())).toBe(tree);
+    });
+
+    it("turns away a platform admin", async () => {
+      authStub.currentUser.and.returnValue({ role: "admin", is_coach: false } as User);
+      authStub.hasPermission.and.returnValue(true);
+
+      expect(await resolve(run())).toBe(tree);
+    });
+
+    it("sends a locked company to the locked screen before anything else", async () => {
+      deskStaff();
+      configStub.subscription.and.returnValue({ locked: true });
+
+      expect(await resolve(run())).toBe(tree);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/account-locked"]);
+    });
+
+    it("lets staff through before permissions have loaded rather than bouncing them", async () => {
+      authStub.currentUser.and.returnValue({ role: "staff", is_coach: false } as User);
+      authStub.hasPermission.and.returnValue(false);
+      configStub.ready.and.returnValue(false);
+
+      expect(await resolve(run())).toBe(true);
+    });
+
+    it("fails open when the bootstrap load errors", async () => {
+      deskStaff();
+      configStub.ensureLoaded.and.returnValue(throwError(() => new Error("offline")));
+
+      expect(await resolve(run())).toBe(true);
+    });
+  });
+});
