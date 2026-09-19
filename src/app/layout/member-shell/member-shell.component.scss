@@ -139,3 +139,23 @@
   &:hover { text-decoration: none; color: var(--color-text); }
   &.is-active { color: var(--color-primary); }
 }
+
+// The brand doubling as a gym switcher, for someone who trains at more than
+// one place. Looks like the link it replaces, plus a caret.
+.member-brand--switch {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+
+  &:hover { background: var(--color-surface-hover); }
+}
+
+.member-brand-caret {
+  margin-inline-start: var(--space-1);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}

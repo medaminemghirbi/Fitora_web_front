@@ -34,6 +34,24 @@ export class MemberShellComponent {
   readonly member = inject(MemberService);
 
   readonly userMenuOpen = signal(false);
+  readonly gymMenuOpen = signal(false);
+
+  /**
+   * Show a different gym, and reload everything scoped to it. The schedule,
+   * the bookings and the subscription are all per-gym, so none of them may
+   * keep showing the last one's data.
+   */
+  switchGym(gymId: string): void {
+    this.gymMenuOpen.set(false);
+    if (gymId === this.member.companyId()) return;
+
+    this.member.switchTo(gymId);
+    this.member.load().subscribe({
+      // A failed reload leaves the previous gym on screen, which is wrong but
+      // readable; the next navigation retries.
+      error: () => undefined,
+    });
+  }
 
   readonly navItems: MemberNavItem[] = [
     { path: "/member/home", icon: "bi-calendar-week", labelKey: "member.nav.schedule" },

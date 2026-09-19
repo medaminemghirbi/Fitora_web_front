@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, effect, inject, signal } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { MemberSession } from "../../../core/models/member.model";
@@ -57,14 +57,31 @@ export class MemberScheduleComponent {
     return [...byDay.entries()].map(([date, sessions]) => ({ date, sessions }));
   });
 
+  /** The gym the sessions on screen belong to. */
+  private loadedGymId: string | null = null;
+
   constructor() {
     this.load();
+
+    // Someone who trains at two places switches between them from the shell,
+    // and this screen keeping the other gym's week would be worse than
+    // showing nothing. Only on a real change: an effect runs after change
+    // detection, so the load above is what fills the first render.
+    effect(() => {
+      const gymId = this.member.companyId();
+      if (gymId === this.loadedGymId) return;
+
+      this.load();
+    });
   }
 
   load(): void {
     this.loading.set(true);
     this.error.set(false);
-    this.sessionsService.list(undefined, this.member.companyId()).subscribe({
+    const gymId = this.member.companyId();
+    this.loadedGymId = gymId;
+
+    this.sessionsService.list(undefined, gymId).subscribe({
       next: (res) => {
         this.sessions.set(res.sessions);
         this.loading.set(false);
