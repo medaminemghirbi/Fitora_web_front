@@ -1388,7 +1388,8 @@
     "no_subscription_body": "توجّه إلى استقبال قاعتك للاشتراك.",
     "attendance": "حضوري",
     "attendance_rate_hint": "من الحصص التي حجزتها، تلك التي حضرتها.",
-    "no_attendance": "لم تحضر أيّ حصّة بعد"
+    "no_attendance": "لم تحضر أيّ حصّة بعد",
+    "sessions_left_label": "حصص متبقية"
   },
   "locked": {
     "title_suspended": "وصولك معلّق",

@@ -1388,7 +1388,8 @@
     "no_subscription_body": "Talk to your gym's front desk to take one out.",
     "attendance": "My attendance",
     "attendance_rate_hint": "Of the sessions you booked, the ones you came to.",
-    "no_attendance": "No sessions attended yet"
+    "no_attendance": "No sessions attended yet",
+    "sessions_left_label": "sessions left"
   },
   "locked": {
     "title_suspended": "Your access is suspended",

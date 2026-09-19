@@ -1388,7 +1388,8 @@
     "no_subscription_body": "Adressez-vous à l'accueil de votre salle pour en souscrire un.",
     "attendance": "Ma présence",
     "attendance_rate_hint": "Des séances réservées auxquelles vous êtes venu.",
-    "no_attendance": "Aucune séance suivie pour l'instant"
+    "no_attendance": "Aucune séance suivie pour l'instant",
+    "sessions_left_label": "séances restantes"
   },
   "locked": {
     "title_suspended": "Votre accès est suspendu",

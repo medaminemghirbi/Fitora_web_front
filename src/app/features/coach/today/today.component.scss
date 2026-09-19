@@ -37,3 +37,55 @@
   flex: 1;
   min-width: 0;
 }
+
+// The session on now, or the next one. One line, one action.
+.ct-next {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+
+  // Happening now takes the brand's dark ground, so a coach glancing at a
+  // phone between sets can tell the two apart without reading.
+  &.is-live {
+    background: var(--color-primary-active);
+    border-color: transparent;
+    color: #fff;
+
+    .ct-next-what small { color: rgba(255, 255, 255, 0.72); }
+  }
+}
+
+.ct-next-when {
+  flex-shrink: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.ct-next-what {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+
+  strong { font-weight: 600; }
+  small { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+}
+
+// The row is a button now, so it needs a button's reset.
+.schedule-row {
+  width: 100%;
+  text-align: start;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}

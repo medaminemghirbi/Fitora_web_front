@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from "@angular/core";
+import { Component, OnInit, computed, signal } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AttendanceBooking, AttendanceStatus } from "../../../core/models/attendance.model";
@@ -39,6 +39,27 @@ export class CoachTodayComponent implements OnInit {
     private readonly toast: ToastService,
     private readonly translate: TranslateService
   ) {}
+
+  /**
+   * The session that is on now, or the next one today. A coach opens this
+   * page to answer "what am I doing, and is it now" — the day's full list
+   * answers it only after they have read it.
+   */
+  readonly upNext = computed(() => {
+    const now = Date.now();
+    const live = this.sessions().find(
+      (s) => s.status === "scheduled" &&
+             new Date(s.starts_at).getTime() <= now &&
+             new Date(s.ends_at).getTime() > now
+    );
+    if (live) return { session: live, live: true };
+
+    const next = this.sessions()
+      .filter((s) => s.status === "scheduled" && new Date(s.starts_at).getTime() > now)
+      .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0];
+
+    return next ? { session: next, live: false } : null;
+  });
 
   ngOnInit(): void {
     this.load();

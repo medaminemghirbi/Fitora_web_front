@@ -100,4 +100,46 @@ describe("CoachTodayComponent", () => {
   it("lists all 4 attendance statuses", () => {
     expect(component.statuses).toEqual(["present", "absent", "late", "no_show"]);
   });
+
+  describe("what is on now", () => {
+    function at(offsetMinutes: number, durationMinutes = 60): Record<string, unknown> {
+      const starts = new Date(Date.now() + offsetMinutes * 60_000);
+      return {
+        id: `s${offsetMinutes}`,
+        status: "scheduled",
+        starts_at: starts.toISOString(),
+        ends_at: new Date(starts.getTime() + durationMinutes * 60_000).toISOString(),
+        activity_name: "Pilates",
+        activity_emoji: null,
+        confirmed_count: 4,
+        capacity: 10,
+      };
+    }
+
+    it("leads with the session under way", () => {
+      component.sessions.set([at(-10), at(120)] as never);
+
+      expect(component.upNext()?.live).toBe(true);
+      expect(component.upNext()?.session.id).toBe("s-10");
+    });
+
+    it("leads with the soonest one still to come when nothing is on", () => {
+      component.sessions.set([at(300), at(60)] as never);
+
+      expect(component.upNext()?.live).toBe(false);
+      expect(component.upNext()?.session.id).toBe("s60");
+    });
+
+    it("ignores what has already finished", () => {
+      component.sessions.set([at(-300)] as never);
+
+      expect(component.upNext()).toBeNull();
+    });
+
+    it("ignores a cancelled session, even one in its own slot", () => {
+      component.sessions.set([{ ...at(-10), status: "cancelled" }] as never);
+
+      expect(component.upNext()).toBeNull();
+    });
+  });
 });

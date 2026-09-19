@@ -12,29 +12,36 @@
         @if (p.client.phone) { <span dir="ltr"> · {{ p.client.phone }}</span> }
       </p>
 
-      <section class="mb-card">
-        <h2 class="mb-card-head">{{ "member.subscription" | translate }}</h2>
-        @if (p.subscription; as sub) {
-          <p class="mb-sub-name">
-            {{ sub.activity_emoji ? sub.activity_emoji + " " : "" }}{{ sub.activity_name }}
-            <span class="mb-muted">· {{ sub.plan_name }}</span>
-          </p>
-          @if (sub.expires_at) {
-            <p class="mb-muted">{{ "member.valid_until" | translate }} {{ sub.expires_at | date: "mediumDate" }}</p>
-          }
+      <!-- The one thing a member opens this page to find out. It was a muted
+           line under two other muted lines; it is the page's headline now. -->
+      @if (p.subscription; as sub) {
+        <section class="mb-hero">
           @if (sub.remaining_bookings !== null) {
-            <p class="mb-muted">{{ "member.sessions_left" | translate: { count: sub.remaining_bookings } }}</p>
+            <span class="mb-hero-value">{{ sub.remaining_bookings }}</span>
+            <span class="mb-hero-label">{{ "member.sessions_left_label" | translate }}</span>
           } @else {
-            <p class="mb-muted">{{ "member.unlimited" | translate }}</p>
+            <span class="mb-hero-value">∞</span>
+            <span class="mb-hero-label">{{ "member.unlimited" | translate }}</span>
           }
-        } @else {
+
+          <span class="mb-hero-plan">
+            {{ sub.activity_emoji ? sub.activity_emoji + " " : "" }}{{ sub.activity_name }} · {{ sub.plan_name }}
+          </span>
+          @if (sub.expires_at) {
+            <span class="mb-hero-until">
+              {{ "member.valid_until" | translate }} {{ sub.expires_at | date: "d MMMM y" }}
+            </span>
+          }
+        </section>
+      } @else {
+        <section class="mb-card">
           <app-empty-state
             [title]="'member.no_subscription_title' | translate"
             [body]="'member.no_subscription_body' | translate"
             icon="bi-award"
           />
-        }
-      </section>
+        </section>
+      }
 
       <section class="mb-card">
         <h2 class="mb-card-head">{{ "member.attendance" | translate }}</h2>
