@@ -1,0 +1,92 @@
+// ============================================================================
+// TABLES
+// ----------------------------------------------------------------------------
+// The data grid: header, rows, density, status strip, aligned figures.
+//
+// Split out of _fitora.scss, which had grown to 1208 lines and was the reason
+// screens drifted: nobody could see what was already there.
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Tables — premium SaaS data grid
+// ---------------------------------------------------------------------------
+.table {
+  --bs-table-color: var(--color-text);
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--color-border);
+  --bs-table-hover-bg: var(--color-surface-hover);
+  --bs-table-hover-color: var(--color-text);
+  margin-bottom: 0;
+  font-size: 0.875rem;
+
+  > :not(caption) > * > * { padding: 0.85rem 1rem; }
+
+  thead th {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-secondary);
+    background: var(--color-surface-sunken);
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  tbody tr { transition: background var(--transition-fast); }
+  tbody td { border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+
+  &.table-hover tbody tr:hover { background: var(--color-surface-hover); }
+}
+
+// Table wrapper that keeps wide grids scrollable without the page scrolling
+// Horizontal scroll only. `overflow-y` is pinned to `hidden` on purpose: with
+// `overflow-x: auto` alone the browser promotes `overflow-y` to `auto` too,
+// which put a phantom vertical scrollbar on short tables and clipped their
+// header. The row action menu renders `position: fixed`, so nothing needs to
+// escape this box vertically.
+.fx-table-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+
+// Coloured plan / category tag
+.fx-plan-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  white-space: nowrap;
+  .fx-dot { width: 8px; height: 8px; }
+}
+
+// Primary-identity cell (avatar + name + sub)
+.fx-cell-lead {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+
+  .fx-cell-lead-text { min-width: 0; }
+  .fx-cell-lead-title { font-weight: 600; color: var(--color-text); }
+  .fx-cell-lead-sub { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+}
+
+// ---------------------------------------------------------------------------
+// Data grid density — zebra rows, a status strip, aligned figures
+// ---------------------------------------------------------------------------
+.table.fx-grid {
+  > :not(caption) > * > * { padding: 0.62rem 0.7rem; }
+
+  thead th { background: var(--color-surface); font-size: 0.72rem; }
+  thead th.is-sorted { color: var(--color-primary); }
+
+  tbody tr:nth-child(odd) { background: color-mix(in srgb, var(--color-surface-sunken) 55%, var(--color-surface)); }
+  tbody tr:hover { background: var(--color-surface-hover); }
+  tbody td { border-bottom: 1px solid color-mix(in srgb, var(--color-border) 65%, transparent); }
+
+  // First cell carries the row's status colour, as in the design.
+  tbody td:first-child { border-inline-start: 3px solid var(--fx-row-color, transparent); padding-inline-start: 1rem; }
+  thead th:first-child { padding-inline-start: 1rem; }
+  > :not(caption) > * > *:last-child { padding-inline-end: 1rem; }
+
+  .fx-num { font-variant-numeric: tabular-nums; }
+}

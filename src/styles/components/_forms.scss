@@ -1,0 +1,111 @@
+// ============================================================================
+// FORMS
+// ----------------------------------------------------------------------------
+// Fields, labels, help text and the shapes a form is built from.
+//
+// Split out of _fitora.scss, which had grown to 1208 lines and was the reason
+// screens drifted: nobody could see what was already there.
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Forms
+// ---------------------------------------------------------------------------
+.form-control,
+.form-select {
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+  &::placeholder { color: var(--color-muted); }
+
+  &:hover:not(:disabled):not(:focus) { border-color: var(--color-muted); }
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-focus);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  &:disabled { background-color: var(--color-surface-sunken); color: var(--color-muted); }
+}
+
+.form-control-sm,
+.form-select-sm { font-size: 0.8125rem; padding: 0.35rem 0.6rem; }
+
+.form-label,
+label { font-weight: 500; font-size: 0.8125rem; color: var(--color-text); margin-bottom: 0.35rem; }
+
+.form-text { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+
+.form-check-input {
+  border-color: var(--color-border-strong);
+  &:checked { background-color: var(--color-primary); border-color: var(--color-primary); }
+  &:focus { box-shadow: var(--shadow-focus); border-color: var(--color-primary); }
+}
+
+.invalid-feedback { display: block; font-size: var(--font-size-xs); color: var(--color-danger); }
+.is-invalid { border-color: var(--color-danger) !important; }
+
+// Grouped form sections inside dialogs / drawers
+.fx-form-section {
+  & + .fx-form-section {
+    margin-top: var(--space-5);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+}
+.fx-form-section-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+// The settled figure at the foot of a form — what is owed, what a period
+// costs. Emphasised because it is the line someone reads back aloud.
+.fx-summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt, rgba(0, 0, 0, 0.03));
+
+  > strong {
+    font-size: 1.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// A row's own actions: one or two things worth doing without opening the
+// record, plus the overflow menu for the rest.
+.fx-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+// Input with a leading icon (search fields)
+.fx-input-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  > i {
+    position: absolute;
+    inset-inline-start: 0.75rem;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    pointer-events: none;
+  }
+  .form-control { padding-inline-start: 2.25rem; }
+}

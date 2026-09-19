@@ -9,7 +9,22 @@
 @import "bootstrap-icons/font/bootstrap-icons.css";
 @import "styles/tokens";
 @import "styles/utilities";
-@import "styles/fitora";
+// Fitora's own component layer, one file per concern. Was a single 1208-line
+// _fitora.scss, which is why screens drifted: nobody could see what was
+// already there before writing it again.
+@import "styles/components/base";
+@import "styles/components/buttons";
+@import "styles/components/forms";
+@import "styles/components/tables";
+@import "styles/components/feedback";
+@import "styles/components/page";
+@import "styles/components/cards";
+@import "styles/components/filters";
+@import "styles/components/navigation";
+@import "styles/components/overlays";
+@import "styles/components/list-page";
+@import "styles/components/calendar";
+@import "styles/components/misc";
 @import "styles/leftovers";
 @import "styles/shell";
 @import "styles/marketing";

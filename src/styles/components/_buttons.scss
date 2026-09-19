@@ -1,0 +1,119 @@
+// ============================================================================
+// BUTTONS
+// ----------------------------------------------------------------------------
+// Every button in the product: one hierarchy, one height, one radius.
+//
+// Split out of _fitora.scss, which had grown to 1208 lines and was the reason
+// screens drifted: nobody could see what was already there.
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Buttons — one consistent hierarchy, one height, one radius
+// ---------------------------------------------------------------------------
+.btn {
+  --bs-btn-font-size: 0.875rem;
+  --bs-btn-font-weight: 600;
+  --bs-btn-padding-y: 0.5rem;
+  --bs-btn-padding-x: 0.9rem;
+  --bs-btn-border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast), box-shadow var(--transition-fast);
+
+  i { font-size: 1rem; line-height: 1; }
+
+  &:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+}
+
+.btn-sm {
+  --bs-btn-font-size: 0.8125rem;
+  --bs-btn-padding-y: 0.35rem;
+  --bs-btn-padding-x: 0.65rem;
+}
+
+.btn-lg {
+  --bs-btn-font-size: 0.9375rem;
+  --bs-btn-padding-y: 0.65rem;
+  --bs-btn-padding-x: 1.15rem;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--color-primary);
+  --bs-btn-border-color: var(--color-primary);
+  --bs-btn-color: var(--color-on-primary);
+  --bs-btn-hover-bg: var(--color-primary-hover);
+  --bs-btn-hover-border-color: var(--color-primary-hover);
+  --bs-btn-hover-color: var(--color-on-primary);
+  --bs-btn-active-bg: var(--color-primary-active);
+  --bs-btn-active-border-color: var(--color-primary-active);
+  --bs-btn-active-color: var(--color-on-primary);
+  --bs-btn-disabled-bg: var(--color-primary);
+  --bs-btn-disabled-border-color: var(--color-primary);
+  --bs-btn-disabled-color: var(--color-on-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--color-primary);
+  --bs-btn-border-color: var(--color-primary-border);
+  --bs-btn-hover-bg: var(--color-primary-soft);
+  --bs-btn-hover-border-color: var(--color-primary);
+  --bs-btn-hover-color: var(--color-primary);
+  --bs-btn-active-bg: var(--color-primary-soft);
+  --bs-btn-active-border-color: var(--color-primary);
+  --bs-btn-active-color: var(--color-primary);
+}
+
+// Neutral / secondary action — the default "quiet" button
+.btn-outline-secondary,
+.btn-secondary {
+  --bs-btn-color: var(--color-text);
+  --bs-btn-bg: var(--color-surface);
+  --bs-btn-border-color: var(--color-border-strong);
+  --bs-btn-hover-bg: var(--color-surface-hover);
+  --bs-btn-hover-color: var(--color-text);
+  --bs-btn-hover-border-color: var(--color-border-strong);
+  --bs-btn-active-bg: var(--color-surface-sunken);
+  --bs-btn-active-color: var(--color-text);
+  --bs-btn-active-border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-danger {
+  --bs-btn-bg: var(--color-danger);
+  --bs-btn-border-color: var(--color-danger);
+  --bs-btn-color: #fff;
+  --bs-btn-hover-bg: #b91c1c;
+  --bs-btn-hover-border-color: #b91c1c;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: #991b1b;
+  --bs-btn-active-border-color: #991b1b;
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--color-danger);
+  --bs-btn-border-color: var(--color-danger-soft);
+  --bs-btn-hover-bg: var(--color-danger-soft);
+  --bs-btn-hover-border-color: var(--color-danger);
+  --bs-btn-hover-color: var(--color-danger);
+}
+
+.btn-link {
+  --bs-btn-color: var(--color-primary);
+  --bs-btn-hover-color: var(--color-primary-hover);
+  --bs-btn-font-weight: 600;
+  text-decoration: none;
+}
+
+// Ghost / toolbar icon button
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  &:hover { background: var(--color-surface-hover); color: var(--color-text); }
+}

@@ -1,0 +1,21 @@
+// ============================================================================
+// BASE
+// ----------------------------------------------------------------------------
+// Type rhythm: the few element-level rules the whole app inherits.
+//
+// Split out of _fitora.scss, which had grown to 1208 lines and was the reason
+// screens drifted: nobody could see what was already there.
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Typography rhythm
+// ---------------------------------------------------------------------------
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.fx-muted { color: var(--color-text-secondary) !important; }
+.fx-strong { font-weight: 600; }
