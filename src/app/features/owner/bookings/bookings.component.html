@@ -36,7 +36,10 @@
   </app-filter-rail>
 
   <div class="fx-listpage-main">
-    <app-page-header [title]="'bookings.title' | translate" [description]="'bookings.subtitle' | translate"></app-page-header>
+    <header class="lst-head">
+      <h1>{{ "bookings.title" | translate }}</h1>
+      <span class="lst-head-count">{{ meta()?.total ?? 0 }}</span>
+    </header>
 
     <nav class="fx-cat-tabs" [attr.aria-label]="'common.status' | translate">
       @for (opt of statusOptions; track opt.value) {

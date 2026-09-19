@@ -41,11 +41,13 @@
   </app-filter-rail>
 
   <div class="fx-listpage-main">
-    <app-page-header [title]="'nav.payments' | translate" [description]="'payments.subtitle' | translate">
+    <header class="lst-head">
+      <h1>{{ "nav.payments" | translate }}</h1>
+      <span class="lst-head-count">{{ counts()["all"] ?? 0 }}</span>
       <button type="button" class="btn btn-primary" (click)="openRecordModal()">
         <i class="bi bi-plus-lg"></i> {{ "payments.record" | translate }}
       </button>
-    </app-page-header>
+    </header>
 
     <!-- One tab per payment method, with how many receipts it holds. -->
     <nav class="fx-cat-tabs" [attr.aria-label]="'payments.method' | translate">
@@ -76,16 +78,8 @@
           <dd>{{ totals().average_payment | money: currency() }}</dd>
         </div>
         <div>
-          <dt>{{ "payments.receipts" | translate }}</dt>
-          <dd>{{ counts()["all"] ?? 0 }}</dd>
-        </div>
-        <div>
           <dt>{{ "payments.status_refunded" | translate }}</dt>
           <dd>{{ totals().refunded_value | money: currency() }}</dd>
-        </div>
-        <div>
-          <dt>{{ "payments.status_cancelled" | translate }}</dt>
-          <dd class="fx-muted">{{ counts()["cancelled"] ?? 0 }}</dd>
         </div>
       </dl>
     </div>

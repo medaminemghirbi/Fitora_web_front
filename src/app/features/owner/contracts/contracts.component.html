@@ -45,7 +45,10 @@
   </app-filter-rail>
 
   <div class="fx-listpage-main">
-    <app-page-header [title]="'nav.subscriptions' | translate" [description]="'contracts.subtitle' | translate"></app-page-header>
+    <header class="lst-head">
+      <h1>{{ "nav.subscriptions" | translate }}</h1>
+      <span class="lst-head-count">{{ counts()["all"] ?? 0 }}</span>
+    </header>
 
     <!-- One tab per plan, with how many contracts it holds for the current search. -->
     <nav class="fx-cat-tabs" [attr.aria-label]="'contract_types.plan' | translate">
@@ -64,16 +67,8 @@
     <div class="fx-stats-bar">
       <dl class="fx-stats">
         <div>
-          <dt>{{ "contract.status_active" | translate }}</dt>
-          <dd>{{ counts()["active"] ?? 0 }}</dd>
-        </div>
-        <div>
           <dt>{{ "contracts.portfolio_value" | translate }}</dt>
           <dd>{{ totals().portfolio_value | money: currency() }}</dd>
-        </div>
-        <div>
-          <dt>{{ "payments.status_unpaid" | translate }}</dt>
-          <dd class="text-danger-token">{{ counts()["unpaid"] ?? 0 }}</dd>
         </div>
         <div>
           <dt>{{ "contracts.average_basket" | translate }}</dt>
