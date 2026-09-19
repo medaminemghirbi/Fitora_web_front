@@ -128,6 +128,25 @@ export class DashboardComponent {
     this.load();
   }
 
+  /**
+   * What an audit entry says, in words.
+   *
+   * The key is assembled from the action the backend sent
+   * ("audit." + "payment.recorded"), which means a new action ships with no
+   * translation and the log prints the key at the reader: twelve of the
+   * twenty-five actions were doing exactly that. The labels are filled in
+   * now, and this makes the next one degrade into something readable rather
+   * than into "audit.subscription.invoice_issued".
+   */
+  auditLabel(action: string): string {
+    const key = `audit.${action}`;
+    const translated = this.translate.instant(key);
+    if (translated !== key) return translated;
+
+    // Last resort: the action itself, made pronounceable.
+    return action.replace(/[._]/g, " ").replace(/^./, (c) => c.toUpperCase());
+  }
+
   /** Fill ratio (0-100) for the schedule row's mini capacity bar. */
   fillPct(item: TodaysScheduleItem): number {
     return item.capacity > 0 ? Math.min(100, (item.confirmed_count / item.capacity) * 100) : 0;

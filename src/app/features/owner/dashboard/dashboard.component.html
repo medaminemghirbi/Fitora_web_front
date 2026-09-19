@@ -220,7 +220,7 @@
               @for (log of auditLogs(); track log.id) {
                 <li>
                   <span class="fx-list-main">
-                    <span class="fx-strong">{{ ("audit." + log.action) | translate }}</span>
+                    <span class="fx-strong">{{ auditLabel(log.action) }}</span>
                     <span class="fx-muted">· {{ log.user?.full_name || "—" }}</span>
                   </span>
                   <span class="fx-muted">{{ log.created_at | date: "short" }}</span>

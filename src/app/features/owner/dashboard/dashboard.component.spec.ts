@@ -2,7 +2,7 @@ import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ConfigurationService, SetupState } from "../../../core/configuration/configuration.service";
@@ -353,5 +353,27 @@ describe("DashboardComponent", () => {
       expect(dashboardService.get).toHaveBeenCalled();
     });
   });
-});
 
+  describe("what an audit entry says", () => {
+    it("uses the translation when there is one", () => {
+      // TranslateModule is stubbed in these specs, so instant() echoes the
+      // key — which is exactly the "no translation" case below. Here the
+      // point is that it asks for the right key.
+      const translate = TestBed.inject(TranslateService);
+      spyOn(translate, "instant").and.returnValue("Paiement encaissé");
+
+      expect(component.auditLabel("payment.recorded")).toBe("Paiement encaissé");
+      expect(translate.instant).toHaveBeenCalledWith("audit.payment.recorded");
+    });
+
+    it("never prints the key at the reader when an action has no label yet", () => {
+      const translate = TestBed.inject(TranslateService);
+      spyOn(translate, "instant").and.callFake((key: string) => key);
+
+      const label = component.auditLabel("subscription.invoice_issued");
+
+      expect(label).not.toContain("audit.");
+      expect(label).toBe("Subscription invoice issued");
+    });
+  });
+});

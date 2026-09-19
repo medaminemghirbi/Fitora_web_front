@@ -965,30 +965,56 @@
     }
   },
   "audit": {
-    "staff": {
-      "created": "Staff member created",
-      "role_changed": "Staff role changed"
+    "admin": {
+      "impersonation_started": "Signed in as the owner",
+      "settings_updated": "Settings changed by Fitora"
+    },
+    "booking": {
+      "cancelled": "Booking cancelled",
+      "reminder_sent": "Reminder sent"
+    },
+    "client": {
+      "created": "Member added",
+      "joined": "Member joined the gym",
+      "updated": "Member details changed"
+    },
+    "coach": {
+      "login_set": "Coach access created"
+    },
+    "contract": {
+      "cancelled": "Subscription cancelled",
+      "created": "Subscription sold",
+      "deleted": "Subscription deleted"
+    },
+    "data": {
+      "imported": "Data imported"
+    },
+    "owner": {
+      "company_limit_changed": "Allowed number of gyms changed"
+    },
+    "payment": {
+      "recorded": "Payment taken",
+      "refunded": "Payment refunded"
+    },
+    "report": {
+      "exported": "Report exported"
     },
     "session": {
       "cancelled": "Session cancelled"
     },
-    "booking": {
-      "cancelled": "Booking cancelled",
-      "reminder_sent": "Reminder SMS sent"
-    },
-    "contract": {
-      "cancelled": "Contract cancelled",
-      "deleted": "Contract deleted"
+    "staff": {
+      "created": "Team member added",
+      "role_changed": "Role changed"
     },
     "subscription": {
-      "status_overridden": "Subscription status changed",
-      "upgrade_requested": "Upgrade requested"
+      "access_restored": "Access restored by Fitora",
+      "access_suspended": "Access suspended by Fitora",
+      "invoice_issued": "Fitora invoice issued",
+      "invoice_voided": "Fitora invoice voided"
     },
-    "admin": {
-      "impersonation_started": "Admin logged in as owner",
-      "modules_updated": "Company modules changed",
-      "settings_updated": "Company currency / language changed",
-      "mobile_key_overridden": "Mobile key changed by admin"
+    "support_ticket": {
+      "created": "Support request sent",
+      "resolved": "Support request resolved"
     }
   },
   "landing": {

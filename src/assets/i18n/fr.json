@@ -965,30 +965,56 @@
     }
   },
   "audit": {
-    "staff": {
-      "created": "Membre d'équipe créé",
-      "role_changed": "Rôle d'un membre modifié"
+    "admin": {
+      "impersonation_started": "Connexion en tant que propriétaire",
+      "settings_updated": "Réglages modifiés par Fitora"
+    },
+    "booking": {
+      "cancelled": "Réservation annulée",
+      "reminder_sent": "Rappel envoyé"
+    },
+    "client": {
+      "created": "Membre ajouté",
+      "joined": "Membre rattaché à la salle",
+      "updated": "Fiche membre modifiée"
+    },
+    "coach": {
+      "login_set": "Accès coach créé"
+    },
+    "contract": {
+      "cancelled": "Abonnement résilié",
+      "created": "Abonnement souscrit",
+      "deleted": "Abonnement supprimé"
+    },
+    "data": {
+      "imported": "Données importées"
+    },
+    "owner": {
+      "company_limit_changed": "Nombre de salles autorisé modifié"
+    },
+    "payment": {
+      "recorded": "Paiement encaissé",
+      "refunded": "Paiement remboursé"
+    },
+    "report": {
+      "exported": "Rapport exporté"
     },
     "session": {
       "cancelled": "Séance annulée"
     },
-    "booking": {
-      "cancelled": "Réservation annulée",
-      "reminder_sent": "Rappel SMS envoyé"
-    },
-    "contract": {
-      "cancelled": "Contrat annulé",
-      "deleted": "Contrat supprimé"
+    "staff": {
+      "created": "Membre d'équipe ajouté",
+      "role_changed": "Rôle modifié"
     },
     "subscription": {
-      "status_overridden": "Statut d'abonnement modifié",
-      "upgrade_requested": "Mise à niveau demandée"
+      "access_restored": "Accès rétabli par Fitora",
+      "access_suspended": "Accès suspendu par Fitora",
+      "invoice_issued": "Facture Fitora émise",
+      "invoice_voided": "Facture Fitora annulée"
     },
-    "admin": {
-      "impersonation_started": "Connexion admin en tant que propriétaire",
-      "modules_updated": "Modules de l'entreprise modifiés",
-      "settings_updated": "Devise / langue de l'entreprise modifiées",
-      "mobile_key_overridden": "Clé mobile modifiée par l'admin"
+    "support_ticket": {
+      "created": "Demande de support envoyée",
+      "resolved": "Demande de support résolue"
     }
   },
   "landing": {

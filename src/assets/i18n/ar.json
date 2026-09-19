@@ -965,30 +965,56 @@
     }
   },
   "audit": {
-    "staff": {
-      "created": "تم إنشاء عضو فريق",
-      "role_changed": "تم تغيير دور عضو الفريق"
-    },
-    "session": {
-      "cancelled": "تم إلغاء الحصة"
+    "admin": {
+      "impersonation_started": "تسجيل الدخول كمالك",
+      "settings_updated": "تغيير الإعدادات من Fitora"
     },
     "booking": {
-      "cancelled": "تم إلغاء الحجز",
-      "reminder_sent": "تم إرسال رسالة تذكير"
+      "cancelled": "إلغاء حجز",
+      "reminder_sent": "إرسال تذكير"
+    },
+    "client": {
+      "created": "إضافة عضو",
+      "joined": "انضمام عضو إلى القاعة",
+      "updated": "تعديل بيانات عضو"
+    },
+    "coach": {
+      "login_set": "إنشاء وصول للمدرّب"
     },
     "contract": {
-      "cancelled": "تم إلغاء العقد",
-      "deleted": "تم حذف العقد"
+      "cancelled": "إلغاء اشتراك",
+      "created": "بيع اشتراك",
+      "deleted": "حذف اشتراك"
+    },
+    "data": {
+      "imported": "استيراد بيانات"
+    },
+    "owner": {
+      "company_limit_changed": "تغيير عدد القاعات المسموح"
+    },
+    "payment": {
+      "recorded": "تحصيل دفعة",
+      "refunded": "استرجاع دفعة"
+    },
+    "report": {
+      "exported": "تصدير تقرير"
+    },
+    "session": {
+      "cancelled": "إلغاء حصة"
+    },
+    "staff": {
+      "created": "إضافة عضو فريق",
+      "role_changed": "تغيير الدور"
     },
     "subscription": {
-      "status_overridden": "تم تغيير حالة الاشتراك",
-      "upgrade_requested": "تم طلب الترقية"
+      "access_restored": "إعادة الوصول من Fitora",
+      "access_suspended": "تعليق الوصول من Fitora",
+      "invoice_issued": "إصدار فاتورة Fitora",
+      "invoice_voided": "إلغاء فاتورة Fitora"
     },
-    "admin": {
-      "impersonation_started": "دخول المسؤول بصفته المالك",
-      "modules_updated": "تم تغيير وحدات الشركة",
-      "settings_updated": "تم تغيير عملة / لغة الشركة",
-      "mobile_key_overridden": "تم تغيير مفتاح الجوال من قبل المسؤول"
+    "support_ticket": {
+      "created": "إرسال طلب دعم",
+      "resolved": "حلّ طلب دعم"
     }
   },
   "landing": {
