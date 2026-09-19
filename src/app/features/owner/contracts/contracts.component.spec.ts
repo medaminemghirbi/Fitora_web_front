@@ -51,6 +51,8 @@ describe("ContractsComponent", () => {
     amount_due: "0",
     plan: contractType,
     activity: { id: "a1", name: "Yoga", emoji: "\u{1F9D8}" },
+    all_access: false,
+    activity_label: "Yoga",
     client: { id: "cl1", full_name: "Amy Client", phone: null },
   };
 

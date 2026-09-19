@@ -70,7 +70,7 @@
           @if (c.current_contract; as contract) {
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
               <div>
-                <p class="fx-strong mb-1">{{ contract.plan.name }} · {{ contract.activity.emoji ? contract.activity.emoji + " " : "" }}{{ contract.activity.name }}</p>
+                <p class="fx-strong mb-1">{{ contract.plan.name }} · {{ contract.activity?.emoji ? contract.activity!.emoji + " " : "" }}{{ contract.activity_label }}</p>
                 <p class="fx-muted mb-0" style="font-size: 0.8125rem">
                   {{ contract.starts_at | date: "mediumDate" }} → {{ contract.expires_at | date: "mediumDate" }}
                   @if (contractProgress(); as progress) { · {{ progress.percent | number: "1.0-0" }}% {{ "clients.elapsed" | translate }} }
@@ -139,7 +139,7 @@
               <div class="abo-body">
                 <div class="abo-top">
                   <div>
-                    <div class="abo-name">{{ m.plan.name }} · {{ m.activity.emoji ? m.activity.emoji + " " : "" }}{{ m.activity.name }}</div>
+                    <div class="abo-name">{{ m.plan.name }} · {{ m.activity?.emoji ? m.activity!.emoji + " " : "" }}{{ m.activity_label }}</div>
                     <div class="abo-dates">
                       {{ m.starts_at | date: "mediumDate" }} → {{ m.expires_at | date: "mediumDate" }}
                       · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}
@@ -363,7 +363,7 @@
     <div class="alert alert-danger">{{ formError() }}</div>
   }
   @if (editingContract(); as m) {
-    <p class="fx-muted" style="font-size: 0.875rem">{{ m.plan.name }} · {{ m.activity.emoji ? m.activity.emoji + " " : "" }}{{ m.activity.name }} · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}</p>
+    <p class="fx-muted" style="font-size: 0.875rem">{{ m.plan.name }} · {{ m.activity?.emoji ? m.activity!.emoji + " " : "" }}{{ m.activity_label }} · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}</p>
     <form [formGroup]="editForm" (ngSubmit)="submitEdit()" novalidate>
       <div class="row">
         <div class="col-6 mb-3">

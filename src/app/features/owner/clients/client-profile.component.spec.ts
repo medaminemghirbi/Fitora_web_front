@@ -52,6 +52,8 @@ describe("ClientProfileComponent", () => {
     remaining_bookings: 5, auto_renew: true, discount: "0", base_price: "100", final_price: "100",
     payment_status: "paid", amount_due: "0", plan: contractType,
     activity: { id: activity.id, name: activity.name, emoji: activity.emoji },
+    all_access: false,
+    activity_label: activity.name,
     client: { id: "cl1", full_name: "Amy", phone: null },
   };
   const session: Session = { id: "s1", starts_at: "2026-01-05T10:00:00Z", ends_at: "2026-01-05T11:00:00Z" } as never;

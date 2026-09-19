@@ -147,7 +147,7 @@
                       <span [innerHTML]="m.plan.name | highlight: search()"></span>
                     </span>
                     <div class="fx-muted" style="font-size: var(--font-size-xs)">
-                      {{ m.activity.emoji ? m.activity.emoji + " " : "" }}{{ m.activity.name }}
+                      {{ m.activity?.emoji ? m.activity!.emoji + " " : "" }}{{ m.activity_label }}
                     </div>
                   </td>
                   <td class="text-end fx-num">
