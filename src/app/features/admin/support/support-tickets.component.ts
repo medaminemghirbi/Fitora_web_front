@@ -5,7 +5,6 @@ import { AdminSupportTicketsService } from "../../../core/services/admin-support
 import { AdminSupportTicket, SupportTicketStatus } from "../../../core/models/support-ticket.model";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
@@ -16,7 +15,7 @@ type FilterStatus = "open" | "all";
 @Component({
   selector: "app-admin-support-tickets",
   standalone: true,
-  imports: [DatePipe, TranslateModule, PageHeaderComponent, SpinnerComponent, ErrorStateComponent, EmptyStateComponent, ModalComponent],
+  imports: [DatePipe, TranslateModule, SpinnerComponent, ErrorStateComponent, EmptyStateComponent, ModalComponent],
   templateUrl: "./support-tickets.component.html",
   styleUrl: "./support-tickets.component.scss",
 })

@@ -16,7 +16,6 @@ import { AvatarComponent } from "../../../shared/components/avatar.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
 import { ModalComponent } from "../../../shared/components/modal.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { PaginationComponent } from "../../../shared/components/pagination.component";
 import { clientPageMeta, filterBySearch, pageSlice } from "../../../shared/utils/client-list";
@@ -69,7 +68,6 @@ const PERMISSION_ORDER = ["revenue", "payments", "clients", "sessions", "booking
     EmptyStateComponent,
     ModalComponent,
     StatusBadgeComponent,
-    PageHeaderComponent,
     HighlightPipe,
     PaginationComponent,
     SkeletonComponent,

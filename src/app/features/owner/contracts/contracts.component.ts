@@ -16,7 +16,6 @@ import { AvatarComponent } from "../../../shared/components/avatar.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
 import { PaginationComponent } from "../../../shared/components/pagination.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
@@ -39,7 +38,6 @@ import { BrandingService } from "../../../core/services/branding.service";
     EmptyStateComponent,
     PaginationComponent,
     StatusBadgeComponent,
-    PageHeaderComponent,
     HighlightPipe,
     SkeletonComponent,
     ErrorStateComponent,

@@ -1,9 +1,11 @@
 <div class="fx-page">
-  <app-page-header [title]="'admin.updates.title' | translate" [description]="'admin.updates.subtitle' | translate">
+  <header class="lst-head">
+    <h1>{{ "admin.updates.title" | translate }}</h1>
+    <span class="lst-head-count">{{ updates().length }}</span>
     <button type="button" class="btn btn-primary" (click)="openCreate()">
       <i class="bi bi-megaphone"></i> {{ "admin.updates.new" | translate }}
     </button>
-  </app-page-header>
+  </header>
 
   @if (loading()) {
     <div class="d-flex justify-content-center py-5"><app-spinner [size]="32" /></div>

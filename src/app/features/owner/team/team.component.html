@@ -30,11 +30,13 @@
   </app-filter-rail>
 
   <div class="fx-listpage-main">
-    <app-page-header [title]="'nav.team' | translate" [description]="'team.subtitle' | translate">
+    <header class="lst-head">
+      <h1>{{ "nav.team" | translate }}</h1>
+      <span class="lst-head-count">{{ members().length }}</span>
       <button type="button" class="btn btn-primary" (click)="openCreate('coach')">
         <i class="bi bi-plus-lg"></i> {{ "team.new" | translate }}
       </button>
-    </app-page-header>
+    </header>
 
     <nav class="fx-cat-tabs" [attr.aria-label]="'team.title' | translate">
       @for (t of tabs(); track t.id) {

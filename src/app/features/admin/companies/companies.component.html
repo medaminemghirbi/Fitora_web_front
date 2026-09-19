@@ -1,5 +1,8 @@
 <div class="fx-page">
-  <app-page-header [title]="'admin.companies_title' | translate" [description]="'admin.companies_subtitle' | translate" />
+  <header class="lst-head">
+    <h1>{{ "admin.companies_title" | translate }}</h1>
+    <span class="lst-head-count">{{ companies().length }}</span>
+  </header>
 
   <div class="fx-toolbar">
     <div class="fx-input-icon">

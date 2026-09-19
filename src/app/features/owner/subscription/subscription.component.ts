@@ -7,7 +7,6 @@ import { ToastService } from "../../../core/services/toast.service";
 import { downloadBlob } from "../../../core/services/download.util";
 import { extractErrorMessage } from "../../../core/services/error.util";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
@@ -27,7 +26,6 @@ import { LedgerCell, ledgerFor, ledgerYears as yearsFrom } from "../../../shared
     DatePipe,
     TranslateModule,
     MoneyPipe,
-    PageHeaderComponent,
     SkeletonComponent,
     ErrorStateComponent,
     EmptyStateComponent,

@@ -9,7 +9,6 @@ import { EmptyStateComponent } from "../../../shared/components/empty-state.comp
 import { PaginationComponent } from "../../../shared/components/pagination.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
@@ -26,7 +25,6 @@ import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
     PaginationComponent,
     SpinnerComponent,
     StatusBadgeComponent,
-    PageHeaderComponent,
     ErrorStateComponent,
     HighlightPipe,
     MoneyPipe,

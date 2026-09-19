@@ -1,5 +1,8 @@
 <div class="fx-page">
-  <app-page-header [title]="'subscription.title' | translate" [description]="'subscription.subtitle' | translate"></app-page-header>
+  <header class="lst-head">
+    <h1>{{ "subscription.title" | translate }}</h1>
+  </header>
+  <p class="fx-muted mb-4">{{ "subscription.subtitle" | translate }}</p>
 
   @if (loading()) {
     <app-skeleton variant="kpi" [count]="3" />

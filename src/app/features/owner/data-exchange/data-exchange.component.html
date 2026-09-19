@@ -1,6 +1,4 @@
 <div class="fx-page">
-  <app-page-header [title]="'nav.data_exchange' | translate" [description]="'data_exchange.subtitle' | translate"></app-page-header>
-
   <div class="data-exchange-selector">
     <label for="data-exchange-entity">{{ "data_exchange.select_module" | translate }}</label>
     <select id="data-exchange-entity" class="form-select" [ngModel]="selectedEntity()" (ngModelChange)="selectEntity($event)">

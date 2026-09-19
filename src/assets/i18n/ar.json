@@ -166,7 +166,6 @@
     "attention_detail_oldest_days": "أقدمها يعود إلى {{count}} يومًا"
   },
   "data_exchange": {
-    "subtitle": "استورد أو صدّر بياناتك بصيغة CSV، وحدة بوحدة.",
     "select_module": "اختر وحدة",
     "preview_rows": "تم اكتشاف {{count}} سطر",
     "preview_truncated": "المعاينة محدودة بأول {{shown}} سطر من أصل {{total}}.",
@@ -753,7 +752,6 @@
     "currency": "العملة",
     "language": "لغة التطبيق",
     "companies_title": "الشركات",
-    "companies_subtitle": "إدارة وصول جميع شركات Fitora",
     "companies_search_placeholder": "الاسم أو المدينة أو المالك…",
     "owner": "المالك",
     "no_companies": "لا توجد شركات بعد",
@@ -902,7 +900,6 @@
   },
   "team": {
     "title": "الفريق",
-    "subtitle": "أدِر ملفات وصلاحيات فريقك",
     "new": "عضو جديد",
     "new_hint": "أضف عضوًا إلى فريقك.",
     "empty_title": "لا أحد في الفريق بعد",

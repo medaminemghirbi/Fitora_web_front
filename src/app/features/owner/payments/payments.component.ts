@@ -18,7 +18,6 @@ import { PaginationComponent } from "../../../shared/components/pagination.compo
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
@@ -46,7 +45,6 @@ type PayableOption = { kind: "contract" | "booking"; id: string; label: string; 
     MoneyPipe,
     SpinnerComponent,
     StatusBadgeComponent,
-    PageHeaderComponent,
     HighlightPipe,
     SkeletonComponent,
     ErrorStateComponent,

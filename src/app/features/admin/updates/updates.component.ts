@@ -6,7 +6,6 @@ import { AppUpdate } from "../../../core/models/app-update.model";
 import { AppUpdatesService } from "../../../core/services/app-updates.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
@@ -21,7 +20,7 @@ const ALLOWED_TYPES = [ "image/jpeg", "image/png", "image/webp", "image/gif", "v
   selector: "app-admin-updates",
   standalone: true,
   imports: [
-    FormsModule, DatePipe, TranslateModule, PageHeaderComponent, SpinnerComponent, ErrorStateComponent,
+    FormsModule, DatePipe, TranslateModule, SpinnerComponent, ErrorStateComponent,
     EmptyStateComponent, DrawerComponent, MediaUrlPipe,
   ],
   templateUrl: "./updates.component.html",

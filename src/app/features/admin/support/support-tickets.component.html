@@ -1,5 +1,7 @@
 <div class="fx-page">
-  <app-page-header [title]="'admin.support.title' | translate" [description]="'admin.support.subtitle' | translate">
+  <header class="lst-head">
+    <h1>{{ "admin.support.title" | translate }}</h1>
+    <span class="lst-head-count">{{ tickets().length }}</span>
     <div class="fx-segmented">
       <button type="button" [class.is-active]="filter() === 'open'" (click)="setFilter('open')">
         {{ "admin.support.filter_open" | translate }}
@@ -8,7 +10,7 @@
         {{ "admin.support.filter_all" | translate }}
       </button>
     </div>
-  </app-page-header>
+  </header>
 
   @if (loading()) {
     <div class="d-flex justify-content-center py-5"><app-spinner [size]="32" /></div>

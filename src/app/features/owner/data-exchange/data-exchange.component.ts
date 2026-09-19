@@ -6,7 +6,6 @@ import { downloadBlob } from "../../../core/services/download.util";
 import { extractErrorMessage } from "../../../core/services/error.util";
 import { parseCsv } from "../../../core/services/csv.util";
 import { ToastService } from "../../../core/services/toast.service";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 
 interface EntityCard {
@@ -30,7 +29,7 @@ const PREVIEW_ROW_LIMIT = 20;
 @Component({
   selector: "app-data-exchange",
   standalone: true,
-  imports: [FormsModule, TranslateModule, PageHeaderComponent, SpinnerComponent],
+  imports: [FormsModule, TranslateModule, SpinnerComponent],
   templateUrl: "./data-exchange.component.html",
   styleUrl: "./data-exchange.component.scss",
 })

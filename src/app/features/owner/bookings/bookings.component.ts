@@ -13,7 +13,6 @@ import { PaginationComponent } from "../../../shared/components/pagination.compo
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
 import { AvatarComponent } from "../../../shared/components/avatar.component";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
@@ -34,7 +33,6 @@ import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/st
     SpinnerComponent,
     StatusBadgeComponent,
     AvatarComponent,
-    PageHeaderComponent,
     HighlightPipe,
     SkeletonComponent,
     ErrorStateComponent,

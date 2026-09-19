@@ -1,5 +1,8 @@
 <div class="fx-page">
-  <app-page-header [title]="'admin.pricing_nav' | translate" [description]="'admin.pricing_subtitle' | translate"></app-page-header>
+  <header class="lst-head">
+    <h1>{{ "admin.pricing_nav" | translate }}</h1>
+  </header>
+  <p class="fx-muted mb-4">{{ "admin.pricing_subtitle" | translate }}</p>
 
   @if (loading()) {
     <div class="d-flex justify-content-center py-5"><app-spinner [size]="32" /></div>

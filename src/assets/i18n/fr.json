@@ -166,7 +166,6 @@
     "attention_detail_oldest_days": "Le plus ancien remonte à {{count}} jours"
   },
   "data_exchange": {
-    "subtitle": "Importez ou exportez vos données en CSV, par module.",
     "select_module": "Choisir un module",
     "preview_rows": "{{count}} ligne(s) détectée(s)",
     "preview_truncated": "Aperçu limité aux {{shown}} premières lignes sur {{total}}.",
@@ -753,7 +752,6 @@
     "currency": "Devise",
     "language": "Langue de l'application",
     "companies_title": "Entreprises",
-    "companies_subtitle": "Gérez l'accès de toutes les entreprises Fitora",
     "companies_search_placeholder": "Nom, ville ou propriétaire…",
     "owner": "Propriétaire",
     "no_companies": "Aucune entreprise pour le moment",
@@ -902,7 +900,6 @@
   },
   "team": {
     "title": "Équipe",
-    "subtitle": "Gérez les profils et les accès de votre équipe",
     "new": "Nouveau membre",
     "new_hint": "Ajoutez un membre à votre équipe.",
     "empty_title": "Personne dans l'équipe pour le moment",
