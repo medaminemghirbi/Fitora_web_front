@@ -409,7 +409,9 @@
     "event_cancelled": "ملغاة",
     "event_booked": "حجز",
     "event_paid": "دفعة",
-    "event_refunded": "استرجاع"
+    "event_refunded": "استرجاع",
+    "term_elapsed": "{{percent}}٪ من المدة انقضت",
+    "attendance": "الحضور"
   },
   "subscription": {
     "title": "اشتراك Fitora",
@@ -649,7 +651,10 @@
     "no_prices_yet": "لم يُحدَّد أي سعر",
     "not_offered": "غير معروضة",
     "no_activities": "لا توجد أنشطة بعد. أضف واحدًا من عمود «الأنشطة» على اليمين: الصيغة تُباع دائمًا لنشاط محدّد.",
-    "needs_a_price": "حدّد سعرًا لنشاط واحد على الأقل."
+    "needs_a_price": "حدّد سعرًا لنشاط واحد على الأقل.",
+    "what_it_includes": "ما تتضمنه الصيغة",
+    "counted_sessions": "عدد من الحصص",
+    "needs_session_count": "حدّد عدد الحصص."
   },
   "payments": {
     "title": "المدفوعات",

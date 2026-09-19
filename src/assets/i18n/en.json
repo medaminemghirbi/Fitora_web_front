@@ -409,7 +409,9 @@
     "event_cancelled": "Cancelled",
     "event_booked": "Booked",
     "event_paid": "Payment",
-    "event_refunded": "Refund"
+    "event_refunded": "Refund",
+    "term_elapsed": "{{percent}}% of the term elapsed",
+    "attendance": "Attendance"
   },
   "subscription": {
     "title": "Fitora Subscription",
@@ -649,7 +651,10 @@
     "no_prices_yet": "No price set yet",
     "not_offered": "Not offered",
     "no_activities": "No activities yet. Add one in the Activities column on the right — a plan is always sold for a particular activity.",
-    "needs_a_price": "Set a price for at least one activity."
+    "needs_a_price": "Set a price for at least one activity.",
+    "what_it_includes": "What the plan includes",
+    "counted_sessions": "A number of sessions",
+    "needs_session_count": "Say how many sessions."
   },
   "payments": {
     "title": "Payments",

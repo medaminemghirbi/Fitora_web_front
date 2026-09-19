@@ -63,10 +63,15 @@
               <p class="prof-big"><span>∞</span> {{ "contract_types.unlimited_bookings" | translate }}</p>
             }
 
+            <!-- The bar is the term running down, not the sessions. Unlabelled
+                 under "illimité" it read as a progress meter for nothing. -->
             @if (contractProgress(); as progress) {
               <div class="contract-progress">
                 <div class="contract-progress-bar contract-progress-bar--{{ progress.tone }}" [style.width.%]="progress.percent"></div>
               </div>
+              <p class="prof-progress-note">
+                {{ "clients.term_elapsed" | translate: { percent: (progress.percent | number: "1.0-0") } }}
+              </p>
             }
 
             <div class="prof-actions">
@@ -85,11 +90,13 @@
 
       <section class="app-card">
         <div class="app-card-body">
-          <h2 class="prof-label">{{ "clients.attendance_rate" | translate }}</h2>
+          <!-- "Taux de présence · jamais venu(e)" was a rate label over a
+               value that is not a rate. The heading follows the answer. -->
+          <h2 class="prof-label">{{ "clients.attendance" | translate }}</h2>
           @if (c.attendance_rate !== null) {
             <p class="prof-big"><span>{{ c.attendance_rate }}%</span> {{ "clients.of_booked" | translate }}</p>
           } @else {
-            <p class="fx-muted mb-0">{{ "clients.never_came" | translate }}</p>
+            <p class="prof-empty">{{ "clients.never_came" | translate }}</p>
           }
           @if (c.last_visit_at) {
             <p class="prof-plan-sub mb-0">

@@ -289,3 +289,18 @@
   flex-shrink: 0;
   font-size: var(--font-size-xs);
 }
+
+// What the bar under the subscription actually measures.
+.prof-progress-note {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+// An answer that is a fact rather than a figure — "jamais venu(e)" — still
+// reads as the card's content, not as a note about missing data.
+.prof-empty {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+}

@@ -120,20 +120,35 @@
           </div>
         }
       </fieldset>
-      <div class="mb-3">
-        <label for="mp-sessions">{{ "contract_types.session_count" | translate }} ({{ "common.optional" | translate }})</label>
-        <input id="mp-sessions" type="number" min="1" class="form-control" formControlName="session_count" />
-      </div>
-      <div class="mb-3 form-check">
-        <input id="mp-unlimited" type="checkbox" class="form-check-input" formControlName="unlimited_bookings" />
-        <label for="mp-unlimited" class="form-check-label">{{ "contract_types.unlimited_bookings" | translate }}</label>
-      </div>
-      @if (!planForm.controls.unlimited_bookings.value) {
-        <div class="mb-3">
-          <label for="mp-limit">{{ "contract_types.booking_limit" | translate }}</label>
-          <input id="mp-limit" type="number" min="1" class="form-control" formControlName="booking_limit" />
+      <!-- One choice, not two fields that can contradict each other. A
+           session count beside an "unlimited" checkbox that defaulted to on
+           produced plans called "24 Séances" that sold as unlimited. -->
+      <fieldset class="mb-3">
+        <legend class="form-label mb-1">{{ "contract_types.what_it_includes" | translate }} *</legend>
+
+        <div class="form-check mb-2">
+          <input id="mp-kind-unlimited" type="radio" class="form-check-input" name="plan-kind"
+                 [checked]="planForm.controls.unlimited_bookings.value" (change)="setUnlimited(true)" />
+          <label for="mp-kind-unlimited" class="form-check-label">
+            {{ "contract_types.unlimited_bookings" | translate }}
+          </label>
         </div>
-      }
+
+        <div class="form-check">
+          <input id="mp-kind-counted" type="radio" class="form-check-input" name="plan-kind"
+                 [checked]="!planForm.controls.unlimited_bookings.value" (change)="setUnlimited(false)" />
+          <label for="mp-kind-counted" class="form-check-label">
+            {{ "contract_types.counted_sessions" | translate }}
+          </label>
+        </div>
+
+        @if (!planForm.controls.unlimited_bookings.value) {
+          <div class="mt-2">
+            <label for="mp-sessions">{{ "contract_types.session_count" | translate }} *</label>
+            <input id="mp-sessions" type="number" min="1" class="form-control" formControlName="session_count" />
+          </div>
+        }
+      </fieldset>
       <div class="mb-3">
         <label for="mp-color">{{ "contract_types.color" | translate }}</label>
         <div class="d-flex align-items-center gap-2">

@@ -138,6 +138,20 @@ export class PlansComponent implements OnInit {
     this.activityPrices.set(next);
   }
 
+  /**
+   * The two are one decision: a plan either has no limit, or it has a number
+   * of sessions. Holding both produced plans named "24 Séances" that sold as
+   * unlimited, because the checkbox defaulted to on and nothing cleared the
+   * count beside it.
+   */
+  setUnlimited(unlimited: boolean): void {
+    this.planForm.patchValue({
+      unlimited_bookings: unlimited,
+      session_count: unlimited ? null : this.planForm.controls.session_count.value,
+      booking_limit: unlimited ? null : this.planForm.controls.booking_limit.value,
+    });
+  }
+
   private pricedRows(): { activity_id: string; price: number }[] {
     return Object.entries(this.activityPrices())
       .filter(([, price]) => price !== null && !Number.isNaN(price) && Number(price) >= 0)
@@ -151,6 +165,11 @@ export class PlansComponent implements OnInit {
   submitPlan(): void {
     if (this.planForm.invalid) {
       this.planForm.markAllAsTouched();
+      return;
+    }
+
+    if (!this.planForm.controls.unlimited_bookings.value && !this.planForm.controls.session_count.value) {
+      this.formError.set(this.translate.instant("contract_types.needs_session_count"));
       return;
     }
 

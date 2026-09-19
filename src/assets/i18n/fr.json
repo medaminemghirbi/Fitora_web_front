@@ -409,7 +409,9 @@
     "event_cancelled": "Annulée",
     "event_booked": "Réservation",
     "event_paid": "Paiement",
-    "event_refunded": "Remboursement"
+    "event_refunded": "Remboursement",
+    "term_elapsed": "{{percent}} % de la période écoulée",
+    "attendance": "Présence"
   },
   "subscription": {
     "title": "Abonnement Fitora",
@@ -649,7 +651,10 @@
     "no_prices_yet": "Aucun tarif défini",
     "not_offered": "Non proposée",
     "no_activities": "Aucune activité pour l'instant. Créez-en une dans la colonne « Activités », à droite : une formule se vend toujours pour une activité précise.",
-    "needs_a_price": "Définissez un tarif pour au moins une activité."
+    "needs_a_price": "Définissez un tarif pour au moins une activité.",
+    "what_it_includes": "Ce que la formule inclut",
+    "counted_sessions": "Un nombre de séances",
+    "needs_session_count": "Indiquez le nombre de séances."
   },
   "payments": {
     "title": "Paiements",
