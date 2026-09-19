@@ -386,10 +386,6 @@
     "finish": "Terminer",
     "finish_without_plan": "Enregistrer sans abonnement",
     "notes_placeholder": "Blessure, préférence, rappel…",
-    "mobile_login": "Accès à l'app",
-    "mobile_login_active": "Accès actif",
-    "mobile_login_none": "Accès non activé",
-    "mobile_login_needs_email": "Ajoutez un e-mail pour activer l'accès.",
     "mobile_login_hint": "L'adhérent pourra voir le planning, réserver et annuler. Il reçoit un e-mail de confirmation.",
     "set_login": "Activer l'accès",
     "reset_login": "Réinitialiser",
@@ -398,7 +394,6 @@
     "never_came": "jamais venu(e)",
     "sessions_left": "{{count}} séance(s) restante(s)",
     "until": "jusqu'au {{date}}",
-    "of_booked": "des séances réservées",
     "recent_activity": "Activité récente",
     "no_activity": "Rien pour l'instant",
     "sessions_left_of": "séances restantes sur {{total}}",
@@ -411,7 +406,10 @@
     "event_paid": "Paiement",
     "event_refunded": "Remboursement",
     "term_elapsed": "{{percent}} % de la période écoulée",
-    "attendance": "Présence"
+    "attendance": "Présence",
+    "member_since": "Membre depuis",
+    "collect": "Encaisser {{amount}}",
+    "mobile_login": "Accès à l'application"
   },
   "subscription": {
     "title": "Abonnement Fitora",

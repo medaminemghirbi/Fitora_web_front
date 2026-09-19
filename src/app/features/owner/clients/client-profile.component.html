@@ -30,6 +30,13 @@
         <button type="button" class="fx-menu-item" (click)="openPaymentModal()">
           <i class="bi bi-cash-coin"></i> {{ "clients.add_payment" | translate }}
         </button>
+        <!-- Giving someone their app login is a thing you do, not a thing you
+             read, so it belongs with the other actions rather than in a card
+             of its own down the side. -->
+        <button type="button" class="fx-menu-item" [disabled]="!c.email" (click)="openLoginModal()">
+          <i class="bi bi-phone"></i>
+          {{ (c.login_enabled ? "clients.reset_login" : "clients.set_login") | translate }}
+        </button>
       </app-action-menu>
     </div>
   </div>
@@ -39,6 +46,10 @@
     <!-- Left: the subscription. It is why this person is in the system, so
          it is not a row in a table of contracts. -->
     <div class="prof-side">
+      <!-- One card, for the one thing that is a card: the live subscription.
+           Attendance, balance and history were four more boxes down a narrow
+           column, each holding a line — which is what made this page read as
+           mostly padding. -->
       <section class="app-card">
         <div class="app-card-body">
           <h2 class="prof-label">{{ "clients.current_subscription" | translate }}</h2>
@@ -52,8 +63,6 @@
               }
             </p>
 
-            <!-- Sessions remaining as the headline number: it is the question
-                 this page gets asked. -->
             @if (contract.remaining_bookings !== null) {
               <p class="prof-big">
                 <span>{{ contract.remaining_bookings }}</span>
@@ -63,8 +72,7 @@
               <p class="prof-big"><span>∞</span> {{ "contract_types.unlimited_bookings" | translate }}</p>
             }
 
-            <!-- The bar is the term running down, not the sessions. Unlabelled
-                 under "illimité" it read as a progress meter for nothing. -->
+            <!-- The bar is the term running down, not the sessions. -->
             @if (contractProgress(); as progress) {
               <div class="contract-progress">
                 <div class="contract-progress-bar contract-progress-bar--{{ progress.tone }}" [style.width.%]="progress.percent"></div>
@@ -78,92 +86,79 @@
               <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openContractModal()">
                 {{ "contracts.renew" | translate }}
               </button>
+              @if (+c.outstanding_balance > 0) {
+                <button type="button" class="btn btn-sm btn-primary" (click)="openPaymentModal()">
+                  {{ "clients.collect" | translate: { amount: +c.outstanding_balance } }}
+                </button>
+              }
             </div>
           } @else {
-            <app-empty-state [title]="'clients.no_subscription' | translate" body="" icon="bi-file-earmark-text" />
-            <button type="button" class="btn btn-sm btn-primary" (click)="openContractModal()">
-              {{ "clients.add_subscription" | translate }}
-            </button>
+            <p class="prof-empty">{{ "clients.no_subscription" | translate }}</p>
+            <div class="prof-actions">
+              <button type="button" class="btn btn-sm btn-primary" (click)="openContractModal()">
+                {{ "clients.add_subscription" | translate }}
+              </button>
+            </div>
           }
         </div>
       </section>
 
-      <section class="app-card">
-        <div class="app-card-body">
-          <!-- "Taux de présence · jamais venu(e)" was a rate label over a
-               value that is not a rate. The heading follows the answer. -->
-          <h2 class="prof-label">{{ "clients.attendance" | translate }}</h2>
-          @if (c.attendance_rate !== null) {
-            <p class="prof-big"><span>{{ c.attendance_rate }}%</span> {{ "clients.of_booked" | translate }}</p>
-          } @else {
-            <p class="prof-empty">{{ "clients.never_came" | translate }}</p>
-          }
-          @if (c.last_visit_at) {
-            <p class="prof-plan-sub mb-0">
-              {{ "clients.last_visit" | translate }} · {{ c.last_visit_at | date: "d MMM y" }}
-            </p>
-          }
+      <!-- The rest are facts, not objects. A definition list says so and
+           costs four lines instead of four boxes. -->
+      <dl class="prof-facts">
+        <div>
+          <dt>{{ "clients.attendance" | translate }}</dt>
+          <dd>
+            @if (c.attendance_rate !== null) {
+              {{ c.attendance_rate }}%
+            } @else {
+              {{ "clients.never_came" | translate }}
+            }
+          </dd>
         </div>
-      </section>
+        <div>
+          <dt>{{ "clients.last_visit" | translate }}</dt>
+          <dd>
+            @if (c.last_visit_at) {
+              {{ c.last_visit_at | date: "d MMM y" }}
+            } @else {
+              —
+            }
+          </dd>
+        </div>
+        <div>
+          <dt>{{ "clients.outstanding_balance" | translate }}</dt>
+          <dd [class.is-owed]="+c.outstanding_balance > 0">{{ +c.outstanding_balance }}</dd>
+        </div>
+        <div>
+          <dt>{{ "clients.member_since" | translate }}</dt>
+          <dd>{{ c.joined_at | date: "MMM y" }}</dd>
+        </div>
+      </dl>
 
-      @if (+c.outstanding_balance > 0) {
-        <section class="app-card prof-owed">
-          <div class="app-card-body">
-            <h2 class="prof-label">{{ "clients.outstanding_balance" | translate }}</h2>
-            <p class="prof-big"><span>{{ +c.outstanding_balance }}</span></p>
-            <button type="button" class="btn btn-sm btn-primary" (click)="openPaymentModal()">
-              {{ "clients.add_payment" | translate }}
-            </button>
-          </div>
+      @if (aboRows().length > 1) {
+        <section>
+          <h2 class="prof-label">{{ "clients.tab_contracts" | translate }}</h2>
+          <ul class="prof-history">
+            @for (row of aboRows(); track row.contract.id) {
+              <li>
+                <span>{{ row.contract.plan.name }}</span>
+                <span class="fx-muted">{{ row.contract.starts_at | date: "MMM y" }}</span>
+              </li>
+            }
+          </ul>
         </section>
       }
 
-      <section class="app-card">
-        <div class="app-card-body">
-          <h2 class="prof-label">{{ "clients.tab_contracts" | translate }}</h2>
-          @if (aboRows().length === 0) {
-            <p class="fx-muted mb-0">{{ "clients.no_subscription" | translate }}</p>
-          } @else {
-            <ul class="prof-history">
-              @for (row of aboRows(); track row.contract.id) {
-                <li>
-                  <span>{{ row.contract.plan.name }}</span>
-                  <span class="fx-muted">{{ row.contract.starts_at | date: "MMM y" }}</span>
-                </li>
-              }
-            </ul>
-          }
-        </div>
-      </section>
-
-      <section class="app-card">
-        <div class="app-card-body">
-          <h2 class="prof-label">{{ "clients.notes" | translate }}</h2>
-          <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
-            <textarea class="form-control mb-3" rows="3" formControlName="notes" [placeholder]="'clients.notes_placeholder' | translate"></textarea>
-            <button type="submit" class="btn btn-outline-secondary btn-sm" [disabled]="notesSaving()">
-              {{ (notesSaving() ? "common.saving" : "common.save") | translate }}
-            </button>
-          </form>
-        </div>
-      </section>
-
-      <section class="app-card">
-        <div class="app-card-body">
-          <h2 class="prof-label">{{ "clients.mobile_login" | translate }}</h2>
-          <p class="prof-plan-sub">
-            @if (c.login_enabled) {
-              {{ "clients.mobile_login_active" | translate }}
-            } @else if (!c.email) {
-              {{ "clients.mobile_login_needs_email" | translate }}
-            } @else {
-              {{ "clients.mobile_login_none" | translate }}
-            }
-          </p>
-          <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="!c.email" (click)="openLoginModal()">
-            {{ (c.login_enabled ? "clients.reset_login" : "clients.set_login") | translate }}
+      <section>
+        <h2 class="prof-label">{{ "clients.notes" | translate }}</h2>
+        <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
+          <textarea class="form-control mb-2" rows="3" formControlName="notes"
+                    [placeholder]="'clients.notes_placeholder' | translate"></textarea>
+          <button type="submit" class="btn btn-outline-secondary btn-sm" [disabled]="notesSaving()">
+            {{ (notesSaving() ? "common.saving" : "common.save") | translate }}
           </button>
-        </div>
+        </form>
       </section>
     </div>
 

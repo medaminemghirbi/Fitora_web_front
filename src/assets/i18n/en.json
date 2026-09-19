@@ -386,10 +386,6 @@
     "finish": "Finish",
     "finish_without_plan": "Save without a subscription",
     "notes_placeholder": "Injury, preference, reminder…",
-    "mobile_login": "App access",
-    "mobile_login_active": "Access on",
-    "mobile_login_none": "Access not enabled",
-    "mobile_login_needs_email": "Add an email to enable access.",
     "mobile_login_hint": "They will see the schedule, book and cancel. A confirmation email is sent to them.",
     "set_login": "Enable access",
     "reset_login": "Reset",
@@ -398,7 +394,6 @@
     "never_came": "never came",
     "sessions_left": "{{count}} session(s) left",
     "until": "until {{date}}",
-    "of_booked": "of sessions booked",
     "recent_activity": "Recent activity",
     "no_activity": "Nothing yet",
     "sessions_left_of": "sessions left of {{total}}",
@@ -411,7 +406,10 @@
     "event_paid": "Payment",
     "event_refunded": "Refund",
     "term_elapsed": "{{percent}}% of the term elapsed",
-    "attendance": "Attendance"
+    "attendance": "Attendance",
+    "member_since": "Member since",
+    "collect": "Collect {{amount}}",
+    "mobile_login": "App access"
   },
   "subscription": {
     "title": "Fitora Subscription",

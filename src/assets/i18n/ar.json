@@ -386,10 +386,6 @@
     "finish": "إنهاء",
     "finish_without_plan": "حفظ بدون اشتراك",
     "notes_placeholder": "إصابة، تفضيل، تذكير…",
-    "mobile_login": "الوصول إلى التطبيق",
-    "mobile_login_active": "الوصول مفعّل",
-    "mobile_login_none": "الوصول غير مفعّل",
-    "mobile_login_needs_email": "أضف بريدًا إلكترونيًا لتفعيل الوصول.",
     "mobile_login_hint": "سيرى الجدول ويحجز ويلغي. تُرسل إليه رسالة تأكيد.",
     "set_login": "تفعيل الوصول",
     "reset_login": "إعادة تعيين",
@@ -398,7 +394,6 @@
     "never_came": "لم يحضر قط",
     "sessions_left": "{{count}} حصة متبقية",
     "until": "حتى {{date}}",
-    "of_booked": "من الحصص المحجوزة",
     "recent_activity": "النشاط الأخير",
     "no_activity": "لا شيء بعد",
     "sessions_left_of": "حصة متبقية من {{total}}",
@@ -411,7 +406,10 @@
     "event_paid": "دفعة",
     "event_refunded": "استرجاع",
     "term_elapsed": "{{percent}}٪ من المدة انقضت",
-    "attendance": "الحضور"
+    "attendance": "الحضور",
+    "member_since": "عضو منذ",
+    "collect": "تحصيل {{amount}}",
+    "mobile_login": "الوصول إلى التطبيق"
   },
   "subscription": {
     "title": "اشتراك Fitora",

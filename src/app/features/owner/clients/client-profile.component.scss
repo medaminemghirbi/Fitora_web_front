@@ -304,3 +304,31 @@
   font-size: var(--font-size-md);
   color: var(--color-text);
 }
+
+// Facts, as a definition list. Four of these were four cards down a narrow
+// column, each holding one line — the reason the page read as mostly padding.
+.prof-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  dt {
+    margin: 0 0 0.1rem;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+
+    &.is-owed { color: var(--color-danger); }
+  }
+}
