@@ -132,17 +132,38 @@ describe("ClientProfileComponent", () => {
     expect(component.error()).toBe(true);
   });
 
-  it("setTab switches the active tab", () => {
-    component.setTab("contracts");
-    expect(component.activeTab()).toBe("contracts");
-  });
+  describe("the timeline", () => {
+    it("tells one story out of bookings and payments, newest first", () => {
+      expect(component.timeline().length).toBe(component.bookings().length + component.payments().length);
 
-  it("offers four tabs — what was booked and whether they turned up is one list", () => {
-    expect(component.tabs).toEqual(["overview", "contracts", "attendance", "payments"]);
-  });
+      const dates = component.timeline().map((e) => new Date(e.at).getTime());
+      expect(dates).toEqual([...dates].sort((a, b) => b - a));
+    });
 
-  it("opens on the overview, so the file says something before anything is clicked", () => {
-    expect(component.activeTab()).toBe("overview");
+    it("reads a booking's status as whether they turned up", () => {
+      const kinds = component.timeline().filter((e) => e.stream === "sessions").map((e) => e.kind);
+
+      expect(kinds.every((k) => ["attended", "missed", "cancelled", "booked"].includes(k))).toBe(true);
+    });
+
+    it("narrows without splitting the story back into tabs", () => {
+      component.filter.set("payments");
+      expect(component.timeline().every((e) => e.stream === "payments")).toBe(true);
+
+      component.filter.set("sessions");
+      expect(component.timeline().every((e) => e.stream === "sessions")).toBe(true);
+
+      component.filter.set("all");
+      expect(component.timeline().length).toBeGreaterThan(0);
+    });
+
+    it("gives every kind of event its own mark", () => {
+      const kinds = ["attended", "missed", "cancelled", "booked", "paid", "refunded"] as const;
+      const icons = kinds.map((k) => component.timelineIcon(k));
+
+      expect(icons.every((i) => i.startsWith("bi-"))).toBe(true);
+      expect(new Set(icons).size).toBe(kinds.length);
+    });
   });
 
   it("balanceTone is danger for a positive balance, success otherwise", () => {

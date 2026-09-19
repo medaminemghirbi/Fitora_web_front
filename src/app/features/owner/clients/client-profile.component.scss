@@ -109,3 +109,183 @@
     color: var(--color-warning);
   }
 }
+
+// ---------------------------------------------------------------------------
+// The profile, as two columns
+// ---------------------------------------------------------------------------
+// Four tabs became a side and a stream. Bookings, payments and attendance
+// were three of those tabs; they are one story about one person, so they are
+// one list.
+
+.prof {
+  display: grid;
+  grid-template-columns: 22rem minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+
+  @media (max-width: 991px) { grid-template-columns: minmax(0, 1fr); }
+}
+
+.prof-side,
+.prof-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.prof-label {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.prof-plan {
+  margin: 0 0 0.15rem;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.prof-plan-sub {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+// The one number the page is opened to find out.
+.prof-big {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+
+  > span {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-primary);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.prof-owed {
+  border-color: var(--color-danger);
+
+  .prof-big > span { color: var(--color-danger); }
+}
+
+.prof-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.prof-history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child { border-bottom: none; }
+    > span:first-child { flex-grow: 1; min-width: 0; }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The stream
+// ---------------------------------------------------------------------------
+.prof-main-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+
+  .prof-label { margin-bottom: 0; }
+}
+
+.prof-filters {
+  display: flex;
+  gap: 0.15rem;
+  margin-inline-start: auto;
+}
+
+.prof-filter {
+  padding: 0.3rem 0.6rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  &:hover { background: var(--color-surface-hover); }
+
+  &.is-active {
+    background: var(--color-primary-soft);
+    color: var(--color-text);
+    font-weight: 600;
+  }
+}
+
+.prof-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  > li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child { border-bottom: none; }
+  }
+}
+
+.prof-timeline-mark {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+
+  // Colour follows the meaning, and the entry's own words say it too.
+  &[data-kind="attended"] { background: var(--color-success-soft); color: var(--color-success); }
+  &[data-kind="missed"] { background: var(--color-danger-soft); color: var(--color-danger); }
+  &[data-kind="paid"] { background: var(--color-success-soft); color: var(--color-success); }
+  &[data-kind="refunded"] { background: var(--color-warning-soft); color: var(--color-warning); }
+  &[data-kind="booked"] { background: var(--color-primary-soft); color: var(--color-primary); }
+}
+
+.prof-timeline-text {
+  flex-grow: 1;
+  min-width: 0;
+  font-size: var(--font-size-sm);
+}
+
+.prof-timeline-when {
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+}

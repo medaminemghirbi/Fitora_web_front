@@ -37,7 +37,36 @@ import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 // twice — what was booked, and whether they turned up — and a note about
 // someone belongs with the rest of what you read about them, on the
 // overview.
-type Tab = "overview" | "contracts" | "attendance" | "payments";
+/** What happened, and what kind of thing it was. */
+interface TimelineEntry {
+  id: string;
+  /** ISO. Sessions are dated by when they ran, payments by when money arrived. */
+  at: string;
+  stream: "sessions" | "payments";
+  kind: "attended" | "missed" | "cancelled" | "booked" | "paid" | "refunded";
+  title: string;
+  detail: string | null;
+}
+
+/**
+ * A booking's status IS its attendance: `completed` means they came,
+ * `no_show` means they did not. There is no separate record to merge in.
+ */
+const TIMELINE_ICONS: Record<TimelineEntry["kind"], string> = {
+  attended: "bi-check2",
+  missed: "bi-x",
+  cancelled: "bi-slash-circle",
+  booked: "bi-calendar-check",
+  paid: "bi-cash-coin",
+  refunded: "bi-arrow-counterclockwise",
+};
+
+const BOOKING_KINDS: Record<string, TimelineEntry["kind"]> = {
+  completed: "attended",
+  no_show: "missed",
+  cancelled: "cancelled",
+  confirmed: "booked",
+};
 
 function toDateInputValue(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -75,9 +104,47 @@ export class ClientProfileComponent implements OnInit {
   readonly contracts = signal<Contract[]>([]);
   readonly bookings = signal<Booking[]>([]);
   readonly payments = signal<Payment[]>([]);
-  readonly activeTab = signal<Tab>("overview");
   readonly contractProgress = signal<{ percent: number; tone: "success" | "warning" | "danger" } | null>(null);
-  readonly tabs: Tab[] = ["overview", "contracts", "attendance", "payments"];
+  /**
+   * Bookings, payments and attendance were three tabs. They are one story —
+   * whether this person still comes, and whether they have paid for it — so
+   * they are one stream, newest first.
+   *
+   * `filter` narrows it without splitting it back up.
+   */
+  readonly filter = signal<"all" | "sessions" | "payments">("all");
+
+  /** The mark beside a timeline entry — one icon per kind of event. */
+  timelineIcon(kind: TimelineEntry["kind"]): string {
+    return TIMELINE_ICONS[kind];
+  }
+
+  readonly timeline = computed<TimelineEntry[]>(() => {
+    const sessions: TimelineEntry[] = this.bookings().map((booking) => ({
+      id: `b-${booking.id}`,
+      at: booking.session.starts_at,
+      stream: "sessions" as const,
+      kind: BOOKING_KINDS[booking.status] ?? "booked",
+      title: `${booking.session.activity_emoji ? booking.session.activity_emoji + " " : ""}${booking.session.activity_name}`,
+      detail: booking.covered_by?.name ?? null,
+    }));
+
+    const money: TimelineEntry[] = this.payments().map((payment) => ({
+      id: `p-${payment.id}`,
+      // A recorded payment is dated by when the money arrived, not by when
+      // someone typed it in.
+      at: payment.paid_at ?? payment.created_at,
+      stream: "payments" as const,
+      kind: payment.status === "refunded" ? "refunded" : "paid",
+      title: `${payment.amount} ${payment.currency}`,
+      detail: payment.product_name,
+    }));
+
+    const all = [...sessions, ...money];
+    const chosen = this.filter() === "all" ? all : all.filter((entry) => entry.stream === this.filter());
+
+    return chosen.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  });
 
   readonly contractTypes = signal<ContractType[]>([]);
   readonly activities = signal<Activity[]>([]);
@@ -196,9 +263,6 @@ export class ClientProfileComponent implements OnInit {
     });
   }
 
-  setTab(tab: Tab): void {
-    this.activeTab.set(tab);
-  }
 
   openLoginModal(): void {
     this.loginForm.reset();
