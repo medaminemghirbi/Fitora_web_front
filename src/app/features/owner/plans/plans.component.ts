@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, effect, signal } from "@angular/core";
+import { Component, OnInit, computed, effect, signal, Input } from "@angular/core";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
@@ -25,6 +25,13 @@ import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
   templateUrl: "./plans.component.html",
 })
 export class PlansComponent implements OnInit {
+  /**
+   * Rendered inside the catalogue page rather than on a route of its own.
+   * A price only exists where a plan crosses an activity, so the two belong
+   * on one screen; the shell supplies the heading when they are there.
+   */
+  @Input() embedded = false;
+
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);

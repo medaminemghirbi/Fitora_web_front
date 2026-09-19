@@ -1,0 +1,20 @@
+<div class="fx-page">
+  <header class="cat-head">
+    <h1>{{ "catalogue.title" | translate }}</h1>
+    <p>{{ "catalogue.subtitle" | translate }}</p>
+  </header>
+
+  <!-- Plans lead: they are what a member buys. Activities are what a plan is
+       priced for, so they sit beside it rather than a menu entry away. -->
+  <div class="cat">
+    <section class="cat-main" aria-labelledby="cat-plans-h">
+      <h2 id="cat-plans-h" class="cat-label">{{ "nav.plans" | translate }}</h2>
+      <app-plans [embedded]="true" />
+    </section>
+
+    <section class="cat-side" aria-labelledby="cat-activities-h">
+      <h2 id="cat-activities-h" class="cat-label">{{ "nav.activities" | translate }}</h2>
+      <app-activities [embedded]="true" />
+    </section>
+  </div>
+</div>

@@ -125,7 +125,8 @@
     "today": "Aujourd'hui",
     "subscriptions": "Abonnements",
     "subscriptions_active": "En cours",
-    "plans": "Formules"
+    "plans": "Formules",
+    "catalogue": "Offre"
   },
   "dashboard": {
     "total_clients": "Total clients",
@@ -1376,5 +1377,9 @@
       "no_sessions_title": "Aucune séance aujourd'hui",
       "no_sessions_body": "Il n'y a rien à pointer pour le moment."
     }
+  },
+  "catalogue": {
+    "title": "Ce que vous vendez",
+    "subtitle": "Vos formules et les activités pour lesquelles elles sont tarifées."
   }
 }

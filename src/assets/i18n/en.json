@@ -125,7 +125,8 @@
     "today": "Today",
     "subscriptions": "Subscriptions",
     "subscriptions_active": "Active",
-    "plans": "Plans"
+    "plans": "Plans",
+    "catalogue": "Catalogue"
   },
   "dashboard": {
     "total_clients": "Total Clients",
@@ -1376,5 +1377,9 @@
       "no_sessions_title": "No sessions today",
       "no_sessions_body": "There is nothing to check anyone into right now."
     }
+  },
+  "catalogue": {
+    "title": "What you sell",
+    "subtitle": "Your plans, and the activities they are priced for."
   }
 }

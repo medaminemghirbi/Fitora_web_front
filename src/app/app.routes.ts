@@ -67,8 +67,12 @@ export const routes: Routes = [
       { path: "contracts", canActivate: [capabilityGuard("contracts")], loadComponent: () => import("./features/owner/contracts/contracts.component").then((m) => m.ContractsComponent) },
       // The catalogue left Settings: a plan and an activity are seasonal
       // business objects, not one-off configuration.
-      { path: "contracts/plans", canActivate: [capabilityGuard("contract_types")], loadComponent: () => import("./features/owner/plans/plans.component").then((m) => m.PlansComponent) },
-      { path: "contracts/activities", canActivate: [capabilityGuard("activities")], loadComponent: () => import("./features/owner/activities/activities.component").then((m) => m.ActivitiesComponent) },
+      // Plans and activities are one page: a price only exists where the two
+      // cross. The old routes still resolve, so a bookmark or an old link
+      // lands somewhere sensible rather than on a 404.
+      { path: "catalogue", canActivate: [capabilityGuard("contract_types")], loadComponent: () => import("./features/owner/catalogue/catalogue.component").then((m) => m.CatalogueComponent) },
+      { path: "contracts/plans", pathMatch: "full", redirectTo: "catalogue" },
+      { path: "contracts/activities", pathMatch: "full", redirectTo: "catalogue" },
       { path: "payments", canActivate: [capabilityGuard("payments")], loadComponent: () => import("./features/owner/payments/payments.component").then((m) => m.OwnerPaymentsComponent) },
       // Import/export moved under Settings; the old link keeps working.
       { path: "data-exchange", redirectTo: "settings/data-exchange", pathMatch: "full" },

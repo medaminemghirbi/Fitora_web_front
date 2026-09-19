@@ -1,0 +1,45 @@
+// Plans and activities, facing each other.
+//
+// A price exists only where the two cross, so reading one without the other
+// was always half the picture. Plans take the wider column because that is
+// what a member buys; activities are what a plan is priced for.
+
+.cat-head {
+  margin-bottom: var(--space-5);
+
+  h1 {
+    margin: 0 0 0.15rem;
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+  }
+}
+
+.cat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24rem;
+  gap: var(--space-5);
+  align-items: start;
+
+  // Below this the two columns would each be too narrow to read, so they
+  // stack — plans first, which is the order they are used in.
+  @media (max-width: 1199px) { grid-template-columns: minmax(0, 1fr); }
+}
+
+.cat-main,
+.cat-side { min-width: 0; }
+
+.cat-label {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
