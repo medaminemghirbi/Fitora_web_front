@@ -175,7 +175,7 @@ export class AuthService {
     localStorage.removeItem(IMPERSONATOR_KEY);
     this.impersonatorStashSignal.set(null);
     this.setSession({ token: stash.token, user: stash.user });
-    this.router.navigate(["/admin/companies"]);
+    this.router.navigate(["/admin/overview"]);
   }
 
   getToken(): string | null {
@@ -185,7 +185,7 @@ export class AuthService {
   homeRouteForCurrentUser(): string {
     if (this.isClient()) return "/member/home";
     const user = this.currentUserSignal();
-    if (user?.role === "admin") return "/admin/companies";
+    if (user?.role === "admin") return "/admin/overview";
     // Anyone who coaches uses the dedicated coach shell ("My schedule" /
     // attendance) — whatever their role happens to be called.
     if (user?.is_coach) return "/coach/today";

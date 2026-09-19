@@ -830,7 +830,28 @@
     "tab_billing": "الفوترة",
     "tab_gym": "القاعة",
     "record_payment": "تمّ استلام الدفع",
-    "attention_never": "لم تُفوتر أيّ فترة — سيُغلق الوصول عند المرور التالي."
+    "attention_never": "لم تُفوتر أيّ فترة — سيُغلق الوصول عند المرور التالي.",
+    "overview": {
+      "nav": "نظرة عامة",
+      "gyms": "القاعات",
+      "open_count": "{{count}} مفتوحة",
+      "locked_count": "{{count}} مغلقة",
+      "new_this_month": "جديدة هذا الشهر",
+      "vs_last_month": "مقابل {{count}} الشهر الماضي",
+      "no_comparison": "لا يوجد شهر سابق للمقارنة",
+      "members": "الأعضاء",
+      "new_members": "+{{count}} هذا الشهر",
+      "in_use": "قيد الاستعمال فعليًا",
+      "in_use_note": "{{count}} قاعة نظّمت حصة خلال 30 يومًا",
+      "invoiced": "الفوترة هذا الشهر",
+      "invoiced_note": "اشتراكات Fitora، لا مداخيل القاعات",
+      "arrears": "المتأخرات",
+      "arrears_note": "فترات انقضت دون تسوية",
+      "usage": "آخر 30 يومًا",
+      "usage_line": "{{sessions}} حصة مبرمجة، {{bookings}} حجز.",
+      "newest": "أحدث القاعات",
+      "locked": "مغلقة"
+    }
   },
   "staff": {
     "title": "الموظفون",

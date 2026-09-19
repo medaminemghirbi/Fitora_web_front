@@ -830,7 +830,28 @@
     "tab_billing": "Facturation",
     "tab_gym": "La salle",
     "record_payment": "Paiement reçu",
-    "attention_never": "Aucune période facturée — l'accès se fermera à la prochaine passe."
+    "attention_never": "Aucune période facturée — l'accès se fermera à la prochaine passe.",
+    "overview": {
+      "nav": "Vue d'ensemble",
+      "gyms": "Salles",
+      "open_count": "{{count}} ouverte(s)",
+      "locked_count": "{{count}} bloquée(s)",
+      "new_this_month": "Nouvelles ce mois-ci",
+      "vs_last_month": "vs {{count}} le mois dernier",
+      "no_comparison": "Pas de mois précédent à comparer",
+      "members": "Membres",
+      "new_members": "+{{count}} ce mois-ci",
+      "in_use": "Réellement utilisé",
+      "in_use_note": "{{count}} salle(s) ont tenu une séance sur 30 jours",
+      "invoiced": "Facturé ce mois-ci",
+      "invoiced_note": "Abonnements Fitora, hors recettes des salles",
+      "arrears": "Impayés",
+      "arrears_note": "Périodes écoulées sans facture réglée",
+      "usage": "Usage sur 30 jours",
+      "usage_line": "{{sessions}} séances programmées, {{bookings}} réservations.",
+      "newest": "Dernières salles inscrites",
+      "locked": "Bloquée"
+    }
   },
   "staff": {
     "title": "Employés",

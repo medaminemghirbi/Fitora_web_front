@@ -198,7 +198,7 @@ describe("AuthService", () => {
       expect(auth.currentUser()).toEqual(admin);
       expect(auth.getToken()).toBe("admin-tok");
       expect(auth.isImpersonating()).toBe(false);
-      expect(router.navigate).toHaveBeenCalledWith(["/admin/companies"]);
+      expect(router.navigate).toHaveBeenCalledWith(["/admin/overview"]);
     });
   });
 
@@ -234,7 +234,7 @@ describe("AuthService", () => {
     it("sends a platform admin to /admin/companies", () => {
       localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "admin" }));
       const auth = buildService();
-      expect(auth.homeRouteForCurrentUser()).toBe("/admin/companies");
+      expect(auth.homeRouteForCurrentUser()).toBe("/admin/overview");
     });
 
     it("sends a coach-kind staff login to /coach/today", () => {

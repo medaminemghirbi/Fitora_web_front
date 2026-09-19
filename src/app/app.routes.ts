@@ -115,13 +115,14 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard("admin")],
     loadComponent: () => import("./layout/admin-shell/admin-shell.component").then((m) => m.AdminShellComponent),
     children: [
+      { path: "overview", loadComponent: () => import("./features/admin/overview/admin-overview.component").then((m) => m.AdminOverviewComponent) },
       { path: "companies", loadComponent: () => import("./features/admin/companies/companies.component").then((m) => m.AdminCompaniesComponent) },
       { path: "companies/:id", loadComponent: () => import("./features/admin/company-detail/company-detail.component").then((m) => m.AdminCompanyDetailComponent) },
       { path: "pricing", loadComponent: () => import("./features/admin/pricing/pricing.component").then((m) => m.AdminPricingComponent) },
       { path: "modules", pathMatch: "full", redirectTo: "pricing" },
       { path: "support", loadComponent: () => import("./features/admin/support/support-tickets.component").then((m) => m.AdminSupportTicketsComponent) },
       { path: "updates", loadComponent: () => import("./features/admin/updates/updates.component").then((m) => m.AdminUpdatesComponent) },
-      { path: "", pathMatch: "full", redirectTo: "companies" },
+      { path: "", pathMatch: "full", redirectTo: "overview" },
     ],
   },
 

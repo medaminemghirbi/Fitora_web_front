@@ -830,7 +830,28 @@
     "tab_billing": "Billing",
     "tab_gym": "The gym",
     "record_payment": "Payment received",
-    "attention_never": "No period ever invoiced — access closes on the next sweep."
+    "attention_never": "No period ever invoiced — access closes on the next sweep.",
+    "overview": {
+      "nav": "Overview",
+      "gyms": "Gyms",
+      "open_count": "{{count}} open",
+      "locked_count": "{{count}} locked",
+      "new_this_month": "New this month",
+      "vs_last_month": "vs {{count}} last month",
+      "no_comparison": "No previous month to compare",
+      "members": "Members",
+      "new_members": "+{{count}} this month",
+      "in_use": "Actually in use",
+      "in_use_note": "{{count}} gym(s) ran a session in 30 days",
+      "invoiced": "Invoiced this month",
+      "invoiced_note": "Fitora subscriptions, not gyms' takings",
+      "arrears": "Arrears",
+      "arrears_note": "Periods elapsed with nothing settled",
+      "usage": "Last 30 days",
+      "usage_line": "{{sessions}} sessions scheduled, {{bookings}} bookings made.",
+      "newest": "Newest gyms",
+      "locked": "Locked"
+    }
   },
   "staff": {
     "title": "Employees",

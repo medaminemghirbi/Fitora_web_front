@@ -28,7 +28,7 @@ export const ownerAreaGuard: CanActivateFn = () => {
   const user = auth.currentUser();
 
   if (!user) return elsewhereFor(auth, router);
-  if (user.role === "admin") return router.createUrlTree(["/admin/companies"]);
+  if (user.role === "admin") return router.createUrlTree(["/admin/overview"]);
 
   return config.ensureLoaded().pipe(
     map(() => {

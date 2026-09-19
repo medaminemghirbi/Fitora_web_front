@@ -33,6 +33,7 @@ describe("AdminShellComponent", () => {
 
   it("lists the admin areas", () => {
     expect(component.navItems.map((n) => n.path)).toEqual([
+      "/admin/overview",
       "/admin/companies",
       "/admin/pricing",
       "/admin/support",

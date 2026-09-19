@@ -64,7 +64,7 @@ describe("staff.guard", () => {
     it("redirects a platform admin to /admin/companies", async () => {
       authStub.currentUser.and.returnValue({ role: "admin" } as User);
       expect(await resolve(run())).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/companies"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/overview"]);
     });
 
     it("lets an owner/staff login through when the coach shell doesn't apply", async () => {
