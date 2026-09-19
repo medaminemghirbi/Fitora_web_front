@@ -111,29 +111,141 @@
 }
 
 // ---------------------------------------------------------------------------
-// The profile, as two columns
+// The member's file, as a banner
 // ---------------------------------------------------------------------------
-// Four tabs became a side and a stream. Bookings, payments and attendance
-// were three of those tabs; they are one story about one person, so they are
-// one list.
+// The whole state of the relationship in one block, the actions in a row of
+// their own, and the history filling the rest. Five cards down a narrow
+// column said the same things in four times the height.
 
-.prof {
-  display: grid;
-  grid-template-columns: 22rem minmax(0, 1fr);
-  gap: var(--space-5);
-  align-items: start;
+.prof-back {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
 
-  @media (max-width: 991px) { grid-template-columns: minmax(0, 1fr); }
+  &:hover { color: var(--color-text); text-decoration: none; }
 }
 
-.prof-side,
-.prof-main {
+.prof-banner {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-5);
+  border-radius: var(--radius-xl);
+  // The dark end of the brand, so the block reads as one object rather than
+  // as a tinted card.
+  background: var(--color-primary-active);
+  color: #fff;
+
+  @media (max-width: 991px) {
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+}
+
+.prof-banner-avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+}
+
+.prof-banner-id {
+  flex-grow: 1;
   min-width: 0;
 }
 
+.prof-banner-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0;
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+}
+
+.prof-banner-badge {
+  padding: 0.1rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+
+  // Inactive is a fact worth seeing at a glance, and the banner is already
+  // dark — so it changes weight and hue rather than relying on colour alone.
+  &.is-off { background: var(--color-warning); color: var(--color-text); }
+}
+
+.prof-banner-sub {
+  margin: 0.3rem 0 0;
+  font-size: var(--font-size-base);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.prof-banner-stat {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding-inline: var(--space-5);
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.15);
+
+  @media (max-width: 991px) {
+    padding-inline: var(--space-4);
+    &:first-of-type { border-inline-start: 0; padding-inline-start: 0; }
+  }
+}
+
+.prof-banner-value {
+  font-size: 2.125rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+
+  small { font-size: 1.0625rem; font-weight: 700; }
+
+  // Money owed, on a dark ground: the danger red would not carry, so this is
+  // the accent lifted to read against aubergine.
+  &.is-owed { color: #ff8fb0; }
+}
+
+.prof-banner-label {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------------------
+// Actions
+// ---------------------------------------------------------------------------
+.prof-actions-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin: var(--space-4) 0 var(--space-5);
+
+  .btn { min-height: 42px; }
+}
+
+.prof-actions-spacer { flex-grow: 1; }
+
+// ---------------------------------------------------------------------------
+// The stream
+// ---------------------------------------------------------------------------
 .prof-label {
   margin: 0 0 var(--space-3);
   font-size: var(--font-size-xs);
@@ -143,69 +255,6 @@
   color: var(--color-text-secondary);
 }
 
-.prof-plan {
-  margin: 0 0 0.15rem;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-}
-
-.prof-plan-sub {
-  margin: 0 0 var(--space-4);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-// The one number the page is opened to find out.
-.prof-big {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin: 0 0 var(--space-3);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-
-  > span {
-    font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--color-primary);
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-.prof-owed {
-  border-color: var(--color-danger);
-
-  .prof-big > span { color: var(--color-danger); }
-}
-
-.prof-actions {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-}
-
-.prof-history {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  > li {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-2);
-    padding: var(--space-2) 0;
-    font-size: var(--font-size-sm);
-    border-bottom: 1px solid var(--color-border);
-
-    &:last-child { border-bottom: none; }
-    > span:first-child { flex-grow: 1; min-width: 0; }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// The stream
-// ---------------------------------------------------------------------------
 .prof-main-head {
   display: flex;
   align-items: center;
@@ -219,10 +268,13 @@
   display: flex;
   gap: 0.15rem;
   margin-inline-start: auto;
+  padding: 0.2rem;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-md);
 }
 
 .prof-filter {
-  padding: 0.3rem 0.6rem;
+  padding: 0.3rem 0.7rem;
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
@@ -231,22 +283,19 @@
   color: var(--color-text-secondary);
   cursor: pointer;
 
-  &:hover { background: var(--color-surface-hover); }
-
   &.is-active {
-    background: var(--color-primary-soft);
+    background: var(--color-surface);
     color: var(--color-text);
     font-weight: 600;
   }
 }
 
 .prof-timeline {
-  margin: 0;
+  margin: var(--space-3) 0 0;
   padding: 0;
   list-style: none;
   overflow: hidden;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
 
   > li {
@@ -264,12 +313,12 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
   background: var(--color-surface-sunken);
   color: var(--color-text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 
   // Colour follows the meaning, and the entry's own words say it too.
   &[data-kind="attended"] { background: var(--color-success-soft); color: var(--color-success); }
@@ -282,7 +331,7 @@
 .prof-timeline-text {
   flex-grow: 1;
   min-width: 0;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
 }
 
 .prof-timeline-when {
@@ -290,45 +339,32 @@
   font-size: var(--font-size-xs);
 }
 
-// What the bar under the subscription actually measures.
-.prof-progress-note {
-  margin: var(--space-2) 0 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-}
-
-// An answer that is a fact rather than a figure — "jamais venu(e)" — still
-// reads as the card's content, not as a note about missing data.
-.prof-empty {
-  margin: 0;
-  font-size: var(--font-size-md);
-  color: var(--color-text);
-}
-
-// Facts, as a definition list. Four of these were four cards down a narrow
-// column, each holding one line — the reason the page read as mostly padding.
-.prof-facts {
+// ---------------------------------------------------------------------------
+// The foot
+// ---------------------------------------------------------------------------
+.prof-foot {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3) var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.prof-history {
   margin: 0;
-  padding: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  padding: 0;
+  list-style: none;
 
-  dt {
-    margin: 0 0 0.1rem;
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-  }
+  > li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-border);
 
-  dd {
-    margin: 0;
-    font-size: var(--font-size-md);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-
-    &.is-owed { color: var(--color-danger); }
+    &:last-child { border-bottom: none; }
+    > span:first-child { flex-grow: 1; min-width: 0; }
   }
 }

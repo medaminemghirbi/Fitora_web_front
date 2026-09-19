@@ -122,7 +122,6 @@ describe("ClientProfileComponent", () => {
     expect(component.contracts()).toEqual([contract]);
     expect(component.contractTypes().length).toBe(1);
     expect(component.activities().length).toBe(1);
-    expect(component.notesForm.value.notes).toBe("some notes");
     expect(component.contractProgress()).not.toBeNull();
   });
 
@@ -188,7 +187,6 @@ describe("ClientProfileComponent", () => {
       of({ client: { ...client, notes: null, current_contract: null }, contracts: [contract], bookings: [booking], payments: [payment] })
     );
     component.load();
-    expect(component.notesForm.value.notes).toBe("");
     expect(component.contractProgress()).toBeNull();
   });
 
@@ -577,22 +575,6 @@ describe("ClientProfileComponent", () => {
       component.bookings.set([booking]);
       attendanceService.mark.and.returnValue(throwError(() => new Error("nope")));
       component.checkIn();
-      expect(toast.toasts()[0].kind).toBe("error");
-    });
-  });
-
-  describe("notes", () => {
-    it("saveNotes saves and shows a success toast", () => {
-      clientsService.update.and.returnValue(of({ client }));
-      component.saveNotes();
-      expect(clientsService.update).toHaveBeenCalledWith("cl1", { notes: "some notes" });
-      expect(component.notesSaving()).toBe(false);
-      expect(toast.toasts()[0].kind).toBe("success");
-    });
-
-    it("saveNotes shows an error toast on failure", () => {
-      clientsService.update.and.returnValue(throwError(() => new Error("nope")));
-      component.saveNotes();
       expect(toast.toasts()[0].kind).toBe("error");
     });
   });

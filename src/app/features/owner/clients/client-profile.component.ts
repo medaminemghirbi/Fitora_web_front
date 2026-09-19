@@ -13,7 +13,7 @@ import { Session } from "../../../core/models/session.model";
 import { ActivitiesService } from "../../../core/services/activities.service";
 import { AttendanceService } from "../../../core/services/attendance.service";
 import { BookingsService } from "../../../core/services/bookings.service";
-import { ClientsService, ClientPayload } from "../../../core/services/clients.service";
+import { ClientsService } from "../../../core/services/clients.service";
 import { downloadBlob } from "../../../core/services/download.util";
 import { ContractTypesService } from "../../../core/services/contract-types.service";
 import { ContractsService } from "../../../core/services/contracts.service";
@@ -114,6 +114,17 @@ export class ClientProfileComponent implements OnInit {
    */
   readonly filter = signal<"all" | "sessions" | "payments">("all");
 
+  /** Two letters for the banner's disc — the avatar component is a circle
+   *  of its own and would sit oddly inside a coloured block. */
+  initials(name: string): string {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("");
+  }
+
   /** The mark beside a timeline entry — one icon per kind of event. */
   timelineIcon(kind: TimelineEntry["kind"]): string {
     return TIMELINE_ICONS[kind];
@@ -171,7 +182,6 @@ export class ClientProfileComponent implements OnInit {
   readonly editingContract = signal<Contract | null>(null);
   readonly bookingModalOpen = signal(false);
   readonly paymentModalOpen = signal(false);
-  readonly notesSaving = signal(false);
   readonly formError = signal<string | null>(null);
 
   // Fitora only takes cash payments in the gym — there is no method selector.
@@ -212,7 +222,6 @@ export class ClientProfileComponent implements OnInit {
     password: ["", [Validators.required, Validators.minLength(8)]],
   });
 
-  readonly notesForm = this.fb.nonNullable.group({ notes: [""] });
 
 
   private clientId!: string;
@@ -252,7 +261,6 @@ export class ClientProfileComponent implements OnInit {
         this.contracts.set(res.contracts);
         this.bookings.set(res.bookings);
         this.payments.set(res.payments);
-        this.notesForm.setValue({ notes: res.client.notes || "" });
         this.contractProgress.set(res.client.current_contract ? this.computeContractProgress(res.client.current_contract) : null);
         this.loading.set(false);
       },
@@ -637,23 +645,6 @@ export class ClientProfileComponent implements OnInit {
         this.load();
       },
       error: (err) => this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic"))),
-    });
-  }
-
-  // === Notes ===
-  saveNotes(): void {
-    this.notesSaving.set(true);
-    const payload: ClientPayload = { notes: this.notesForm.getRawValue().notes };
-
-    this.clientsService.update(this.clientId, payload).subscribe({
-      next: () => {
-        this.notesSaving.set(false);
-        this.toast.success(this.translate.instant("common.save"));
-      },
-      error: (err) => {
-        this.notesSaving.set(false);
-        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
-      },
     });
   }
 

@@ -409,7 +409,9 @@
     "attendance": "الحضور",
     "member_since": "عضو منذ",
     "collect": "تحصيل {{amount}}",
-    "mobile_login": "الوصول إلى التطبيق"
+    "mobile_login": "الوصول إلى التطبيق",
+    "sessions_left_short": "حصص متبقية",
+    "owed": "مستحقة"
   },
   "subscription": {
     "title": "اشتراك Fitora",

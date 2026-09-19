@@ -409,7 +409,9 @@
     "attendance": "Présence",
     "member_since": "Membre depuis",
     "collect": "Encaisser {{amount}}",
-    "mobile_login": "Accès à l'application"
+    "mobile_login": "Accès à l'application",
+    "sessions_left_short": "séances restantes",
+    "owed": "dus"
   },
   "subscription": {
     "title": "Abonnement Fitora",

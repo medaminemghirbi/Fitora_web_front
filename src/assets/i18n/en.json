@@ -409,7 +409,9 @@
     "attendance": "Attendance",
     "member_since": "Member since",
     "collect": "Collect {{amount}}",
-    "mobile_login": "App access"
+    "mobile_login": "App access",
+    "sessions_left_short": "sessions left",
+    "owed": "owed"
   },
   "subscription": {
     "title": "Fitora Subscription",
