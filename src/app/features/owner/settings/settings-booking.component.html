@@ -1,0 +1,98 @@
+<!-- `settings()` leads: `as` binds only on a primary @if, and loading and
+     error are the fallbacks anyway. -->
+@if (settings(); as s) {
+
+  <section class="sb-group">
+    <h2 class="sb-group-title">{{ "settings.booking_how" | translate }}</h2>
+
+    <div class="sb-row">
+      <label class="sb-row-text" for="sb-online">
+        <span class="sb-row-label">{{ "settings.booking_online" | translate }}</span>
+        <span class="sb-row-hint">{{ "settings.booking_online_hint" | translate }}</span>
+      </label>
+      <input id="sb-online" type="checkbox" class="form-check-input" [checked]="s.features.online_booking"
+             [disabled]="saving()" (change)="setFeature('online_booking', $any($event.target).checked)" />
+    </div>
+
+    <!-- Only meaningful once members book for themselves: the desk is never
+         held to these two. -->
+    @if (s.features.online_booking) {
+      <div class="sb-row">
+        <label class="sb-row-text" for="sb-window">
+          <span class="sb-row-label">{{ "settings.booking_cancel_window" | translate }}</span>
+          <span class="sb-row-hint">{{ "settings.booking_cancel_window_hint" | translate }}</span>
+        </label>
+        <select id="sb-window" class="form-select form-select-sm sb-control" [disabled]="saving()"
+                [ngModel]="s.booking.cancellation_hours"
+                (ngModelChange)="setRule('cancellation_hours', $event)">
+          @for (hours of windows; track hours) {
+            <option [ngValue]="hours">
+              {{ hours === 0
+                ? ("settings.booking_cancel_anytime" | translate)
+                : ("settings.booking_hours_before" | translate: { count: hours }) }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="sb-row">
+        <label class="sb-row-text" for="sb-horizon">
+          <span class="sb-row-label">{{ "settings.booking_horizon" | translate }}</span>
+          <span class="sb-row-hint">{{ "settings.booking_horizon_hint" | translate }}</span>
+        </label>
+        <select id="sb-horizon" class="form-select form-select-sm sb-control" [disabled]="saving()"
+                [ngModel]="s.booking.booking_opens_days"
+                (ngModelChange)="setRule('booking_opens_days', $event)">
+          @for (days of horizons; track days) {
+            <option [ngValue]="days">{{ "settings.booking_days_ahead" | translate: { count: days } }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <div class="sb-row">
+      <label class="sb-row-text" for="sb-noshow">
+        <span class="sb-row-label">{{ "settings.booking_no_show" | translate }}</span>
+        <span class="sb-row-hint">{{ "settings.booking_no_show_hint" | translate }}</span>
+      </label>
+      <input id="sb-noshow" type="checkbox" class="form-check-input" [checked]="s.booking.no_show_consumes_session"
+             [disabled]="saving()" (change)="setRule('no_show_consumes_session', $any($event.target).checked)" />
+    </div>
+
+    <div class="sb-row">
+      <label class="sb-row-text" for="sb-waitlist">
+        <span class="sb-row-label">{{ "settings.booking_waitlist" | translate }}</span>
+        <span class="sb-row-hint">{{ "settings.booking_waitlist_hint" | translate }}</span>
+      </label>
+      <input id="sb-waitlist" type="checkbox" class="form-check-input" [checked]="s.features.waitlist"
+             [disabled]="saving()" (change)="setFeature('waitlist', $any($event.target).checked)" />
+    </div>
+  </section>
+
+  <section class="sb-group">
+    <h2 class="sb-group-title">{{ "settings.booking_what" | translate }}</h2>
+
+    <div class="sb-row">
+      <label class="sb-row-text" for="sb-spaces">
+        <span class="sb-row-label">{{ "settings.booking_spaces" | translate }}</span>
+        <span class="sb-row-hint">{{ "settings.booking_spaces_hint" | translate }}</span>
+      </label>
+      <input id="sb-spaces" type="checkbox" class="form-check-input" [checked]="s.features.spaces"
+             [disabled]="saving()" (change)="setFeature('spaces', $any($event.target).checked)" />
+    </div>
+
+    <div class="sb-row">
+      <label class="sb-row-text" for="sb-attendance">
+        <span class="sb-row-label">{{ "settings.booking_attendance" | translate }}</span>
+        <span class="sb-row-hint">{{ "settings.booking_attendance_hint" | translate }}</span>
+      </label>
+      <input id="sb-attendance" type="checkbox" class="form-check-input" [checked]="s.features.attendance"
+             [disabled]="saving()" (change)="setFeature('attendance', $any($event.target).checked)" />
+    </div>
+  </section>
+} @else if (loading()) {
+  <app-skeleton variant="line" width="70%" />
+  <app-skeleton variant="line" width="100%" />
+} @else if (error()) {
+  <app-error-state [body]="error()!" (retry)="load()" />
+}

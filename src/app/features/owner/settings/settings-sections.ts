@@ -42,6 +42,9 @@ export class SettingsSectionsService {
     { path: "company", icon: "bi-building", labelKey: "settings.nav_company", descKey: "settings.desc_company", group: "establishment", ownerOnly: true },
     { path: "branding", icon: "bi-palette", labelKey: "settings.nav_branding", descKey: "settings.desc_branding", group: "establishment", ownerOnly: true },
     { path: "planning", icon: "bi-calendar3", labelKey: "settings.nav_planning", descKey: "settings.desc_planning", group: "planning", ownerOnly: true },
+    // How this gym books. The engine has enforced these rules all along;
+    // until now nothing could set them, so every gym ran on the defaults.
+    { path: "booking", icon: "bi-journal-check", labelKey: "settings.nav_booking", descKey: "settings.desc_booking", group: "planning", ownerOnly: true },
     { path: "roles", icon: "bi-shield-lock", labelKey: "settings.nav_roles", descKey: "settings.desc_roles", group: "hr", ownerOnly: true },
     { path: "data-exchange", icon: "bi-arrow-down-up", labelKey: "nav.data_exchange", descKey: "settings.desc_data_exchange", group: "establishment", ownerOnly: true },
   ];

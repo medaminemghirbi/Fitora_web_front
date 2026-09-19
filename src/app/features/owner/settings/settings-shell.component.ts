@@ -7,6 +7,7 @@ import { SettingsSectionsService } from "./settings-sections";
 import { SettingsCompanyComponent } from "./settings-company.component";
 import { SettingsBrandingComponent } from "./settings-branding.component";
 import { SettingsPlanningComponent } from "./settings-planning.component";
+import { SettingsBookingComponent } from "./settings-booking.component";
 import { SettingsRolesComponent } from "./settings-roles.component";
 import { DataExchangeComponent } from "../data-exchange/data-exchange.component";
 import { SettingsAppearanceComponent } from "./settings-appearance.component";
@@ -23,6 +24,7 @@ import { SettingsAppearanceComponent } from "./settings-appearance.component";
     SettingsCompanyComponent,
     SettingsBrandingComponent,
     SettingsPlanningComponent,
+    SettingsBookingComponent,
     SettingsRolesComponent,
     DataExchangeComponent,
     SettingsAppearanceComponent,
