@@ -14,7 +14,7 @@ describe("AuthService", () => {
   let configStub: {
     permissions: jasmine.Spy;
     role: jasmine.Spy;
-    setup: jasmine.Spy;
+    onboarding: jasmine.Spy;
     hasPermission: jasmine.Spy;
     load: jasmine.Spy;
     clear: jasmine.Spy;
@@ -39,7 +39,7 @@ describe("AuthService", () => {
     configStub = {
       permissions: jasmine.createSpy().and.returnValue([]),
       role: jasmine.createSpy().and.returnValue(null),
-      setup: jasmine.createSpy().and.returnValue(null),
+      onboarding: jasmine.createSpy().and.returnValue(null),
       hasPermission: jasmine.createSpy().and.returnValue(false),
       load: jasmine.createSpy().and.returnValue({ subscribe: (o: { error?: () => void }) => o }),
       clear: jasmine.createSpy(),
@@ -244,17 +244,17 @@ describe("AuthService", () => {
       expect(auth.homeRouteForCurrentUser()).toBe("/coach/today");
     });
 
-    it("sends a fresh owner with unfinished setup to the getting-started guide", () => {
+    it("sends a fresh owner with unfinished setup into the onboarding flow", () => {
       localStorage.setItem("fitora_user", JSON.stringify(owner));
       const auth = buildService();
-      configStub.setup.and.returnValue({ complete: false, dismissed: false });
-      expect(auth.homeRouteForCurrentUser()).toBe("/owner/getting-started");
+      configStub.onboarding.and.returnValue({ complete: false, dismissed: false });
+      expect(auth.homeRouteForCurrentUser()).toBe("/owner/onboarding");
     });
 
     it("sends an owner with dismissed/complete setup to the dashboard", () => {
       localStorage.setItem("fitora_user", JSON.stringify(owner));
       const auth = buildService();
-      configStub.setup.and.returnValue({ complete: false, dismissed: true });
+      configStub.onboarding.and.returnValue({ complete: false, dismissed: true });
       expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
     });
 

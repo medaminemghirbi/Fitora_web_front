@@ -4,13 +4,14 @@ import { NavigationService } from "./navigation.service";
 
 describe("NavigationService", () => {
   let service: NavigationService;
-  let authStub: { currentUser: jasmine.Spy; hasPermission: jasmine.Spy };
+  let authStub: { currentUser: jasmine.Spy; hasPermission: jasmine.Spy; hasFeature: jasmine.Spy };
 
-  function build(role: string, permissions: string[]): void {
+  function build(role: string, permissions: string[], features: string[] = []): void {
     TestBed.resetTestingModule();
     authStub = {
       currentUser: jasmine.createSpy().and.returnValue({ role }),
       hasPermission: jasmine.createSpy().and.callFake((p: string) => permissions.includes(p)),
+      hasFeature: jasmine.createSpy().and.callFake((f: string) => features.includes(f)),
     };
     TestBed.configureTestingModule({ providers: [{ provide: AuthService, useValue: authStub }] });
     service = TestBed.inject(NavigationService);
@@ -23,6 +24,27 @@ describe("NavigationService", () => {
     // calendar carries no `permission` — visible to anyone.
     const planning = service.groups().find((g) => g.id === "planning")!;
     expect(planning.items.map((i) => i.path)).toContain("/owner/calendar");
+  });
+
+  it("hides rooms from a gym that has not turned them on, permission or not", () => {
+    build("owner", ["spaces"]);
+
+    const planning = service.groups().find((g) => g.id === "planning")!;
+    expect(planning.items.map((i) => i.path)).not.toContain("/owner/spaces");
+  });
+
+  it("shows rooms once the feature is on and the permission is held", () => {
+    build("owner", ["spaces"], ["spaces"]);
+
+    const planning = service.groups().find((g) => g.id === "planning")!;
+    expect(planning.items.map((i) => i.path)).toContain("/owner/spaces");
+  });
+
+  it("still hides rooms from a login without the permission, feature or not", () => {
+    build("staff", [], ["spaces"]);
+
+    const planning = service.groups().find((g) => g.id === "planning")!;
+    expect(planning.items.map((i) => i.path)).not.toContain("/owner/spaces");
   });
 
   it("hides the dashboard without the 'reports' permission", () => {

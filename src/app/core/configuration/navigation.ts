@@ -14,6 +14,10 @@ export interface NavLeafBlueprint {
   comingSoon?: boolean;
   // Hidden from every non-owner staff role.
   ownerOnly?: boolean;
+  // A settings.features key. The entry exists only for a company that turned
+  // that feature on — a one-room gym has no rooms menu, because it has no
+  // rooms and asking it about them would be a question with one answer.
+  feature?: string;
 }
 
 export interface NavGroupBlueprint {
@@ -55,6 +59,7 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
     labelKey: "nav.planning",
     items: [
       { path: "/owner/calendar", icon: "bi-calendar3", labelKey: "nav.planning" },
+      { path: "/owner/spaces", icon: "bi-door-open", labelKey: "nav.spaces", permission: "spaces", feature: "spaces" },
     ],
   },
   {

@@ -21,6 +21,7 @@ describe("OwnerShellComponent", () => {
     exitImpersonation: jasmine.Spy;
     loadConfiguration: jasmine.Spy;
     hasPermission: jasmine.Spy;
+    hasFeature: jasmine.Spy;
   };
   let configStub: jasmine.SpyObj<ConfigurationService>;
   let recoveryStub: jasmine.SpyObj<AccountRecoveryService>;
@@ -33,6 +34,7 @@ describe("OwnerShellComponent", () => {
       exitImpersonation: jasmine.createSpy(),
       loadConfiguration: jasmine.createSpy(),
       hasPermission: jasmine.createSpy().and.returnValue(true),
+      hasFeature: jasmine.createSpy().and.returnValue(false),
     };
     configStub = jasmine.createSpyObj<ConfigurationService>("ConfigurationService", ["ready", "subscription"]);
     configStub.ready.and.returnValue(ready);

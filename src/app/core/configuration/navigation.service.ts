@@ -61,7 +61,17 @@ export class NavigationService {
 
   private visible(item: NavLeafBlueprint): boolean {
     if (item.ownerOnly && !this.isOwner()) return false;
+    if (item.feature && !this.featureOn(item.feature)) return false;
     if (!item.permission) return true;
     return this.auth.hasPermission(item.permission);
+  }
+
+  /**
+   * A feature being on says the product offers it here. It never says this
+   * login may use it — that is the permission check above, made separately
+   * and on the backend as well.
+   */
+  private featureOn(key: string): boolean {
+    return this.auth.hasFeature(key);
   }
 }

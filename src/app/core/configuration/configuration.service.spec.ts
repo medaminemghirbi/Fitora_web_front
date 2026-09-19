@@ -23,7 +23,8 @@ describe("ConfigurationService", () => {
     roles: [{ id: "r1", key: "owner", name: "Owner", permissions: ["clients"], builtin: true }],
     permission_catalog: { clients: "Membres" },
     subscription: null,
-    setup: null,
+    onboarding: null,
+    features: {},
     notifications: { unread_count: 2 },
   };
 
@@ -203,7 +204,7 @@ describe("ConfigurationService", () => {
     expect(config.roles()).toEqual([]);
     expect(config.permissionCatalog()).toEqual({});
     expect(config.subscription()).toBeNull();
-    expect(config.setup()).toBeNull();
+    expect(config.onboarding()).toBeNull();
   });
 
   it("seeds the unread badge at 0 when the payload's notifications field is missing", () => {

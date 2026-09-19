@@ -14,7 +14,7 @@ describe("MobileBarComponent", () => {
       imports: [MobileBarComponent, TranslateModule.forRoot()],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { hasPermission: (key: string) => granted.includes(key) } },
+        { provide: AuthService, useValue: { hasPermission: (key: string) => granted.includes(key), hasFeature: () => false } },
       ],
     });
     fixture = TestBed.createComponent(MobileBarComponent);

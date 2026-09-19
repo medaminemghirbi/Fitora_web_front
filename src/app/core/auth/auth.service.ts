@@ -128,6 +128,17 @@ export class AuthService {
     return this.config.hasPermission(key);
   }
 
+  /**
+   * Whether this tenant has the feature turned on.
+   *
+   * A different question from hasPermission: this says what the product
+   * OFFERS here, not who may use it. Both are asked, and both are asked
+   * again on the backend.
+   */
+  hasFeature(key: string): boolean {
+    return this.config.features()[key] === true;
+  }
+
   /** Drops the session without leaving the page. */
   clearSession(): void {
     localStorage.removeItem(TOKEN_KEY);
@@ -193,10 +204,13 @@ export class AuthService {
     // a shell of its own. The owner is deliberately not sent here: their
     // shell already does all of this and more.
     if (this.deskShellApplies()) return "/desk/dashboard";
-    // A freshly-signed-up owner lands on the "Premiers pas" guide until the
-    // foundational setup is done (or they skip it).
-    const setup = this.config.setup();
-    if (user?.role === "owner" && setup && !setup.complete && !setup.dismissed) return "/owner/getting-started";
+    // A freshly-signed-up owner lands in the setup flow until it is done (or
+    // they leave it). Read from the bootstrap payload rather than
+    // OnboardingService: this runs before any page has loaded one.
+    const onboarding = this.config.onboarding();
+    if (user?.role === "owner" && onboarding && !onboarding.complete && !onboarding.dismissed) {
+      return "/owner/onboarding";
+    }
     // The dashboard needs only the base `reports` permission — the safe
     // universal landing for every other role.
     return "/owner/dashboard";

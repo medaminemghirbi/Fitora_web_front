@@ -3,7 +3,7 @@ import { authGuard } from "./core/guards/auth.guard";
 import { guestGuard } from "./core/guards/guest.guard";
 import { noCompanyGuard, companyGuard } from "./core/guards/company.guard";
 import { roleGuard } from "./core/guards/role.guard";
-import { capabilityGuard, deskAreaGuard, ownerAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
+import { capabilityGuard, deskAreaGuard, featureGuard, ownerAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
 import { memberGuard } from "./core/guards/member.guard";
 
 /**
@@ -59,10 +59,15 @@ export const routes: Routes = [
     loadComponent: () => import("./layout/owner-shell/owner-shell.component").then((m) => m.OwnerShellComponent),
     children: [
       { path: "dashboard", canActivate: [capabilityGuard("reports")], loadComponent: () => import("./features/owner/dashboard/dashboard.component").then((m) => m.DashboardComponent) },
-      { path: "getting-started", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/getting-started/getting-started.component").then((m) => m.GettingStartedComponent) },
+      { path: "onboarding", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/onboarding/onboarding.component").then((m) => m.OnboardingComponent) },
+      { path: "getting-started", pathMatch: "full", redirectTo: "onboarding" },
       { path: "clients", canActivate: [capabilityGuard("clients")], loadComponent: () => import("./features/owner/clients/clients-list.component").then((m) => m.ClientsListComponent) },
       { path: "clients/:id", canActivate: [capabilityGuard("clients")], loadComponent: () => import("./features/owner/clients/client-profile.component").then((m) => m.ClientProfileComponent) },
       { path: "calendar", loadComponent: () => import("./features/owner/calendar/calendar.component").then((m) => m.CalendarComponent) },
+      // Rooms exist only for a gym that turned them on; both guards apply,
+      // because "the product offers this" and "you may use it" are separate
+      // questions and the backend asks both too.
+      { path: "spaces", canActivate: [featureGuard("spaces"), capabilityGuard("spaces")], loadComponent: () => import("./features/owner/spaces/spaces.component").then((m) => m.SpacesComponent) },
       { path: "bookings", canActivate: [capabilityGuard("bookings")], loadComponent: () => import("./features/owner/bookings/bookings.component").then((m) => m.OwnerBookingsComponent) },
       { path: "contracts", canActivate: [capabilityGuard("contracts")], loadComponent: () => import("./features/owner/contracts/contracts.component").then((m) => m.ContractsComponent) },
       // The catalogue left Settings: a plan and an activity are seasonal

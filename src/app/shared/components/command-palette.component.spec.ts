@@ -17,13 +17,14 @@ describe("CommandPaletteComponent", () => {
   let contractsService: jasmine.SpyObj<ContractsService>;
   let paymentsService: jasmine.SpyObj<PaymentsService>;
   let router: Router;
-  let authStub: { currentUser: jasmine.Spy; hasPermission: jasmine.Spy };
+  let authStub: { currentUser: jasmine.Spy; hasPermission: jasmine.Spy; hasFeature: jasmine.Spy };
 
   function build(role: string): void {
     TestBed.resetTestingModule();
     authStub = {
       currentUser: jasmine.createSpy().and.returnValue({ role }),
       hasPermission: jasmine.createSpy().and.returnValue(true),
+      hasFeature: jasmine.createSpy().and.returnValue(false),
     };
     clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["list"]);
     contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["list"]);

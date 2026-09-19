@@ -66,6 +66,34 @@ export function capabilityGuard(permission: string): CanActivateFn {
 }
 
 /**
+ * A page that only exists for a company that turned the feature on.
+ *
+ * The mirror of the backend's own refusal (SpacesController answers 404 for
+ * a gym without rooms), not a substitute for it: this only spares someone
+ * an empty screen. Pairs with capabilityGuard, which asks the other
+ * question — the product offers this, but may YOU use it.
+ */
+export function featureGuard(feature: string): CanActivateFn {
+  return () => {
+    const auth = inject(AuthService);
+    const config = inject(ConfigurationService);
+    const router = inject(Router);
+    const user = auth.currentUser();
+
+    if (!user) return elsewhereFor(auth, router);
+
+    return config.ensureLoaded().pipe(
+      map(() =>
+        !config.ready() || config.features()[feature] === true
+          ? true
+          : router.createUrlTree([auth.homeRouteForCurrentUser()])
+      ),
+      catchError(() => of(true))
+    );
+  };
+}
+
+/**
  * Entry guard for the front desk.
  *
  * The desk is for the people who work it: staff who can check members in and

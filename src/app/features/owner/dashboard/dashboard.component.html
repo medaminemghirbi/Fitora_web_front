@@ -22,13 +22,16 @@
   @if (showSetupCard) {
     <div class="app-card">
       <div class="app-card-header">
-        <h2>{{ "getting_started.card_title" | translate }}</h2>
-        <a routerLink="/owner/getting-started" class="btn btn-sm btn-outline-secondary">
-          {{ "getting_started.open_guide" | translate }}
+        <h2>{{ "onboarding.card_title" | translate }}</h2>
+        <a routerLink="/owner/onboarding" class="btn btn-sm btn-outline-secondary">
+          {{ "onboarding.open_flow" | translate }}
         </a>
       </div>
       <div class="app-card-body">
-        <app-setup-checklist [setup]="setup" [compact]="true" (dismiss)="dismissSetup()" />
+        <app-onboarding-steps [state]="onboardingState" [compact]="true" />
+        <button type="button" class="btn btn-link ob-card-leave" (click)="dismissSetup()">
+          {{ "onboarding.leave" | translate }}
+        </button>
       </div>
     </div>
   }

@@ -5,7 +5,8 @@ import { provideRouter } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { AuthService } from "../../../core/auth/auth.service";
-import { ConfigurationService, SetupState } from "../../../core/configuration/configuration.service";
+import { ConfigurationService } from "../../../core/configuration/configuration.service";
+import { OnboardingState } from "../../../core/models/onboarding.model";
 import { Company } from "../../../core/models/company.model";
 import { AuditLogsService } from "../../../core/services/audit-logs.service";
 import { DashboardResponse, DashboardService } from "../../../core/services/dashboard.service";
@@ -21,7 +22,7 @@ describe("DashboardComponent", () => {
   let auditLogsService: jasmine.SpyObj<AuditLogsService>;
   let reportsService: jasmine.SpyObj<ReportsService>;
   let onboardingService: jasmine.SpyObj<OnboardingService>;
-  let configStub: { setup: jasmine.Spy };
+  let configStub: { onboarding: jasmine.Spy };
   let authStub: { currentUser: jasmine.Spy; hasPermission: jasmine.Spy };
   let toast: ToastService;
 
@@ -61,7 +62,7 @@ describe("DashboardComponent", () => {
     },
   };
 
-  function build(setup: SetupState | null = null, auditLogsError = false): void {
+  function build(onboarding: OnboardingState | null = null, auditLogsError = false): void {
     TestBed.resetTestingModule();
     dashboardService = jasmine.createSpyObj("DashboardService", ["get"]);
     dashboardService.get.and.returnValue(of(response));
@@ -70,8 +71,9 @@ describe("DashboardComponent", () => {
       auditLogsError ? throwError(() => new Error("nope")) : of({ audit_logs: [], meta: { page: 1, per_page: 5, total: 0, total_pages: 0 } })
     );
     reportsService = jasmine.createSpyObj("ReportsService", ["exportCompany"]);
-    onboardingService = jasmine.createSpyObj("OnboardingService", ["dismiss"]);
-    configStub = { setup: jasmine.createSpy().and.returnValue(setup) };
+    onboardingService = jasmine.createSpyObj("OnboardingService", ["dismiss", "state"]);
+    onboardingService.state.and.returnValue(onboarding);
+    configStub = { onboarding: jasmine.createSpy().and.returnValue(onboarding) };
     authStub = { currentUser: jasmine.createSpy().and.returnValue({ first_name: "Yassine", role: "owner" }), hasPermission: jasmine.createSpy().and.returnValue(true) };
 
     TestBed.configureTestingModule({
@@ -203,28 +205,33 @@ describe("DashboardComponent", () => {
     });
   });
 
+  const incomplete: OnboardingState = {
+    step: "company", complete: false, dismissed: false, done_count: 0, total: 4,
+    steps: [{ key: "company", skippable: false, state: "current", count: null }],
+  };
+
   it("showSetupCard is false with no setup state", () => {
     expect(component.showSetupCard).toBe(false);
   });
 
   it("showSetupCard is true for an incomplete, non-dismissed setup as owner", () => {
-    build({ activity: false, contract_type: false, coach: false, dismissed: false, complete: false });
+    build(incomplete);
     expect(component.showSetupCard).toBe(true);
   });
 
   it("showSetupCard is false once complete or dismissed", () => {
-    build({ activity: true, contract_type: true, coach: true, dismissed: false, complete: true });
+    build({ ...incomplete, complete: true });
     expect(component.showSetupCard).toBe(false);
   });
 
   it("showSetupCard is false for a non-owner even with incomplete setup", () => {
-    build({ activity: false, contract_type: false, coach: false, dismissed: false, complete: false });
+    build(incomplete);
     authStub.currentUser.and.returnValue({ first_name: "K", role: "staff" });
     expect(component.showSetupCard).toBe(false);
   });
 
   it("dismissSetup delegates to the onboarding service", () => {
-    onboardingService.dismiss.and.returnValue(of({ setup: {} as SetupState }));
+    onboardingService.dismiss.and.returnValue(of({ onboarding: {} as OnboardingState }));
     component.dismissSetup();
     expect(onboardingService.dismiss).toHaveBeenCalled();
   });

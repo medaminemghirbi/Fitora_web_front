@@ -12,7 +12,7 @@ import { ToastService } from "../../../core/services/toast.service";
 import { AuthService } from "../../../core/auth/auth.service";
 import { ConfigurationService } from "../../../core/configuration/configuration.service";
 import { OnboardingService } from "../../../core/services/onboarding.service";
-import { SetupChecklistComponent } from "../../../shared/ui/setup-checklist.component";
+import { OnboardingStepsComponent } from "../../../shared/ui/onboarding-steps.component";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
@@ -38,7 +38,7 @@ import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
     ModalComponent,
     SkeletonComponent,
     ErrorStateComponent,
-    SetupChecklistComponent,
+    OnboardingStepsComponent,
   ],
   templateUrl: "./dashboard.component.html",
   styleUrl: "./dashboard.component.scss",
@@ -85,12 +85,12 @@ export class DashboardComponent {
     });
   }
 
-  get setup() {
-    return this.config.setup();
+  get onboardingState() {
+    return this.onboarding.state();
   }
 
   get showSetupCard(): boolean {
-    const s = this.setup;
+    const s = this.onboardingState;
     return !!s && !s.complete && !s.dismissed && this.auth.currentUser()?.role === "owner";
   }
 

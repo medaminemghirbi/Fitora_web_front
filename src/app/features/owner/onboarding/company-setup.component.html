@@ -27,7 +27,7 @@
       </svg>
     </div>
 
-    <h1 class="prep-title">{{ "onboarding.prep_title" | translate }}</h1>
+    <h1 class="prep-title">{{ "company_setup.prep_title" | translate }}</h1>
     <p class="prep-step">{{ prepSteps[prepStep()] | translate }}</p>
 
     <div class="prep-progress"><span></span></div>
@@ -37,8 +37,8 @@
   <div class="setup-card">
     <div class="setup-brand">fitora</div>
 
-    <h1>{{ "onboarding.details_title" | translate }}</h1>
-    <p class="text-muted-token small mb-3">{{ "onboarding.subtitle" | translate }}</p>
+    <h1>{{ "company_setup.details_title" | translate }}</h1>
+    <p class="text-muted-token small mb-3">{{ "company_setup.subtitle" | translate }}</p>
 
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
       @if (error()) {
@@ -56,9 +56,9 @@
           <input id="org-city" class="form-control" formControlName="city" />
         </div>
         <div class="col-6 mb-3">
-          <label for="org-country">{{ "onboarding.country" | translate }}</label>
+          <label for="org-country">{{ "company_setup.country" | translate }}</label>
           <app-searchable-select id="org-country" formControlName="country"
-                                 [options]="countryOptions" [placeholder]="'onboarding.select_country' | translate" />
+                                 [options]="countryOptions" [placeholder]="'company_setup.select_country' | translate" />
         </div>
       </div>
 
@@ -74,13 +74,13 @@
       </div>
 
       <div class="mb-3">
-        <label for="org-address">{{ "onboarding.gym_address" | translate }}</label>
-        <input id="org-address" class="form-control" formControlName="address" [placeholder]="'onboarding.gym_address_hint' | translate" />
+        <label for="org-address">{{ "company_setup.gym_address" | translate }}</label>
+        <input id="org-address" class="form-control" formControlName="address" [placeholder]="'company_setup.gym_address_hint' | translate" />
       </div>
 
       <div class="row">
         <div class="col-6 mb-3">
-          <label for="org-timezone">{{ "onboarding.timezone" | translate }} *</label>
+          <label for="org-timezone">{{ "company_setup.timezone" | translate }} *</label>
           <select id="org-timezone" class="form-select" formControlName="timezone">
             @for (group of timezoneGroups; track group.region) {
               <optgroup [label]="group.region">
@@ -92,7 +92,7 @@
           </select>
         </div>
         <div class="col-6 mb-3">
-          <label for="org-currency">{{ "onboarding.currency" | translate }} *</label>
+          <label for="org-currency">{{ "company_setup.currency" | translate }} *</label>
           <select id="org-currency" class="form-select" formControlName="currency">
             @for (c of currencies; track c.code) {
               <option [value]="c.code">{{ ("currency." + c.code) | translate }} — {{ c.symbol }} ({{ c.code }})</option>
@@ -105,7 +105,7 @@
         @if (saving()) {
           <app-spinner [size]="16" />
         } @else {
-          {{ "onboarding.create" | translate }}
+          {{ "company_setup.create" | translate }}
         }
       </button>
     </form>

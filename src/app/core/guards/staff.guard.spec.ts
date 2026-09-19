@@ -4,7 +4,7 @@ import { firstValueFrom, isObservable, of, throwError } from "rxjs";
 import { AuthService } from "../auth/auth.service";
 import { ConfigurationService } from "../configuration/configuration.service";
 import { User } from "../models/user.model";
-import { capabilityGuard, deskAreaGuard, ownerAreaGuard, settingsAccessGuard, staffManagerGuard, staffRoleGuard } from "./staff.guard";
+import { capabilityGuard, deskAreaGuard, featureGuard, ownerAreaGuard, settingsAccessGuard, staffManagerGuard, staffRoleGuard } from "./staff.guard";
 
 describe("staff.guard", () => {
   let authStub: {
@@ -14,7 +14,7 @@ describe("staff.guard", () => {
     coachShellApplies: jasmine.Spy;
     hasPermission: jasmine.Spy;
   };
-  let configStub: { subscription: jasmine.Spy; ensureLoaded: jasmine.Spy; ready: jasmine.Spy };
+  let configStub: { subscription: jasmine.Spy; ensureLoaded: jasmine.Spy; ready: jasmine.Spy; features: jasmine.Spy };
   let router: jasmine.SpyObj<Router>;
   let tree: UrlTree;
 
@@ -30,6 +30,7 @@ describe("staff.guard", () => {
       ensureLoaded: jasmine.createSpy().and.returnValue(of(null)),
       ready: jasmine.createSpy().and.returnValue(true),
       subscription: jasmine.createSpy().and.returnValue({ locked: false }),
+      features: jasmine.createSpy().and.returnValue({}),
     };
     tree = {} as UrlTree;
     router = jasmine.createSpyObj<Router>("Router", ["createUrlTree"]);
@@ -49,6 +50,34 @@ describe("staff.guard", () => {
   async function resolve(result: unknown): Promise<boolean | UrlTree> {
     return (isObservable(result) ? firstValueFrom(result) : result) as Promise<boolean | UrlTree> | boolean | UrlTree;
   }
+
+  describe("featureGuard", () => {
+    function run() {
+      return TestBed.runInInjectionContext(() => featureGuard("spaces")({} as never, {} as never));
+    }
+
+    it("sends someone home when the gym has not turned the feature on", async () => {
+      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      expect(await resolve(run())).toBe(tree);
+    });
+
+    it("lets them through once it is on", async () => {
+      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      configStub.features.and.returnValue({ spaces: true });
+      expect(await resolve(run())).toBe(true);
+    });
+
+    it("lets them through before the configuration has landed", async () => {
+      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      configStub.ready.and.returnValue(false);
+      expect(await resolve(run())).toBe(true);
+    });
+
+    it("redirects to login with no user", async () => {
+      authStub.currentUser.and.returnValue(null);
+      expect(await resolve(run())).toBe(tree);
+    });
+  });
 
   describe("ownerAreaGuard", () => {
     function run() {
