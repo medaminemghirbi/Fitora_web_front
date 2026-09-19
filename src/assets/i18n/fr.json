@@ -310,7 +310,6 @@
   },
   "clients": {
     "title": "Adhérents",
-    "subtitle": "Gérez vos adhérents, leurs documents et leur historique.",
     "new": "Ajouter un adhérent",
     "created": "Client créé",
     "search_placeholder": "Rechercher par nom, téléphone ou e-mail...",
@@ -320,9 +319,7 @@
     "filter_contract_active": "Abonnement actif",
     "filter_contract_expired": "Abonnement expiré",
     "filter_no_contract": "Sans abonnement",
-    "contract": "Contrat",
     "no_contract": "Aucun contrat",
-    "payment_status": "Paiement",
     "date_of_birth": "Date de naissance",
     "gender": "Genre",
     "emergency_contact_name": "Contact d'urgence",
@@ -377,7 +374,6 @@
     "abo_no_price": "Cette formule n'a pas de tarif pour l'activité choisie.",
     "abo_no_price_link": "Le définir dans les formules",
     "filter_status": "Filtrer par statut",
-    "stat_total": "Adhérents",
     "abo_price": "Prix catalogue",
     "step_identity": "Identité",
     "step_subscription": "Abonnement",
@@ -399,7 +395,11 @@
     "mobile_login_hint": "L'adhérent pourra voir le planning, réserver et annuler. Il reçoit un e-mail de confirmation.",
     "set_login": "Activer l'accès",
     "reset_login": "Réinitialiser",
-    "login_set": "Accès activé."
+    "login_set": "Accès activé.",
+    "subscribe_cta": "Souscrire →",
+    "never_came": "jamais venu(e)",
+    "sessions_left": "{{count}} séance(s) restante(s)",
+    "until": "jusqu'au {{date}}"
   },
   "subscription": {
     "title": "Abonnement Fitora",

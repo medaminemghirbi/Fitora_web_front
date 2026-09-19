@@ -34,40 +34,16 @@
   </app-filter-rail>
 
   <div class="fx-listpage-main">
-    <app-page-header [title]="'nav.clients' | translate" [description]="'clients.subtitle' | translate">
+    <!-- The count belongs in the title: "Membres 248" answers a question
+         before anyone touches a filter. The six-figure stats bar said the
+         same thing as the rail's own counts, one row lower. -->
+    <header class="lst-head">
+      <h1>{{ "nav.clients" | translate }}</h1>
+      <span class="lst-head-count">{{ counts()["all"] ?? 0 }}</span>
       <button type="button" class="btn btn-primary" (click)="openCreate()">
         <i class="bi bi-plus-lg"></i> {{ "clients.new" | translate }}
       </button>
-    </app-page-header>
-
-    <div class="fx-stats-bar">
-      <dl class="fx-stats">
-        <div>
-          <dt>{{ "clients.stat_total" | translate }}</dt>
-          <dd>{{ counts()["all"] ?? 0 }}</dd>
-        </div>
-        <div>
-          <dt>{{ "clients.filter_contract_active" | translate }}</dt>
-          <dd>{{ counts()["contract_active"] ?? 0 }}</dd>
-        </div>
-        <div>
-          <dt>{{ "clients.filter_no_contract" | translate }}</dt>
-          <dd class="text-warning-token">{{ counts()["no_contract"] ?? 0 }}</dd>
-        </div>
-        <div>
-          <dt>{{ "common.active" | translate }}</dt>
-          <dd>{{ counts()["active"] ?? 0 }}</dd>
-        </div>
-        <div>
-          <dt>{{ "common.inactive" | translate }}</dt>
-          <dd>{{ counts()["inactive"] ?? 0 }}</dd>
-        </div>
-        <div>
-          <dt>{{ "clients.filter_contract_expired" | translate }}</dt>
-          <dd class="text-danger-token">{{ counts()["contract_expired"] ?? 0 }}</dd>
-        </div>
-      </dl>
-    </div>
+    </header>
 
     <div class="app-card">
       @if (filterChips().length > 0) {
@@ -96,71 +72,53 @@
           </app-empty-state>
         </div>
       } @else {
-        <div class="fx-table-scroll">
-          <table class="table table-hover fx-grid">
-            <thead>
-              <tr>
-                <th>{{ "clients.title" | translate }}</th>
-                <th>{{ "auth.phone" | translate }}</th>
-                <th>{{ "auth.email" | translate }}</th>
-                <th>{{ "clients.contract" | translate }}</th>
-                <th>{{ "clients.payment_status" | translate }}</th>
-                <th>{{ "common.status" | translate }}</th>
-                <th class="text-end">{{ "common.actions" | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (client of clients(); track client.id) {
-                <tr class="cursor-pointer" [style.--fx-row-color]="rowColor(client)" (click)="openClient(client)">
-                  <td>
-                    <div class="fx-cell-lead">
-                      <app-avatar [name]="client.full_name" [size]="34" />
-                      <div class="fx-cell-lead-text">
-                        <div class="fx-cell-lead-title" [innerHTML]="client.full_name | highlight: search()"></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td dir="ltr" class="fx-num">
-                    @if (client.phone) {
-                      <span [innerHTML]="client.phone | highlight: search()"></span>
-                    } @else { — }
-                  </td>
-                  <td>
-                    @if (client.email) {
-                      <span [innerHTML]="client.email | highlight: search()"></span>
-                    } @else { — }
-                  </td>
-                  <td>
-                    @if (client.current_contract) {
-                      {{ client.current_contract.plan.name }}
-                    } @else {
-                      <span class="fx-muted">{{ "clients.no_contract" | translate }}</span>
-                    }
-                  </td>
-                  <td>
-                    @if (client.current_contract) {
-                      <app-status-badge [status]="client.current_contract.payment_status">
-                        {{ ("payments.status_" + client.current_contract.payment_status) | translate }}
-                      </app-status-badge>
-                    } @else {
-                      <span class="fx-muted">—</span>
-                    }
-                  </td>
-                  <td>
-                    <app-status-badge [status]="client.active ? 'active' : 'inactive'">
-                      {{ (client.active ? "common.active" : "common.inactive") | translate }}
-                    </app-status-badge>
-                  </td>
-                  <td class="text-end" (click)="$event.stopPropagation()">
-                    <a [routerLink]="['/owner/clients', client.id]" class="fx-action-trigger" [attr.aria-label]="('common.view' | translate) + ' ' + client.full_name">
-                      <i class="bi bi-chevron-right"></i>
-                    </a>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+        <ul class="lst">
+          @for (client of clients(); track client.id) {
+            <li [style.--fx-row-color]="rowColor(client)">
+              <a class="lst-row" [routerLink]="['/owner/clients', client.id]">
+                <app-avatar [name]="client.full_name" [size]="34" />
+
+                <span class="lst-who">
+                  <span class="lst-who-name" [innerHTML]="client.full_name | highlight: search()"></span>
+                  @if (client.phone) {
+                    <span class="lst-who-sub" dir="ltr" [innerHTML]="client.phone | highlight: search()"></span>
+                  } @else if (client.email) {
+                    <span class="lst-who-sub" [innerHTML]="client.email | highlight: search()"></span>
+                  }
+                </span>
+
+                <!-- The subscription and what is wrong with it, together.
+                     "Plan", "paiement" and "statut" were three columns
+                     answering one question. -->
+                <span class="lst-sub">
+                  @if (client.current_contract; as contract) {
+                    <span class="lst-sub-name">{{ contract.plan.name }}</span>
+                    <span class="lst-sub-state" [attr.data-tone]="contractTone(client)">
+                      {{ contractState(client) }}
+                    </span>
+                  } @else {
+                    <span class="lst-sub-name fx-muted">{{ "clients.no_contract" | translate }}</span>
+                    <span class="lst-sub-state is-link">{{ "clients.subscribe_cta" | translate }}</span>
+                  }
+                </span>
+
+                <span class="lst-seen">
+                  @if (client.last_visit_at) {
+                    {{ client.last_visit_at | date: "d MMM" }}
+                  } @else {
+                    <span class="fx-muted">{{ "clients.never_came" | translate }}</span>
+                  }
+                </span>
+
+                @if (!client.active) {
+                  <span class="badge text-bg-secondary">{{ "common.inactive" | translate }}</span>
+                }
+
+                <i class="bi bi-chevron-right lst-go" aria-hidden="true"></i>
+              </a>
+            </li>
+          }
+        </ul>
 
         <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
       }

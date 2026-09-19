@@ -45,6 +45,7 @@ describe("OwnerPaymentsComponent", () => {
     active: true,
     login_enabled: false,
     joined_at: "2026-01-01",
+    last_visit_at: null,
     current_contract: null,
   };
   const clientDetail: ClientDetail = {

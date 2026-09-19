@@ -310,7 +310,6 @@
   },
   "clients": {
     "title": "Members",
-    "subtitle": "Manage your members, their documents and their history.",
     "new": "Add a member",
     "created": "Client created",
     "search_placeholder": "Search by name, phone, or email...",
@@ -320,9 +319,7 @@
     "filter_contract_active": "Active subscription",
     "filter_contract_expired": "Expired subscription",
     "filter_no_contract": "No subscription",
-    "contract": "Contract",
     "no_contract": "No contract",
-    "payment_status": "Payment",
     "date_of_birth": "Date of birth",
     "gender": "Gender",
     "emergency_contact_name": "Emergency contact name",
@@ -377,7 +374,6 @@
     "abo_no_price": "This plan has no price for the selected activity.",
     "abo_no_price_link": "Set it in the plan settings",
     "filter_status": "Filter by status",
-    "stat_total": "Members",
     "abo_price": "Catalogue price",
     "step_identity": "Identity",
     "step_subscription": "Subscription",
@@ -399,7 +395,11 @@
     "mobile_login_hint": "They will see the schedule, book and cancel. A confirmation email is sent to them.",
     "set_login": "Enable access",
     "reset_login": "Reset",
-    "login_set": "Access enabled."
+    "login_set": "Access enabled.",
+    "subscribe_cta": "Subscribe →",
+    "never_came": "never came",
+    "sessions_left": "{{count}} session(s) left",
+    "until": "until {{date}}"
   },
   "subscription": {
     "title": "Fitora Subscription",

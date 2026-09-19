@@ -2,6 +2,7 @@ import { Component, OnInit, computed, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
+import { DatePipe } from "@angular/common";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Client } from "../../../core/models/client.model";
 import { ClientsService, ClientStatusFilter, EnrolmentSubscription } from "../../../core/services/clients.service";
@@ -34,6 +35,7 @@ import { MoneyPipe } from "../../../shared/pipes/money.pipe";
   selector: "app-clients-list",
   standalone: true,
   imports: [
+    DatePipe,
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
@@ -198,6 +200,40 @@ export class ClientsListComponent implements OnInit {
   onPageChange(page: number): void {
     this.page.set(page);
     this.load();
+  }
+
+  /**
+   * What is true about this member's subscription, in one short phrase.
+   *
+   * Three columns — plan, payment status, active — were three answers to one
+   * question. This is that question answered once, and it leads with whatever
+   * needs doing: money owed before an expiry, an expiry before "all good".
+   */
+  contractState(client: Client): string {
+    const contract = client.current_contract;
+    if (!contract) return "";
+
+    if (contract.payment_status === "unpaid") return this.translate.instant("payments.status_unpaid");
+    if (contract.status === "expired") return this.translate.instant("contract.status_expired");
+    if (contract.remaining_bookings !== null) {
+      return this.translate.instant("clients.sessions_left", { count: contract.remaining_bookings });
+    }
+    if (contract.expires_at) {
+      const until = new Date(contract.expires_at).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+      return this.translate.instant("clients.until", { date: until });
+    }
+
+    return this.translate.instant("common.active");
+  }
+
+  /** Which of those phrases is a problem, for the colour that goes with it. */
+  contractTone(client: Client): "danger" | "warning" | "neutral" {
+    const contract = client.current_contract;
+    if (!contract) return "neutral";
+    if (contract.payment_status === "unpaid" || contract.status === "expired") return "danger";
+    if (contract.remaining_bookings !== null && contract.remaining_bookings <= 1) return "warning";
+
+    return "neutral";
   }
 
   /** The colour of a row's left strip — its contract state at a glance. */

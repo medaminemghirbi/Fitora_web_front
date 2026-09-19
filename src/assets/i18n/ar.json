@@ -310,7 +310,6 @@
   },
   "clients": {
     "title": "الأعضاء",
-    "subtitle": "أدر أعضاءك ومستنداتهم وسجلّهم.",
     "new": "إضافة عضو",
     "created": "تم إنشاء العميل",
     "search_placeholder": "ابحث بالاسم أو الهاتف أو البريد الإلكتروني...",
@@ -320,9 +319,7 @@
     "filter_contract_active": "اشتراك جارٍ",
     "filter_contract_expired": "اشتراك منتهٍ",
     "filter_no_contract": "بدون اشتراك",
-    "contract": "العقد",
     "no_contract": "لا يوجد عقد",
-    "payment_status": "الدفع",
     "date_of_birth": "تاريخ الميلاد",
     "gender": "الجنس",
     "emergency_contact_name": "اسم جهة اتصال الطوارئ",
@@ -377,7 +374,6 @@
     "abo_no_price": "هذه الصيغة ليس لها سعر للنشاط المختار.",
     "abo_no_price_link": "حدّده في إعدادات الصيغ",
     "filter_status": "تصفية حسب الحالة",
-    "stat_total": "المنخرطون",
     "abo_price": "سعر القائمة",
     "step_identity": "الهوية",
     "step_subscription": "الاشتراك",
@@ -399,7 +395,11 @@
     "mobile_login_hint": "سيرى الجدول ويحجز ويلغي. تُرسل إليه رسالة تأكيد.",
     "set_login": "تفعيل الوصول",
     "reset_login": "إعادة تعيين",
-    "login_set": "تمّ تفعيل الوصول."
+    "login_set": "تمّ تفعيل الوصول.",
+    "subscribe_cta": "‏اشتراك ←",
+    "never_came": "لم يحضر قط",
+    "sessions_left": "{{count}} حصة متبقية",
+    "until": "حتى {{date}}"
   },
   "subscription": {
     "title": "اشتراك Fitora",

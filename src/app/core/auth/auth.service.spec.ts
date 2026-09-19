@@ -30,7 +30,8 @@ describe("AuthService", () => {
   const memberClient: Client = {
     id: "cl1", first_name: "M", last_name: "C", full_name: "M C", email: "m@x.test", phone: null,
     active: true, login_enabled: false,
-    joined_at: "2026-01-01", current_contract: null,
+    joined_at: "2026-01-01",
+    last_visit_at: null, current_contract: null,
   };
 
   function buildService(): AuthService {

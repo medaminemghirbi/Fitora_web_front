@@ -20,6 +20,7 @@ function client(overrides: Partial<Client> = {}): Client {
     active: true,
     login_enabled: false,
     joined_at: "2026-01-01T00:00:00Z",
+    last_visit_at: null,
     current_contract: null,
     ...overrides,
   };

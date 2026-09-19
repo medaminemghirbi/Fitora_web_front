@@ -29,6 +29,7 @@ describe("ClientsListComponent", () => {
     active: true,
     login_enabled: false,
     joined_at: "2026-01-01",
+    last_visit_at: null,
     current_contract: null,
   };
 
@@ -284,5 +285,53 @@ describe("ClientsListComponent", () => {
       expect(component.step()).toBe(0);
     });
   });
-});
 
+  describe("what a row says about the subscription", () => {
+    function withContract(overrides: Record<string, unknown>) {
+      return { current_contract: { plan: { name: "Pilates" }, ...overrides } } as never;
+    }
+
+    it("leads with money owed, ahead of anything else", () => {
+      const row = withContract({ payment_status: "unpaid", status: "active", remaining_bookings: 5 });
+
+      expect(component.contractState(row)).toBe("payments.status_unpaid");
+      expect(component.contractTone(row)).toBe("danger");
+    });
+
+    it("says expired when it has run out and nothing is owed", () => {
+      const row = withContract({ payment_status: "paid", status: "expired", remaining_bookings: null });
+
+      expect(component.contractState(row)).toBe("contract.status_expired");
+      expect(component.contractTone(row)).toBe("danger");
+    });
+
+    it("counts the sessions left on a session card", () => {
+      const row = withContract({ payment_status: "paid", status: "active", remaining_bookings: 3 });
+
+      expect(component.contractState(row)).toBe("clients.sessions_left");
+      expect(component.contractTone(row)).toBe("neutral");
+    });
+
+    it("warns when the card is nearly spent", () => {
+      const row = withContract({ payment_status: "paid", status: "active", remaining_bookings: 1 });
+
+      expect(component.contractTone(row)).toBe("warning");
+    });
+
+    it("gives the end date for an unlimited plan", () => {
+      const row = withContract({
+        payment_status: "paid", status: "active", remaining_bookings: null,
+        expires_at: "2026-10-14T00:00:00Z",
+      });
+
+      expect(component.contractState(row)).toBe("clients.until");
+    });
+
+    it("says nothing at all when there is no subscription", () => {
+      const row = { current_contract: null } as never;
+
+      expect(component.contractState(row)).toBe("");
+      expect(component.contractTone(row)).toBe("neutral");
+    });
+  });
+});
