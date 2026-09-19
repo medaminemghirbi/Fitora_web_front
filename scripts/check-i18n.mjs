@@ -90,6 +90,11 @@ for (const file of walk(SRC)) {
     pattern.lastIndex = 0;
     let match;
     while ((match = pattern.exec(text)) !== null) {
+      // As in a template: a literal ending in "_" is the front half of a key
+      // assembled at runtime (`"team.access_" + key`). The template path
+      // already skipped those; .instant() calls are assembled the same way
+      // and were not.
+      if (match[1].endsWith("_")) continue;
       if (!seen.has(match[1])) seen.set(match[1], relative(ROOT, file));
     }
   }
