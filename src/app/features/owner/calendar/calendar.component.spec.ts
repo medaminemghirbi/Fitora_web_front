@@ -154,8 +154,13 @@ describe("CalendarComponent", () => {
     expect(businessHours.endTime).toBe("22:00");
   });
 
-  it("hides closed days from the grid entirely instead of just dimming them", () => {
-    expect(component.calendarOptions().hiddenDays).toEqual([0, 6]);
+  it("hides closed days from the grid, but never today", () => {
+    // A gym closed on Saturday still has a Saturday, and hiding it made
+    // "Aujourd'hui" look broken: the button fired, today had no column, and
+    // the view rolled on to the next open week.
+    const today = new Date().getDay();
+
+    expect(component.calendarOptions().hiddenDays).toEqual([ 0, 6 ].filter((day) => day !== today));
   });
 
   it("keeps every day as a working day (nothing hidden) when the company call fails", () => {
@@ -606,6 +611,28 @@ describe("CalendarComponent", () => {
 
       expect(el.classList).toContain("is-uncoached");
       expect(el.querySelector(".fx-ev-coach.is-missing")).toBeTruthy();
+    });
+
+    it("puts a short session on one line — twenty pixels cannot hold four", () => {
+      const el = render({
+        ...base,
+        starts_at: new Date(Date.now() + 86_400_000).toISOString(),
+        // Twenty minutes, like an EMS slot.
+        ends_at: new Date(Date.now() + 86_400_000 + 20 * 60_000).toISOString(),
+      });
+
+      expect(el.classList).toContain("fx-ev--compact");
+      expect(el.querySelector(".fx-ev-line")).toBeTruthy();
+      expect(el.querySelector(".fx-ev-title")).toBeNull();
+      expect(el.querySelector(".fx-ev-count.is-hidden")).toBeTruthy();
+    });
+
+    it("keeps the full stack on a session with room for it", () => {
+      const el = render(base);
+
+      expect(el.classList).not.toContain("fx-ev--compact");
+      expect(el.querySelector(".fx-ev-title")).toBeTruthy();
+      expect(el.querySelector(".fx-ev-line")).toBeNull();
     });
 
     it("marks the session that is running right now", () => {

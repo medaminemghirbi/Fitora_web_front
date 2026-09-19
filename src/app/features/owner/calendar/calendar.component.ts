@@ -133,12 +133,19 @@ export class CalendarComponent implements OnInit {
   private workingDays: number[] = [0, 1, 2, 3, 4, 5, 6];
 
   private applyBusinessHours(): void {
-    const closedDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !this.workingDays.includes(d));
+    // Closed days are dropped from the grid: a day the gym never opens has
+    // no column to show. Today is the exception — a gym closed on Saturday
+    // still has a Saturday, and hiding it meant "Aujourd'hui" looked broken.
+    // It fired, moved to today, and today had no column, so the view rolled
+    // on to the next open week and nothing appeared to happen.
+    const today = new Date().getDay();
+    const closedDays = [ 0, 1, 2, 3, 4, 5, 6 ].filter(
+      (day) => !this.workingDays.includes(day) && day !== today
+    );
+
     this.calendarOptions.update((opts) => ({
       ...opts,
       businessHours: { daysOfWeek: this.workingDays, startTime: this.businessStart, endTime: this.businessEnd },
-      // Closed days are dropped from the grid entirely (not just dimmed) —
-      // a day the gym never opens has no column to show.
       hiddenDays: closedDays,
     }));
   }
@@ -383,22 +390,36 @@ export class CalendarComponent implements OnInit {
 
   private renderEvent(arg: EventContentArg): { domNodes: Node[] } {
     const session = arg.event.extendedProps["session"] as Session;
-    const compact = arg.view.type === "dayGridMonth";
+    // A short session has no room for four stacked lines. An EMS slot is
+    // twenty minutes — about twenty pixels — and the block was rendering the
+    // time, the activity, the coach and the count into it, which crushed all
+    // four into an unreadable stripe.
+    const minutes = (new Date(session.ends_at).getTime() - new Date(session.starts_at).getTime()) / 60_000;
+    const compact = arg.view.type === "dayGridMonth" || minutes < 45;
 
     const root = document.createElement("div");
     root.className = compact ? "fx-ev fx-ev--compact" : "fx-ev";
     if (!session.coach_id) root.classList.add("is-uncoached");
     if (this.isRunning(session)) root.classList.add("is-now");
 
-    const time = document.createElement("span");
-    time.className = "fx-ev-time";
-    time.textContent = arg.timeText;
-    root.appendChild(time);
+    if (compact) {
+      // One line: the start and what it is. Everything else is a hover away,
+      // and legible beats complete in twenty pixels.
+      const line = document.createElement("span");
+      line.className = "fx-ev-line";
+      line.textContent = `${arg.timeText} ${session.activity_name}`;
+      root.appendChild(line);
+    } else {
+      const time = document.createElement("span");
+      time.className = "fx-ev-time";
+      time.textContent = arg.timeText;
+      root.appendChild(time);
 
-    const title = document.createElement("span");
-    title.className = "fx-ev-title";
-    title.textContent = `${session.activity_emoji ? session.activity_emoji + " " : ""}${session.activity_name}`;
-    root.appendChild(title);
+      const title = document.createElement("span");
+      title.className = "fx-ev-title";
+      title.textContent = `${session.activity_emoji ? session.activity_emoji + " " : ""}${session.activity_name}`;
+      root.appendChild(title);
+    }
 
     // A session nobody is running is a problem, and the calendar is where it
     // gets fixed — so it says so here rather than only on the dashboard.
@@ -420,6 +441,7 @@ export class CalendarComponent implements OnInit {
 
     const count = document.createElement("span");
     count.className = "fx-ev-count";
+    if (compact) count.classList.add("is-hidden");
     if (session.confirmed_count >= session.capacity) count.classList.add("is-full");
     count.textContent = `${session.confirmed_count}/${session.capacity}`;
     root.appendChild(count);

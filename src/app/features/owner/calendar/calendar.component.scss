@@ -51,6 +51,23 @@
   }
 
   ::ng-deep .fx-ev-time { font-size: 0.65rem; font-weight: 700; opacity: 0.85; font-variant-numeric: tabular-nums; }
+
+  // A short session says its time and what it is, on one line, and nothing
+  // else. Four stacked lines in twenty pixels read as a smear.
+  ::ng-deep .fx-ev-line {
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::ng-deep .fx-ev-count.is-hidden { display: none; }
+
+  // Short blocks are centred rather than top-aligned: with one line, the
+  // padding that gives a tall block its shape leaves a short one lopsided.
+  ::ng-deep .fx-ev--compact { justify-content: center; }
   ::ng-deep .fx-ev-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   ::ng-deep .fx-ev-coach {
     font-size: 0.68rem;
@@ -69,7 +86,9 @@
   ::ng-deep .fx-ev.is-uncoached {
     background: var(--color-warning-soft);
     border-inline-start: 3px solid var(--color-warning);
-    color: var(--color-warning);
+    // Amber text on an amber ground does not carry at this size; the ink
+    // stays dark and the ground does the signalling.
+    color: var(--color-text);
   }
 
   // Happening now: the accent, matching the dashboard's live row.
