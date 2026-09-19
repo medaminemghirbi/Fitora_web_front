@@ -8,6 +8,8 @@
 // defines, which is what makes removing a framework safe to do at all.
 @import "bootstrap-icons/font/bootstrap-icons.css";
 @import "styles/tokens";
+// The element reset the component layer assumes. Was Bootstrap's Reboot.
+@import "styles/reset";
 @import "styles/utilities";
 // Fitora's own component layer, one file per concern. Was a single 1208-line
 // _fitora.scss, which is why screens drifted: nobody could see what was
@@ -22,14 +24,13 @@
 @import "styles/components/filters";
 @import "styles/components/navigation";
 @import "styles/components/overlays";
+@import "styles/components/list";
 @import "styles/components/list-page";
 @import "styles/components/calendar";
 @import "styles/components/misc";
 @import "styles/leftovers";
 @import "styles/shell";
 @import "styles/marketing";
-
-* { box-sizing: border-box; }
 
 html, body { height: 100%; }
 
