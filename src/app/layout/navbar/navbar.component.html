@@ -1,10 +1,10 @@
-<header class="app-navbar app-navbar-menu">
+<header class="app-navbar">
   <div class="app-navbar-inner">
     <a [routerLink]="brandHome" class="app-navbar-brand" [class.d-lg-none]="!showBrand">
       <span class="app-navbar-mark">
         @if (brandLogoUrl) { <img [src]="brandLogoUrl" alt="" /> } @else { <i class="bi bi-lightning-charge-fill"></i> }
       </span>
-      <span class="app-navbar-brand-text d-none d-sm-inline">{{ brandName }}@if (brandSuffix) { <small>{{ brandSuffix }}</small> }</span>
+      <span class="d-none d-sm-inline">{{ brandName }}@if (brandSuffix) { <small>{{ brandSuffix }}</small> }</span>
     </a>
 
     <button type="button" class="app-navbar-burger d-lg-none" (click)="mobileOpen.set(!mobileOpen())"

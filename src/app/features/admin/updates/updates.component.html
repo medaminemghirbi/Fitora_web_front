@@ -44,7 +44,7 @@
                       <img [src]="m.url | mediaUrl" [alt]="m.filename" />
                     </a>
                   } @else {
-                    <a [href]="m.url | mediaUrl" target="_blank" rel="noopener" class="update-media-tile is-video">
+                    <a [href]="m.url | mediaUrl" target="_blank" rel="noopener" class="update-media-tile">
                       <video [src]="m.url | mediaUrl" muted preload="metadata"></video>
                       <span class="update-media-play"><i class="bi bi-play-fill"></i></span>
                     </a>

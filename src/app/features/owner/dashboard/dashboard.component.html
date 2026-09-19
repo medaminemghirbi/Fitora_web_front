@@ -13,7 +13,7 @@
   </app-page-header>
 
   @if (showSetupCard) {
-    <div class="app-card dashboard-setup-card">
+    <div class="app-card">
       <div class="app-card-header">
         <h2>{{ "getting_started.card_title" | translate }}</h2>
         <a routerLink="/owner/getting-started" class="btn btn-sm btn-outline-secondary">
@@ -27,7 +27,7 @@
   }
 
   @if (data(); as d) {
-    <div class="fx-stack fx-dashboard">
+    <div class="fx-stack">
       <section class="app-card dashboard-attention" aria-labelledby="dash-attention-h">
         <div class="app-card-header">
           <h2 id="dash-attention-h">{{ "dashboard.needs_attention" | translate }}</h2>
