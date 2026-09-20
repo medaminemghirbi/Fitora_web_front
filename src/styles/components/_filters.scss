@@ -116,3 +116,82 @@ mark.fx-hl {
     color: var(--color-text);
   }
 }
+
+// ---------- Status chips -------------------------------------------------
+// The status filter, out of the left rail and onto one row above the table.
+// The radio stays for the semantics and is hidden; the label is the pill.
+.fx-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.fx-chips-legend {
+  float: none;
+  width: auto;
+  padding: 0;
+  margin: 0;
+  // The pills say what they filter; the legend is for whoever cannot see them.
+  position: absolute;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.fx-chip-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.fx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4375rem 0.8125rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.78125rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-border-strong);
+  }
+}
+
+.fx-chip-count {
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+  font-size: 0.71875rem;
+  font-weight: 700;
+}
+
+// The selected pill takes its own status colour, so the filter and the
+// strip down the matching rows are visibly the same thing.
+.fx-chip-input:checked + .fx-chip {
+  border-color: var(--fx-chip-color, var(--color-primary));
+  background: var(--fx-chip-color, var(--color-primary));
+  color: #fff;
+
+  .fx-chip-count {
+    background: rgb(255 255 255 / 0.22);
+    color: #fff;
+  }
+}
+
+.fx-chip-input:focus-visible + .fx-chip {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

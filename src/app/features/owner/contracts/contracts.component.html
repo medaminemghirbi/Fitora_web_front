@@ -1,26 +1,5 @@
 <div class="fx-listpage">
   <app-filter-rail [activeCount]="filterChips().length">
-    <div class="fx-rail-block">
-      <div class="fx-input-icon">
-        <i class="bi bi-search"></i>
-        <input
-          type="search"
-          class="form-control form-control-sm"
-          [ngModel]="search()"
-          (ngModelChange)="onSearchChange($event)"
-          [placeholder]="'contracts.search_placeholder' | translate"
-          [attr.aria-label]="'contracts.search_placeholder' | translate"
-        />
-      </div>
-    </div>
-
-    <app-status-filter
-      name="contract-status"
-      [legend]="'clients.filter_status' | translate"
-      [value]="contractStatusFilter()"
-      [options]="railOptions()"
-      (valueChange)="applyContractFilter($any($event))"
-    />
 
     <div class="fx-rail-block">
       <label class="fx-rail-label" for="contract-plan-filter">{{ "contract_types.plan" | translate }}</label>
@@ -48,6 +27,17 @@
     <header class="lst-head">
       <h1>{{ "nav.subscriptions" | translate }}</h1>
       <span class="lst-head-count">{{ counts()["all"] ?? 0 }}</span>
+      <div class="lst-head-search fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+          [placeholder]="'contracts.search_placeholder' | translate"
+          [attr.aria-label]="'contracts.search_placeholder' | translate"
+        />
+      </div>
     </header>
 
     <!-- One tab per plan, with how many contracts it holds for the current search. -->
@@ -84,6 +74,15 @@
         </div>
       </dl>
     </div>
+
+    <app-status-filter
+      name="contract-status"
+      [legend]="'clients.filter_status' | translate"
+      [value]="contractStatusFilter()"
+      [options]="railOptions()"
+      (valueChange)="applyContractFilter($any($event))"
+    />
+
 
     <div class="app-card">
       @if (filterChips().length > 0) {

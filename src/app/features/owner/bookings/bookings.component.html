@@ -1,26 +1,5 @@
 <div class="fx-listpage">
   <app-filter-rail [activeCount]="filterChips().length">
-    <div class="fx-rail-block">
-      <div class="fx-input-icon">
-        <i class="bi bi-search"></i>
-        <input
-          type="search"
-          class="form-control form-control-sm"
-          [ngModel]="search()"
-          (ngModelChange)="onSearchChange($event)"
-          [placeholder]="'bookings.search_placeholder' | translate"
-          [attr.aria-label]="'bookings.search_placeholder' | translate"
-        />
-      </div>
-    </div>
-
-    <app-status-filter
-      name="booking-status"
-      [legend]="'clients.filter_status' | translate"
-      [value]="statusFilter()"
-      [options]="railOptions()"
-      (valueChange)="applyStatusFilter($event)"
-    />
 
     <div class="fx-rail-block">
       <label class="fx-rail-label" for="booking-date-filter">{{ "bookings.date" | translate }}</label>
@@ -39,6 +18,17 @@
     <header class="lst-head">
       <h1>{{ "bookings.title" | translate }}</h1>
       <span class="lst-head-count">{{ meta()?.total ?? 0 }}</span>
+      <div class="lst-head-search fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+          [placeholder]="'bookings.search_placeholder' | translate"
+          [attr.aria-label]="'bookings.search_placeholder' | translate"
+        />
+      </div>
     </header>
 
     <nav class="fx-cat-tabs" [attr.aria-label]="'common.status' | translate">
@@ -49,6 +39,15 @@
         </button>
       }
     </nav>
+
+    <app-status-filter
+      name="booking-status"
+      [legend]="'clients.filter_status' | translate"
+      [value]="statusFilter()"
+      [options]="railOptions()"
+      (valueChange)="applyStatusFilter($event)"
+    />
+
 
     <div class="app-card">
       @if (filterChips().length > 0) {

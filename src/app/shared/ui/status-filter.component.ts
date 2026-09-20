@@ -9,30 +9,36 @@ export interface StatusFilterOption {
 }
 
 /**
- * The rail's status list: a colour strip, the label, how many rows match,
- * and a radio. Radios (not buttons) because picking a status is picking one
- * of a set — screen readers and the keyboard get that for free.
+ * The status filter: one pill per state, each carrying how many rows match.
+ *
+ * The count is on the pill because you pick "the 4 overdue" already knowing
+ * there are 4 — a filter that hides its own size makes you click to find
+ * out whether it was worth clicking.
+ *
+ * Radios, not buttons: picking a status is picking one of a set, and screen
+ * readers and the keyboard get that for free. The input is visually hidden
+ * and the label is the pill, so the semantics survive the styling.
  */
 @Component({
   selector: "app-status-filter",
   standalone: true,
   template: `
-    <fieldset class="fx-rail-group">
-      <legend class="fx-rail-legend">{{ legend }}</legend>
+    <fieldset class="fx-chips">
+      <legend class="fx-chips-legend">{{ legend }}</legend>
       @for (opt of options; track opt.value) {
-        <div class="fx-rail-status" [class.is-active]="opt.value === value">
-          <span class="fx-rail-status-strip" [style.background]="opt.color"></span>
-          <label [for]="name + '-' + opt.value">{{ opt.label }}</label>
-          <span class="fx-rail-status-count">{{ opt.count }}</span>
-          <input
-            type="radio"
-            [id]="name + '-' + opt.value"
-            [name]="name"
-            [value]="opt.value"
-            [checked]="opt.value === value"
-            (change)="valueChange.emit(opt.value)"
-          />
-        </div>
+        <input
+          type="radio"
+          class="fx-chip-input"
+          [id]="name + '-' + opt.value"
+          [name]="name"
+          [value]="opt.value"
+          [checked]="opt.value === value"
+          (change)="valueChange.emit(opt.value)"
+        />
+        <label class="fx-chip" [for]="name + '-' + opt.value" [style.--fx-chip-color]="opt.color">
+          {{ opt.label }}
+          <span class="fx-chip-count">{{ opt.count }}</span>
+        </label>
       }
     </fieldset>
   `,

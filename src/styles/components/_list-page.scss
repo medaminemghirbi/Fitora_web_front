@@ -127,3 +127,27 @@
     &.is-open { display: flex; }
   }
 }
+
+// ---- header search + the chip row ---------------------------------------
+// The status filter left the rail; a list page's whole filter surface is now
+// its header (search, the actions) and one row of pills above the table.
+.lst-head-search {
+  margin-inline-start: auto;
+  max-width: 260px;
+  width: 100%;
+}
+
+.lst-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 767.98px) {
+  .lst-head-search {
+    order: 3;
+    max-width: none;
+    margin-inline-start: 0;
+  }
+}

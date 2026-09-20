@@ -25,7 +25,6 @@ import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
-import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
 import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
 import { WizardStepsComponent } from "../../../shared/ui/wizard-steps.component";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
@@ -48,7 +47,6 @@ import { MoneyPipe } from "../../../shared/pipes/money.pipe";
     HighlightPipe,
     SkeletonComponent,
     ErrorStateComponent,
-    FilterRailComponent,
     StatusFilterComponent,
     WizardStepsComponent,
     MoneyPipe,

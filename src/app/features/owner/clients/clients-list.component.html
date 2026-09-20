@@ -1,7 +1,13 @@
 <div class="fx-listpage">
-  <app-filter-rail [activeCount]="filterChips().length">
-    <div class="fx-rail-block">
-      <div class="fx-input-icon">
+
+  <div class="fx-listpage-main">
+    <!-- The count belongs in the title: "Membres 248" answers a question
+         before anyone touches a filter. The six-figure stats bar said the
+         same thing as the rail's own counts, one row lower. -->
+    <header class="lst-head">
+      <h1>{{ "nav.clients" | translate }}</h1>
+      <span class="lst-head-count">{{ counts()["all"] ?? 0 }}</span>
+      <div class="lst-head-search fx-input-icon">
         <i class="bi bi-search"></i>
         <input
           type="search"
@@ -12,38 +18,29 @@
           [attr.aria-label]="'clients.search_placeholder' | translate"
         />
       </div>
-    </div>
+      <button type="button" class="btn btn-outline-secondary" (click)="exportCsv()">
+        <i class="bi bi-download"></i> {{ "common.export" | translate }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> {{ "clients.new" | translate }}
+      </button>
+    </header>
 
-    <button type="button" class="btn btn-primary btn-sm w-100" (click)="exportCsv()">
-      <i class="bi bi-download"></i> {{ "common.export" | translate }} (CSV)
-    </button>
-
-    <app-status-filter
+    <div class="lst-filters">
+      <app-status-filter
       name="client-status"
       [legend]="'clients.filter_status' | translate"
       [value]="statusFilter()"
       [options]="railOptions()"
       (valueChange)="applyStatusFilter($any($event))"
-    />
+      />
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+        </button>
+      }
+    </div>
 
-    @if (hasFilters()) {
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">
-        <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
-      </button>
-    }
-  </app-filter-rail>
-
-  <div class="fx-listpage-main">
-    <!-- The count belongs in the title: "Membres 248" answers a question
-         before anyone touches a filter. The six-figure stats bar said the
-         same thing as the rail's own counts, one row lower. -->
-    <header class="lst-head">
-      <h1>{{ "nav.clients" | translate }}</h1>
-      <span class="lst-head-count">{{ counts()["all"] ?? 0 }}</span>
-      <button type="button" class="btn btn-primary" (click)="openCreate()">
-        <i class="bi bi-plus-lg"></i> {{ "clients.new" | translate }}
-      </button>
-    </header>
 
     <div class="app-card">
       @if (filterChips().length > 0) {
