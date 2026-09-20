@@ -7,13 +7,20 @@ import { LocaleService, Locale, LOCALES } from "../../core/services/locale.servi
 import { ThemeService } from "../../core/services/theme.service";
 
 /**
- * Public landing page — light, app-native direction: the same tokens the
- * product itself runs on (src/styles/_tokens.scss), rather than a separate
- * dark marketing skin. The product is evoked with a "cockpit" panel and an
- * illustrated bento built from divs — no screenshots. The signature
- * gradient (violet → raspberry → sunglow) carries the hero, the primary CTA
- * and the brand mark. Nav and footer are inline here rather than the shared
- * light <app-landing-header>/<app-landing-footer> used on the auth pages.
+ * Public landing page — the same tokens the product itself runs on
+ * (src/styles/_tokens.scss), not a separate marketing skin.
+ *
+ * The hero shows the planning instead of describing it: four rooms across
+ * one day, nothing twice in the same room. That is the product's actual
+ * claim, and a picture of it argues better than a sentence. Built from
+ * divs, so there is no screenshot to go stale.
+ *
+ * Calm on purpose. The glow, the blobs, the shimmering gradient headline
+ * and the marquee all competed with the one thing worth looking at, and a
+ * tilt-on-hover panel asked to be played with rather than read.
+ *
+ * Nav and footer are inline here rather than the shared
+ * <app-landing-header>/<app-landing-footer> used on the auth pages.
  */
 @Component({
   selector: "app-landing",
@@ -31,6 +38,66 @@ export class LandingComponent implements AfterViewInit {
   readonly mobileOpen = signal(false);
   readonly locales = LOCALES;
   readonly year = signal(new Date().getFullYear());
+
+  /**
+   * One day across the gym's rooms, for the hero's product panel.
+   *
+   * It shows the promise rather than stating it: four rooms, a day of
+   * sessions, and no two in the same room at once — which is a database
+   * exclusion constraint, not a rule this screen is enforcing.
+   *
+   * `span` is how many of the six time columns the session covers.
+   */
+  readonly heroRooms = [
+    {
+      name: "Studio 1",
+      capacity: "24 places",
+      slots: [
+        { label: "Cross-training", span: 2, tone: "brand" },
+        { label: "", span: 1, tone: "" },
+        { label: "Circuit", span: 2, tone: "brand" },
+        { label: "", span: 1, tone: "" },
+      ],
+    },
+    {
+      name: "Studio 2",
+      capacity: "12 places",
+      slots: [
+        { label: "", span: 1, tone: "" },
+        { label: "Pilates", span: 2, tone: "accent" },
+        { label: "", span: 1, tone: "" },
+        { label: "Yoga", span: 2, tone: "accent" },
+      ],
+    },
+    {
+      name: "Cabine EMS",
+      capacity: "4 places",
+      slots: [
+        { label: "EMS", span: 1, tone: "ok" },
+        { label: "", span: 2, tone: "" },
+        { label: "EMS", span: 1, tone: "ok" },
+        { label: "EMS", span: 1, tone: "ok" },
+        { label: "", span: 1, tone: "" },
+      ],
+    },
+    {
+      name: "Ring",
+      capacity: "16 places",
+      slots: [
+        { label: "", span: 4, tone: "" },
+        { label: "Boxe · complet", span: 2, tone: "warn" },
+      ],
+    },
+  ];
+
+  readonly heroHours = ["07h", "09h", "11h", "15h", "17h", "19h"];
+
+  /** Three claims the product can actually make. */
+  readonly heroNumbers = [
+    { value: "0", textKey: "landing.number_no_clash" },
+    { value: "3", textKey: "landing.number_languages" },
+    { value: "14 j", textKey: "landing.number_trial" },
+  ];
 
   // A gym week, purely illustrative — the mini planning grid in the first
   // feature card. `f` = full (waitlist), `on` = a class runs, "" = free slot.
@@ -84,21 +151,6 @@ export class LandingComponent implements AfterViewInit {
   setLocale(code: Locale): void {
     this.locale.setLocale(code);
     this.langMenuOpen.set(false);
-  }
-
-  // ---- cockpit 3D tilt on hover ----
-  readonly cockpitTilt = signal("");
-
-  onCockpitMove(ev: MouseEvent): void {
-    const el = ev.currentTarget as HTMLElement;
-    const r = el.getBoundingClientRect();
-    const px = (ev.clientX - r.left) / r.width - 0.5;
-    const py = (ev.clientY - r.top) / r.height - 0.5;
-    this.cockpitTilt.set(`rotateX(${(-py * 8).toFixed(2)}deg) rotateY(${(px * 10).toFixed(2)}deg)`);
-  }
-
-  onCockpitLeave(): void {
-    this.cockpitTilt.set("");
   }
 
   ngAfterViewInit(): void {

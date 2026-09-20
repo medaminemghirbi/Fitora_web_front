@@ -1,21 +1,51 @@
-<div class="apro">
-  <header class="apro-bar">
-    <a routerLink="/" class="apro-brand">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12z"/></svg>
-      fitora
-    </a>
-    @if (asideLinkText) {
-      <span class="apro-aside">
-        {{ asideText }}
-        <a [routerLink]="asideLink">{{ asideLinkText }}</a>
-      </span>
-    }
-  </header>
+<div class="apro" [class.is-split]="pitch">
+  @if (pitch) {
+    <section class="apro-pitch" aria-labelledby="apro-pitch-h">
+      <div class="apro-pitch-top">
+        <span class="apro-pitch-brand">
+          <span class="apro-pitch-mark">F</span>
+          Fitora.
+        </span>
+        <span class="apro-pitch-tagline" dir="rtl" lang="ar">{{ "auth.pitch_tagline" | translate }}</span>
+      </div>
 
-  <main class="apro-main">
-    <div class="apro-col" [class.is-wide]="wide">
-      <span class="apro-eyebrow">{{ "auth.pro_space" | translate }}</span>
-      <ng-content></ng-content>
-    </div>
-  </main>
+      <div class="apro-pitch-body">
+        <h2 id="apro-pitch-h">{{ "auth.pitch_title" | translate }}</h2>
+        <ul>
+          @for (key of pitchPoints; track key) {
+            <li>
+              <span class="apro-pitch-tick" aria-hidden="true">
+                <i class="bi bi-check-lg"></i>
+              </span>
+              {{ key | translate }}
+            </li>
+          }
+        </ul>
+      </div>
+
+      <span class="apro-pitch-foot">{{ "auth.pitch_foot" | translate }}</span>
+    </section>
+  }
+
+  <div class="apro-side">
+    <header class="apro-bar">
+      <a routerLink="/" class="apro-brand">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12z"/></svg>
+        fitora
+      </a>
+      @if (asideLinkText) {
+        <span class="apro-aside">
+          {{ asideText }}
+          <a [routerLink]="asideLink">{{ asideLinkText }}</a>
+        </span>
+      }
+    </header>
+
+    <main class="apro-main">
+      <div class="apro-col" [class.is-wide]="wide">
+        <span class="apro-eyebrow">{{ "auth.pro_space" | translate }}</span>
+        <ng-content></ng-content>
+      </div>
+    </main>
+  </div>
 </div>

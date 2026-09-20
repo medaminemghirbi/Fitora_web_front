@@ -2,9 +2,18 @@
   [asideText]="'auth.have_account' | translate"
   [asideLinkText]="'auth.sign_in' | translate"
   asideLink="/connexion"
+  [pitch]="true"
 >
   <h1 class="auth-title">{{ "auth.register_title" | translate }}</h1>
   <p class="auth-subtitle">{{ "auth.register_subtitle" | translate }}</p>
+
+  <!-- What is left after this screen. The account is one of three steps and
+       saying so up front is why someone finishes the other two. -->
+  <ol class="auth-steps" [attr.aria-label]="'auth.register_title' | translate">
+    <li aria-current="step"><span>1</span> {{ "auth.step_account" | translate }}</li>
+    <li><span>2</span> {{ "auth.step_gym" | translate }}</li>
+    <li><span>3</span> {{ "auth.step_plan" | translate }}</li>
+  </ol>
 
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     @if (error()) {

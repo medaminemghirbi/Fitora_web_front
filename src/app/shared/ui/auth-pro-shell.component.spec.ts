@@ -40,4 +40,37 @@ describe("AuthProShellComponent", () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector(".apro-col")?.classList).toContain("is-wide");
   });
+
+  describe("the pitch half", () => {
+    it("stays off by default — signing in knows why it is here", () => {
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector(".apro-pitch")).toBeNull();
+      expect(fixture.nativeElement.querySelector(".apro")?.classList).not.toContain("is-split");
+    });
+
+    it("splits the page and names what Fitora does", () => {
+      component.pitch = true;
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector(".apro")?.classList).toContain("is-split");
+      expect(fixture.nativeElement.querySelectorAll(".apro-pitch-body li").length).toBe(component.pitchPoints.length);
+    });
+
+    it("marks the Arabic tagline as Arabic, so it reads right to left", () => {
+      component.pitch = true;
+      fixture.detectChanges();
+
+      const tagline: HTMLElement = fixture.nativeElement.querySelector(".apro-pitch-tagline");
+      expect(tagline.getAttribute("dir")).toBe("rtl");
+      expect(tagline.getAttribute("lang")).toBe("ar");
+    });
+
+    it("keeps the form half whatever the pitch does", () => {
+      component.pitch = true;
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector(".apro-col")).toBeTruthy();
+    });
+  });
 });

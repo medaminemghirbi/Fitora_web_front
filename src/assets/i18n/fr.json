@@ -106,7 +106,17 @@
     "register_cta": "Créer mon compte",
     "register_trial_note": "14 jours d'accès complet. Aucune carte bancaire : passé ce délai, vous demandez l'activation depuis votre espace.",
     "password_min": "8 caractères minimum.",
-    "email_invalid": "Adresse e-mail invalide."
+    "email_invalid": "Adresse e-mail invalide.",
+    "pitch_tagline": "إدارة قاعتك، ببساطة",
+    "pitch_title": "Gérez votre salle comme un vrai club.",
+    "pitch_point_booking": "Zéro double réservation — la contrainte vit dans la base",
+    "pitch_point_one_place": "Abonnements, séances et présences au même endroit",
+    "pitch_point_receipts": "Reçus et factures en dinars, générés en un clic",
+    "pitch_point_any_gym": "Musculation, Pilates, EMS, boxe — une seule application",
+    "pitch_foot": "Fitora — Tunisie",
+    "step_account": "Compte",
+    "step_gym": "Salle",
+    "step_plan": "Formule"
   },
   "nav": {
     "switch_company": "Changer de société",
@@ -1249,7 +1259,17 @@
     "faq_q_8": "Y a-t-il un engagement ?",
     "faq_a_8": "Aucun engagement de durée — vous pouvez arrêter à tout moment.",
     "faq_q_9": "Mes coachs peuvent-ils utiliser Fitora sur mobile ?",
-    "faq_a_9": "Oui, chaque coach dispose d'un accès mobile pour suivre son planning et pointer les présences."
+    "faq_a_9": "Oui, chaque coach dispose d'un accès mobile pour suivre son planning et pointer les présences.",
+    "nav_pricing": "Voir les tarifs",
+    "panel_title": "Fitora · Planning",
+    "panel_new": "Séance",
+    "panel_sessions": "Séances",
+    "panel_present": "Présents",
+    "panel_members": "Membres actifs",
+    "panel_no_clash": "Aucun conflit de salle",
+    "number_no_clash": "double réservation possible — la contrainte vit dans la base, pas dans l'écran.",
+    "number_languages": "langues sur chaque écran et chaque reçu — français, anglais, arabe.",
+    "number_trial": "d'essai complet, sans carte bancaire et sans fonctionnalité bridée."
   },
   "palette": {
     "trigger": "Rechercher",

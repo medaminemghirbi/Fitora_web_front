@@ -54,86 +54,82 @@
   <main>
     <!-- HERO -->
     <section class="lp-hero">
-      <span class="lp-glow"></span>
-      <span class="lp-blob lp-blob--1" aria-hidden="true"></span>
-      <span class="lp-blob lp-blob--2" aria-hidden="true"></span>
-      <span class="lp-blob lp-blob--3" aria-hidden="true"></span>
       <div class="lp-shell lp-hero-grid">
         <div class="lp-hero-copy">
-          <span class="lp-eyebrow">{{ "landing.eyebrow" | translate }}</span>
-          <h1 class="lp-h1">{{ "landing.hero_title_1" | translate }}<br /><span class="lp-grad-text lp-shimmer">{{ "landing.hero_title_2" | translate }}</span></h1>
+          <span class="lp-eyebrow"><span class="lp-eyebrow-dash" aria-hidden="true"></span>{{ "landing.eyebrow" | translate }}</span>
+          <h1 class="lp-h1">
+            {{ "landing.hero_title_1" | translate }}<br /><span class="lp-h1-accent">{{ "landing.hero_title_2" | translate }}</span>
+          </h1>
           <p class="lp-hero-sub">{{ "landing.hero_subtitle" | translate }}</p>
           <div class="lp-hero-cta">
-            <a routerLink="/inscription" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.hero_cta_primary" | translate }}</a>
-            <a routerLink="/connexion" class="lp-btn lp-btn--ghost lp-btn--lg">{{ "auth.login" | translate }}</a>
+            <a routerLink="/inscription" class="lp-cta">
+              {{ "landing.hero_cta_primary" | translate }}
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+            <a [routerLink]="['/']" fragment="pricing" class="lp-cta-quiet">{{ "landing.nav_pricing" | translate }}</a>
           </div>
           <p class="lp-hero-note">{{ "landing.hero_note" | translate }}</p>
         </div>
 
-        <div class="lp-cockpit-wrap">
-          <div class="lp-cockpit" [style.transform]="cockpitTilt() ? 'perspective(1200px) ' + cockpitTilt() : 'perspective(1200px)'"
-               (mousemove)="onCockpitMove($event)" (mouseleave)="onCockpitLeave()">
-            <div class="lp-cp-head">
-              <span class="lp-cp-title">{{ "landing.panel_today" | translate }}</span>
-              <span class="lp-cp-ctx">{{ "landing.panel_context" | translate }}</span>
-            </div>
+        <!-- The panel shows the planning, so it shows the promise: four
+             rooms across one day, and nothing twice in the same room. -->
+        <div class="lp-panel">
+          <div class="lp-panel-chrome">
+            <span class="lp-panel-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span class="lp-panel-name">{{ "landing.panel_title" | translate }}</span>
+            <span class="lp-panel-new">+ {{ "landing.panel_new" | translate }}</span>
+          </div>
 
-            <div class="lp-cp-tiles">
-              <div class="lp-cp-tile">
-                <div class="lp-cp-k">{{ "landing.panel_appointments" | translate }}</div>
-                <div class="lp-cp-v">6</div>
-              </div>
-              <div class="lp-cp-tile is-accent">
-                <div class="lp-cp-k">{{ "landing.panel_collected" | translate }}</div>
-                <div class="lp-cp-v">1 240 DT</div>
-              </div>
-            </div>
+          <div class="lp-panel-kpis">
+            <div><b>9</b><span>{{ "landing.panel_sessions" | translate }}</span></div>
+            <div><b>74</b><span>{{ "landing.panel_present" | translate }}</span></div>
+            <div><b>148</b><span>{{ "landing.panel_members" | translate }}</span></div>
+          </div>
 
-            <div class="lp-cp-chart">
-              <div class="lp-cp-chart-head"><span>{{ "landing.panel_revenue" | translate }}</span><b>{{ "landing.panel_trend" | translate }}</b></div>
-              <svg viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
-                <defs>
-                  <linearGradient id="lpArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#e8005f" stop-opacity="0.28" />
-                    <stop offset="1" stop-color="#e8005f" stop-opacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d="M10,53.7 L60,47 L110,49.8 L160,37.6 L210,42 L260,28.2 L310,19.3 L310,88 L10,88 Z" fill="url(#lpArea)" />
-                <path d="M10,53.7 L60,47 L110,49.8 L160,37.6 L210,42 L260,28.2 L310,19.3" fill="none" stroke="#e8005f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <circle cx="310" cy="19.3" r="3.6" fill="#e8005f" />
-              </svg>
-            </div>
-
-            <div class="lp-cp-cal">
-              <div class="lp-cp-cal-head">
-                <span></span><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span>
-              </div>
-              @for (row of week; track row.time; let ri = $index) {
-                <div class="lp-cp-cal-row" [style.animation-delay.ms]="ri * 90">
-                  <span class="lp-cp-cal-time">{{ row.time }}</span>
-                  @for (c of row.cells; track $index) {
-                    <span class="lp-cp-cal-cell" [class.on]="c.s === 'on'" [class.full]="c.s === 'f'" [class.grad1]="c.s === 'on' && (ri + $index) % 3 === 0" [class.grad2]="c.s === 'on' && (ri + $index) % 3 === 1" [class.grad3]="c.s === 'on' && (ri + $index) % 3 === 2">{{ c.n }}</span>
-                  }
-                </div>
+          <div class="lp-panel-grid">
+            <div class="lp-panel-hours">
+              <span></span>
+              @for (hour of heroHours; track hour) {
+                <span>{{ hour }}</span>
               }
             </div>
+            @for (room of heroRooms; track room.name) {
+              <div class="lp-panel-row">
+                <span class="lp-panel-room">
+                  <b>{{ room.name }}</b>
+                  <small>{{ room.capacity }}</small>
+                </span>
+                @for (slot of room.slots; track $index) {
+                  <span class="lp-panel-slot" [attr.data-tone]="slot.tone || null" [style.grid-column]="'span ' + slot.span">
+                    {{ slot.label }}
+                  </span>
+                }
+              </div>
+            }
           </div>
-          <span class="lp-cp-float">{{ "landing.panel_checkins" | translate }}</span>
+
+          <div class="lp-panel-foot">
+            <i class="bi bi-check-lg" aria-hidden="true"></i>
+            <span>{{ "landing.panel_no_clash" | translate }}</span>
+            <span class="lp-panel-langs">FR · EN · ع</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- MARQUEE -->
-    <div class="lp-marquee" aria-hidden="true">
-      <div class="lp-marquee-track">
-        @for (i of [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]; track $index) {
-          <span>{{ "landing.marquee_" + i | translate }}</span>
-          <span class="lp-marquee-dot">✦</span>
+    <!-- Three claims the product can actually make. -->
+    <section class="lp-numbers">
+      <div class="lp-shell lp-numbers-grid">
+        @for (n of heroNumbers; track n.value) {
+          <div>
+            <b>{{ n.value }}</b>
+            <p>{{ n.textKey | translate }}</p>
+          </div>
         }
       </div>
-    </div>
+    </section>
 
-    <!-- OVERVIEW -->
+<!-- OVERVIEW -->
     <section class="lp-section lp-reveal">
       <div class="lp-shell">
         <div class="lp-sec-head">

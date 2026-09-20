@@ -106,7 +106,17 @@
     "register_cta": "Create my account",
     "register_trial_note": "14 days of full access. No card: after that you ask for activation from your own space.",
     "password_min": "8 characters minimum.",
-    "email_invalid": "Invalid email address."
+    "email_invalid": "Invalid email address.",
+    "pitch_tagline": "إدارة قاعتك، ببساطة",
+    "pitch_title": "Run your gym like a real club.",
+    "pitch_point_booking": "No double booking — the constraint lives in the database",
+    "pitch_point_one_place": "Memberships, sessions and attendance in one place",
+    "pitch_point_receipts": "Receipts and invoices in dinars, in one click",
+    "pitch_point_any_gym": "Weights, Pilates, EMS, boxing — one application",
+    "pitch_foot": "Fitora — Tunisia",
+    "step_account": "Account",
+    "step_gym": "Gym",
+    "step_plan": "Plan"
   },
   "nav": {
     "switch_company": "Switch company",
@@ -1249,7 +1259,17 @@
     "faq_q_8": "Is there a commitment?",
     "faq_a_8": "No fixed-term commitment — you can stop at any time.",
     "faq_q_9": "Can my coaches use Fitora on mobile?",
-    "faq_a_9": "Yes, every coach gets mobile access to follow their schedule and check members in."
+    "faq_a_9": "Yes, every coach gets mobile access to follow their schedule and check members in.",
+    "nav_pricing": "See pricing",
+    "panel_title": "Fitora · Schedule",
+    "panel_new": "Session",
+    "panel_sessions": "Sessions",
+    "panel_present": "Present",
+    "panel_members": "Active members",
+    "panel_no_clash": "No room clash",
+    "number_no_clash": "double bookings possible — the constraint lives in the database, not in the screen.",
+    "number_languages": "languages on every screen and every receipt — French, English, Arabic.",
+    "number_trial": "of full trial, no card and nothing held back."
   },
   "palette": {
     "trigger": "Search",

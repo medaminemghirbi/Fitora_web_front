@@ -88,23 +88,4 @@ describe("LandingComponent", () => {
       expect(component.openFaq()).toBeNull();
     });
   });
-
-  describe("cockpit tilt", () => {
-    it("sets a rotation transform from the pointer position on move", () => {
-      const el = document.createElement("div");
-      Object.defineProperty(el, "getBoundingClientRect", {
-        value: () => ({ left: 0, top: 0, width: 200, height: 100 }),
-      });
-      const event = { currentTarget: el, clientX: 150, clientY: 20 } as unknown as MouseEvent;
-      component.onCockpitMove(event);
-      expect(component.cockpitTilt()).toContain("rotateX");
-      expect(component.cockpitTilt()).toContain("rotateY");
-    });
-
-    it("clears the transform on mouse leave", () => {
-      component.cockpitTilt.set("rotateX(1deg) rotateY(1deg)");
-      component.onCockpitLeave();
-      expect(component.cockpitTilt()).toBe("");
-    });
-  });
 });
