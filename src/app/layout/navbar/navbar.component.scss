@@ -1,14 +1,30 @@
 :host { display: contents; }
 
-// The bar is a fixed dark-aubergine "skin" (the --sidebar-* tokens), like the
-// old sidebar was: it stays dark in both themes so the brand reads the same
-// whatever the user picked.
+// White, like the rail it sits beside. The bar used to be a dark-aubergine
+// skin from the old sidebar; with the rail carrying the navigation and the
+// brand, a dark strip across the top was the only dark thing left on the
+// page and it cut the rail in half.
+//
+// It also gets out of the way: scrolling down slides it off, scrolling up
+// brings it straight back. Reading a long list should not cost 64px, and
+// getting to the search should not cost a scroll to the top.
 .app-navbar {
   position: sticky;
   top: 0;
   z-index: var(--z-topbar);
-  background: var(--sidebar-bg);
-  border-bottom: 1px solid var(--sidebar-border);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  transition: transform 0.25s ease;
+
+  &.is-hidden {
+    transform: translateY(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-navbar {
+    transition: none;
+  }
 }
 
 .app-navbar-inner {
@@ -27,13 +43,13 @@
   font-weight: 700;
   font-size: 1.15rem;
   letter-spacing: -0.02em;
-  color: var(--sidebar-text-active);
+  color: var(--color-text);
   text-decoration: none;
   padding-inline: var(--space-2) var(--space-5);
   white-space: nowrap;
 
-  &:hover { text-decoration: none; color: var(--sidebar-text-active); }
-  small { font-weight: 500; color: var(--sidebar-text); font-size: 0.7rem; margin-inline-start: 0.15rem; }
+  &:hover { text-decoration: none; color: var(--color-text); }
+  small { font-weight: 500; color: var(--color-text-secondary); font-size: 0.7rem; margin-inline-start: 0.15rem; }
 }
 
 .app-navbar-mark {
@@ -74,7 +90,7 @@
   font: inherit;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--sidebar-text);
+  color: var(--color-text-secondary);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -82,9 +98,9 @@
 
   .app-navbar-item-icon { font-size: 0.95rem; }
   .bi-chevron-down { font-size: 0.65rem; opacity: 0.85; }
-  &:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text-strong); text-decoration: none; }
+  &:hover { background: var(--color-surface-hover); color: var(--color-text); text-decoration: none; }
   // The accent is the "you are here" marker — the one place it appears in the bar.
-  &.is-active { background: var(--sidebar-active-bg); color: var(--sidebar-text-active); font-weight: 600; }
+  &.is-active { background: var(--color-primary-soft); color: var(--color-text); font-weight: 600; }
 }
 
 .app-navbar-dropdown {
@@ -137,38 +153,38 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid var(--sidebar-border);
-  background: var(--sidebar-hover-bg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-hover);
   border-radius: var(--radius-md);
   padding: 0.4rem 0.7rem;
   font: inherit;
   font-size: 0.8125rem;
-  color: var(--sidebar-text);
+  color: var(--color-text-secondary);
   cursor: pointer;
   margin-inline-end: 0.3rem;
 
-  &:hover { background: var(--sidebar-bg-elevated); color: var(--sidebar-text-strong); }
-  kbd { font: inherit; font-size: 0.68rem; background: rgba(255, 255, 255, 0.12); border-radius: var(--radius-xs); padding: 0.05rem 0.3rem; color: var(--sidebar-text-strong); }
+  &:hover { background: var(--color-surface); color: var(--color-text); }
+  kbd { font: inherit; font-size: 0.68rem; background: rgba(255, 255, 255, 0.12); border-radius: var(--radius-xs); padding: 0.05rem 0.3rem; color: var(--color-text); }
 }
 
 .app-navbar-support {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1px solid var(--sidebar-border);
+  border: 1px solid var(--color-border);
   background: transparent;
   border-radius: var(--radius-md);
   padding: 0.4rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--sidebar-text);
+  color: var(--color-text-secondary);
   text-decoration: none;
   margin-inline-end: 0.3rem;
   transition: background var(--transition-fast), color var(--transition-fast);
 
   i { font-size: 0.9rem; }
-  &:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text-strong); text-decoration: none; }
-  &.is-active { background: var(--sidebar-active-bg); color: var(--sidebar-text-active); border-color: transparent; }
+  &:hover { background: var(--color-surface-hover); color: var(--color-text); text-decoration: none; }
+  &.is-active { background: var(--color-primary-soft); color: var(--color-text); border-color: transparent; }
 }
 
 // ---- mobile ---------------------------------------------------------------
@@ -177,14 +193,14 @@
   height: 36px;
   border: 0;
   background: transparent;
-  color: var(--sidebar-text);
+  color: var(--color-text-secondary);
   border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
   cursor: pointer;
-  &:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text-strong); }
+  &:hover { background: var(--color-surface-hover); color: var(--color-text); }
 }
 
 .app-navbar-mobile-title {
@@ -192,14 +208,14 @@
   min-width: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--sidebar-text-strong);
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .app-navbar-mobile {
-  border-top: 1px solid var(--sidebar-border);
+  border-top: 1px solid var(--color-border);
   background: var(--color-surface);
   padding: var(--space-2) var(--space-3) var(--space-3);
   max-height: calc(100vh - 56px);
@@ -238,21 +254,21 @@
   height: 36px;
   padding: 0 0.65rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--sidebar-border);
+  border: 1px solid var(--color-border);
   background: transparent;
-  color: var(--sidebar-text-strong);
+  color: var(--color-text);
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   max-width: 12rem;
   transition: background var(--transition-fast), border-color var(--transition-fast);
 
-  &:hover { background: var(--sidebar-hover-bg); }
+  &:hover { background: var(--color-surface-hover); }
   &[aria-expanded="true"] { border-color: var(--color-accent); }
   &:disabled { opacity: 0.6; cursor: wait; }
 
-  i.bi-building { color: var(--sidebar-text); font-size: 0.95rem; }
-  i.bi-chevron-down { font-size: 0.7rem; color: var(--sidebar-text); }
+  i.bi-building { color: var(--color-text-secondary); font-size: 0.95rem; }
+  i.bi-chevron-down { font-size: 0.7rem; color: var(--color-text-secondary); }
 }
 
 .app-company-switcher-name {

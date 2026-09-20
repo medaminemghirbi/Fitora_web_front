@@ -49,6 +49,22 @@ export class NavbarComponent {
   private readonly companyService = inject(CompanyService);
   private readonly router = inject(Router);
 
+  /**
+   * Hidden while scrolling down, back on the first scroll up.
+   *
+   * Reading a long list should not cost 64px of every screen, and reaching
+   * the search should not cost a scroll to the top. Always visible near the
+   * top of the page, so the bar cannot get stuck away.
+   */
+  readonly hidden = signal(false);
+
+  /** Where the last scroll left us, to tell up from down. */
+  private lastScrollY = 0;
+  private scrollQueued = false;
+
+  /** Below this the bar always shows: there is nothing to gain from hiding. */
+  private static readonly REVEAL_ABOVE = 80;
+
   readonly openGroup = signal<string | null>(null);
   readonly userMenuOpen = signal(false);
   readonly mobileOpen = signal(false);
@@ -57,6 +73,34 @@ export class NavbarComponent {
 
   // Only an owner running more than one company sees this at all — a
   // single-company owner's navbar looks exactly as it always has.
+  /**
+   * Scroll arrives far faster than a frame; the reaction is coalesced into
+   * one rAF so a fling does not queue hundreds of signal writes.
+   */
+  @HostListener("window:scroll")
+  onWindowScroll(): void {
+    if (this.scrollQueued) return;
+    this.scrollQueued = true;
+
+    requestAnimationFrame(() => {
+      this.scrollQueued = false;
+      const y = Math.max(0, window.scrollY);
+
+      // A menu that is open belongs to a bar you can still see.
+      if (y <= NavbarComponent.REVEAL_ABOVE || this.anyMenuOpen()) {
+        this.hidden.set(false);
+      } else {
+        this.hidden.set(y > this.lastScrollY);
+      }
+
+      this.lastScrollY = y;
+    });
+  }
+
+  private anyMenuOpen(): boolean {
+    return this.openGroup() !== null || this.userMenuOpen() || this.companySwitcherOpen() || this.mobileOpen();
+  }
+
   readonly switchableCompanies = computed(() => {
     const companies = this.auth.currentUser()?.companies;
     return companies && companies.length > 1 ? companies : null;

@@ -2,7 +2,7 @@
      with closest(), to tell a click inside the menu from one outside it.
      Removing it as an unstyled class made every click count as outside, so a
      dropdown closed in the same tick it opened. -->
-<header class="app-navbar app-navbar-menu">
+<header class="app-navbar app-navbar-menu" [class.is-hidden]="hidden()">
   <div class="app-navbar-inner">
     <a [routerLink]="brandHome" class="app-navbar-brand" [class.d-lg-none]="!showBrand">
       <span class="app-navbar-mark">

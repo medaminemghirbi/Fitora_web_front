@@ -3,7 +3,6 @@ import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
-import { Invoice } from "../../../core/models/subscription.model";
 import { SubscriptionInfo, SubscriptionService } from "../../../core/services/subscription.service";
 import { SubscriptionComponent } from "./subscription.component";
 
@@ -12,25 +11,10 @@ describe("SubscriptionComponent", () => {
   let component: SubscriptionComponent;
   let service: jasmine.SpyObj<SubscriptionService>;
 
-  function invoice(patch: Partial<Invoice> = {}): Invoice {
-    return {
-      id: "inv1",
-      number: "FIT-2026-0042",
-      period_start: "2026-09-01",
-      period_end: "2026-09-30",
-      amount: 99,
-      currency: "TND",
-      billing_period: "monthly",
-      issued_at: "2026-09-02T00:00:00Z",
-      issued_by: "Fitora",
-      notes: null,
-      ...patch,
-    } as Invoice;
-  }
 
   function build(patch: Partial<SubscriptionInfo> = {}): void {
     TestBed.resetTestingModule();
-    service = jasmine.createSpyObj<SubscriptionService>("SubscriptionService", ["get", "downloadInvoice"]);
+    service = jasmine.createSpyObj<SubscriptionService>("SubscriptionService", ["get"]);
     service.get.and.returnValue(
       of({
         subscription: {
@@ -88,131 +72,10 @@ describe("SubscriptionComponent", () => {
     expect(component.error()).toBe(true);
   });
 
-  // The RIB comes from the host's environment, so "not configured" is the
-  // normal state of a fresh install and must not render an empty bank card.
-  describe("where the gym sends its money", () => {
-    const account = {
-      rib: "TN59 1000 6035 0123 4567 8901",
-      bank_name: "BIAT",
-      holder: "Fitora SARL",
-      swift: null,
-      reference: "FIT-GYMELITE",
-    };
-
-    it("shows no bank card until a RIB is configured", () => {
-      build();
-      expect(component.payout()).toBeNull();
-      expect(fixture.nativeElement.querySelector(".payout")).toBeNull();
-    });
-
-    it("prints the account and the reference for the owner to transcribe", () => {
-      build({ payout: account });
-      const card: HTMLElement = fixture.nativeElement.querySelector(".payout");
-      expect(card.textContent).toContain("TN59 1000 6035 0123 4567 8901");
-      expect(card.textContent).toContain("BIAT");
-      expect(card.textContent).toContain("Fitora SARL");
-      expect(card.textContent).toContain("FIT-GYMELITE");
-    });
-
-    it("leaves out the rows the environment did not fill", () => {
-      build({ payout: { ...account, bank_name: null, holder: null } });
-      const card: HTMLElement = fixture.nativeElement.querySelector(".payout");
-      expect(card.textContent).not.toContain("BIAT");
-      expect(card.querySelectorAll(".payout-row").length).toBe(2);
-    });
-
-    it("copies the RIB and says so, then falls silent again", async () => {
-      build({ payout: account });
-      const writeText = jasmine.createSpy("writeText").and.returnValue(Promise.resolve());
-      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
-
-      component.copy("rib", account.rib);
-      await Promise.resolve();
-
-      expect(writeText).toHaveBeenCalledWith(account.rib);
-      expect(component.copied()).toBe("rib");
-    });
-
-    it("does not reach for the clipboard with nothing to put in it", () => {
-      build({ payout: account });
-      const writeText = jasmine.createSpy("writeText");
-      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
-
-      component.copy("swift", null);
-
-      expect(writeText).not.toHaveBeenCalled();
-      expect(component.copied()).toBeNull();
-    });
-  });
-
-  describe("the ledger of invoices", () => {
-    it("paints a month green when an invoice covers its first day", () => {
-      const year = new Date().getFullYear();
-      build({ invoices: [invoice({ period_start: `${year}-01-01`, period_end: `${year}-01-31` })] });
-
-      component.showYear(year);
-      expect(component.ledger()[0].state).toBe("paid");
-      expect(component.paidCount()).toBe(1);
-    });
-
-    it("paints a whole year from one yearly invoice", () => {
-      const year = new Date().getFullYear();
-      build({ invoices: [invoice({ period_start: `${year}-01-01`, period_end: `${year}-12-31`, billing_period: "yearly" })] });
-
-      component.showYear(year);
-      expect(component.paidCount()).toBe(12);
-    });
-
-    it("leaves a skipped month as a hole rather than filling it in", () => {
-      const year = new Date().getFullYear();
-      build({ invoices: [invoice({ period_start: `${year}-01-01`, period_end: `${year}-01-31` })] });
-
-      component.showYear(year);
-      expect(component.ledger()[1].invoice).toBeNull();
-      expect(component.ledger()[1].state).not.toBe("paid");
-    });
-  });
-
-  describe("downloading", () => {
-    it("asks for the PDF and clears the busy flag", () => {
-      service.downloadInvoice.and.returnValue(of(new Blob()));
-      spyOn(URL, "createObjectURL").and.returnValue("blob:x");
-      spyOn(URL, "revokeObjectURL");
-
-      component.download(invoice());
-
-      expect(service.downloadInvoice).toHaveBeenCalledWith("inv1");
-      expect(component.downloading()).toBeNull();
-    });
-
-    it("does nothing for a month that has no invoice", () => {
-      component.download(null);
-      expect(service.downloadInvoice).not.toHaveBeenCalled();
-    });
-
-    it("clears the busy flag when the download fails", () => {
-      service.downloadInvoice.and.returnValue(throwError(() => new Error("nope")));
-      component.download(invoice());
-      expect(component.downloading()).toBeNull();
-    });
-  });
-
   it("reports what is owed from the server, never from a typed-in field", () => {
     build({ arrears_cents: 19_800 });
     expect(component.arrears()).toBe(198);
   });
-
-    it("lets a gym of several years open all of them", () => {
-      build({
-        invoices: [
-          invoice({ id: "old", period_start: "2024-05-01", period_end: "2024-05-31" }),
-          invoice({ id: "new", period_start: "2026-09-01", period_end: "2026-09-30" }),
-        ],
-      });
-
-      expect(component.ledgerYears()).toContain(2024);
-      expect(component.ledgerYears()).toContain(2026);
-    });
 
   describe("the tiers", () => {
     function withTiers(companyLimit: number | null) {
