@@ -126,10 +126,14 @@
   }
 }
 
+// The circles are ::before and ::after, so the second one is the panel's
+// last child and painted over the footer sitting in the same corner. The
+// content is lifted a layer rather than reordering the decoration.
 .apro-pitch-top,
 .apro-pitch-body,
 .apro-pitch-foot {
   position: relative;
+  z-index: 1;
 }
 
 .apro-pitch-top {
@@ -168,6 +172,9 @@
 
 .apro-pitch-body {
   h2 {
+    // Stated, not inherited: the global heading rule sets a colour, and it
+    // beats what this panel passes down.
+    color: var(--color-on-primary);
     margin: 0 0 1.875rem;
     max-width: 520px;
     font-size: 2.6875rem;

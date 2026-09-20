@@ -20,6 +20,7 @@ import { SpinnerComponent } from "../../../shared/components/spinner.component";
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, TranslateModule, AuthProShellComponent, SpinnerComponent],
   templateUrl: "./register.component.html",
+  styleUrl: "../../auth/auth.component.scss",
 })
 export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
