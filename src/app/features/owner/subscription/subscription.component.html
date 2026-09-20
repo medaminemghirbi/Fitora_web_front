@@ -42,6 +42,71 @@
           </div>
         </div>
 
+        <!-- What this gym is using, against what its tier allows. -->
+        <section class="sub-usage" aria-labelledby="sub-usage-h">
+          <div class="sub-usage-head">
+            <i class="bi bi-gem" aria-hidden="true"></i>
+            <h2 id="sub-usage-h">{{ "subscription.current_plan" | translate }}</h2>
+            <span class="sub-usage-badge">{{ currentTierName() | translate }}</span>
+          </div>
+          <div class="sub-usage-grid">
+            @for (row of usage(); track row.key) {
+              <div>
+                <span class="sub-usage-label"><i class="bi" [class]="row.icon"></i> {{ ("subscription.usage_" + row.key) | translate }}</span>
+                <span class="sub-usage-value">{{ row.value }}</span>
+              </div>
+            }
+          </div>
+        </section>
+
+        <!-- Every tier, not just the one you are on. Real prices, in this
+             gym's own currency. -->
+        @if (tiers().length > 0) {
+          <div class="sub-period">
+            <div class="fx-segmented">
+              <button type="button" [class.is-active]="billingPeriod() === 'monthly'" (click)="billingPeriod.set('monthly')">
+                {{ "subscription.plan_monthly" | translate }}
+              </button>
+              <button type="button" [class.is-active]="billingPeriod() === 'yearly'" (click)="billingPeriod.set('yearly')">
+                {{ "subscription.plan_yearly" | translate }}
+                @if (s.annual_discount_percent > 0) {
+                  <span class="sub-period-off">-{{ s.annual_discount_percent }}%</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <div class="sub-tiers">
+            @for (tier of tiers(); track tier.nameKey) {
+              <section class="sub-tier" [class.is-current]="tier.current" [attr.aria-label]="tier.nameKey | translate">
+                @if (tier.current) {
+                  <span class="sub-tier-ribbon"><i class="bi bi-check-lg"></i> {{ "subscription.tier_current" | translate }}</span>
+                }
+                <h3>{{ tier.nameKey | translate }}</h3>
+                <p class="sub-tier-for">{{ (tier.nameKey + "_for") | translate }}</p>
+                <p class="sub-tier-price">
+                  <strong>{{ tier.price | money: currency() }}</strong>
+                  <span>{{ (billingPeriod() === "yearly" ? "subscription.per_year" : "subscription.per_month") | translate }}</span>
+                </p>
+                <p class="sub-tier-limit">
+                  @if (tier.limit === null) {
+                    {{ "subscription.tier_limit_unlimited" | translate }}
+                  } @else {
+                    {{ "subscription.tier_limit" | translate: { count: tier.limit } }}
+                  }
+                </p>
+                @if (tier.current) {
+                  <span class="sub-tier-cta is-current"><i class="bi bi-check-lg"></i> {{ "subscription.tier_active" | translate }}</span>
+                } @else {
+                  <a href="#sub-pay" class="sub-tier-cta">
+                    <i class="bi bi-envelope"></i> {{ "subscription.tier_contact" | translate }}
+                  </a>
+                }
+              </section>
+            }
+          </div>
+        }
+
         <!-- The year of invoices. Each paid month opens its own. -->
         <div class="app-card">
           <div class="app-card-header sub-ledger-head">
@@ -129,7 +194,7 @@
           }
         </div>
 
-        <div class="app-card">
+        <div class="app-card" id="sub-pay">
           <div class="app-card-body">
             <h2 style="font-size: 1rem; margin-bottom: 0.5rem">{{ "subscription.how_to_pay" | translate }}</h2>
             <p class="fx-muted">{{ "subscription.how_to_pay_body" | translate }}</p>

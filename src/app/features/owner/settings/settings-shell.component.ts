@@ -40,10 +40,12 @@ export class SettingsShellComponent {
 
   readonly navGroups = this.sectionsSvc.navGroups;
 
-  /** Flat section list with its group label attached, in rail order. */
+  /** Every section, in group order — the tab row reads this directly. */
   private readonly flat = computed(() =>
     this.navGroups().flatMap((g) => g.sections.map((s) => ({ ...s, groupLabelKey: g.labelKey })))
   );
+
+  readonly flatSections = this.flat;
 
   private readonly activePath = signal<string>("");
   readonly activeSection = computed(() => this.flat().find((s) => s.path === this.activePath()));

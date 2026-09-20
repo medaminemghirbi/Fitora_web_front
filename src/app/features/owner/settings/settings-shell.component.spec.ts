@@ -80,6 +80,25 @@ describe("SettingsShellComponent", () => {
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
+  it("puts every section on the tab row, active one marked for a screen reader too", () => {
+    build("owner", "company");
+
+    const tabs = [...fixture.nativeElement.querySelectorAll(".settings-tab")] as HTMLElement[];
+    const sections = component.flatSections();
+
+    // Every section, plus the one link that leaves the settings area.
+    expect(tabs.length).toBe(sections.length + 1);
+    expect(fixture.nativeElement.querySelectorAll('.settings-tab[aria-current="page"]').length).toBe(1);
+  });
+
+  it("offers the same sections as a picker where the row will not fit", () => {
+    build("owner", "company");
+
+    const options = [...fixture.nativeElement.querySelectorAll(".settings-picker option")] as HTMLOptionElement[];
+
+    expect(options.map((o) => o.value)).toEqual(component.flatSections().map((s) => s.path));
+  });
+
   it("navGroups always includes the appearance group, visible to any role", () => {
     build("staff", "appearance");
     expect(component.navGroups().some((g) => g.key === "appearance")).toBe(true);

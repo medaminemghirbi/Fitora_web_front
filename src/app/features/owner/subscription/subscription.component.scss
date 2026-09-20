@@ -546,3 +546,189 @@
 @media (max-width: 575.98px) {
   .payout-label { flex: 1 1 100%; }
 }
+
+// ---------- What you are on, and what you are using ----------------------
+.sub-usage {
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--color-primary-border);
+  border-radius: 14px;
+  background: var(--color-primary-soft);
+}
+
+.sub-usage-head {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+
+  i {
+    color: var(--color-primary);
+    font-size: 1.125rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 0.96875rem;
+    font-weight: 700;
+  }
+}
+
+.sub-usage-badge {
+  padding: 0.1875rem 0.625rem;
+  border: 1px solid var(--color-primary-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-primary-hover);
+  font-size: 0.71875rem;
+  font-weight: 700;
+}
+
+.sub-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem 2rem;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3125rem;
+  }
+}
+
+.sub-usage-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  font-size: 0.78125rem;
+  color: var(--color-text-secondary);
+}
+
+.sub-usage-value {
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+// ---------- The tiers ----------------------------------------------------
+.sub-period {
+  display: flex;
+  justify-content: center;
+}
+
+.sub-period-off {
+  margin-inline-start: 0.4375rem;
+  padding: 0.125rem 0.4375rem;
+  border-radius: 999px;
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.sub-tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.125rem;
+  align-items: stretch;
+}
+
+.sub-tier {
+  position: relative;
+  padding: 1.625rem 1.375rem 1.375rem;
+  border: 1px solid var(--color-border);
+  border-radius: 15px;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.1875rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  // The tier you are on is outlined, not merely tinted: the ribbon and the
+  // border say it twice.
+  &.is-current {
+    border: 2px solid var(--color-primary);
+  }
+}
+
+.sub-tier-ribbon {
+  position: absolute;
+  top: -13px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.875rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.71875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sub-tier-for {
+  margin: 0;
+  font-size: 0.78125rem;
+  color: var(--color-text-secondary);
+}
+
+.sub-tier-price {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+
+  strong {
+    font-size: 1.875rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+  }
+
+  span {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+}
+
+.sub-tier-limit {
+  margin: 0;
+  flex-grow: 1;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-surface-sunken);
+  font-size: 0.84375rem;
+  font-weight: 600;
+}
+
+.sub-tier-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &.is-current {
+    border-color: var(--color-primary-border);
+    background: var(--color-primary-soft);
+    color: var(--color-primary-hover);
+  }
+}

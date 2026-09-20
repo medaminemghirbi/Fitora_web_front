@@ -1,73 +1,67 @@
-<div class="settings-a">
-  <div class="settings-a-railcol">
-    <nav class="settings-a-rail" aria-label="Sections des paramètres">
-      <div class="settings-a-rail-head">
-        <h2>{{ "settings.title" | translate }}</h2>
-        <p>{{ "settings.hub_subtitle" | translate }}</p>
-      </div>
+<div class="settings">
+  <header class="settings-head">
+    <h1>{{ "settings.title" | translate }}</h1>
+    <p>{{ "settings.hub_subtitle" | translate }}</p>
+  </header>
 
-      <div class="settings-a-rail-scroll">
-        @if (isOwner) {
-          <span class="settings-a-grp">{{ "settings.group_start" | translate }}</span>
-          <a routerLink="/owner/onboarding" class="settings-a-item settings-a-item--out">
-            <i class="bi bi-compass"></i>
-            <span>{{ "onboarding.card_title" | translate }}</span>
-            <i class="bi bi-box-arrow-up-right settings-a-item-ext"></i>
-          </a>
+  <!-- Every section on one row. The left rail said the same thing in a
+       column and cost the page 240px to do it; with seven sections they all
+       fit, so nothing is hidden behind a menu. -->
+  <nav class="settings-tabs" [attr.aria-label]="'settings.title' | translate">
+    @for (s of flatSections(); track s.path) {
+      <a
+        [routerLink]="['/owner/settings', s.path]"
+        class="settings-tab"
+        [class.is-active]="activeSection()?.path === s.path"
+        [attr.aria-current]="activeSection()?.path === s.path ? 'page' : null"
+      >
+        <i class="bi" [class]="s.icon"></i>
+        <span>{{ s.labelKey | translate }}</span>
+      </a>
+    }
+    @if (isOwner) {
+      <a routerLink="/owner/onboarding" class="settings-tab settings-tab--out">
+        <i class="bi bi-compass"></i>
+        <span>{{ "onboarding.card_title" | translate }}</span>
+        <i class="bi bi-box-arrow-up-right"></i>
+      </a>
+    }
+  </nav>
+
+  <!-- Below the tabs' breakpoint the row becomes a picker rather than
+       wrapping into four lines of pills. -->
+  <select
+    class="settings-picker"
+    [attr.aria-label]="'settings.title' | translate"
+    (change)="goto($any($event.target).value)"
+  >
+    @for (g of navGroups(); track g.key) {
+      <optgroup [label]="g.labelKey | translate">
+        @for (s of g.sections; track s.path) {
+          <option [value]="s.path" [selected]="activeSection()?.path === s.path">
+            {{ s.labelKey | translate }}
+          </option>
         }
+      </optgroup>
+    }
+  </select>
 
-        @for (g of navGroups(); track g.key) {
-          <span class="settings-a-grp">{{ g.labelKey | translate }}</span>
-          @for (s of g.sections; track s.path) {
-            <a
-              [routerLink]="['/owner/settings', s.path]"
-              class="settings-a-item"
-              [class.is-active]="activeSection()?.path === s.path"
-            >
-              <i class="bi" [class]="s.icon"></i>
-              <span>{{ s.labelKey | translate }}</span>
-            </a>
-          }
-        }
-      </div>
-    </nav>
-  </div>
-
-  <section class="settings-a-panel">
-    <select
-      class="settings-a-picker"
-      aria-label="Section des paramètres"
-      (change)="goto($any($event.target).value)"
-    >
-      @for (g of navGroups(); track g.key) {
-        <optgroup [label]="g.labelKey | translate">
-          @for (s of g.sections; track s.path) {
-            <option [value]="s.path" [selected]="activeSection()?.path === s.path">
-              {{ s.labelKey | translate }}
-            </option>
-          }
-        </optgroup>
-      }
-    </select>
-
-    @if (activeSection(); as sec) {
-      <header class="settings-a-panel-head">
-        <span class="settings-a-panel-eyebrow">{{ sec.groupLabelKey | translate }}</span>
-        <h1>{{ sec.labelKey | translate }}</h1>
+  @if (activeSection(); as sec) {
+    <section class="settings-body" aria-labelledby="settings-sec-h">
+      <header class="settings-body-head">
+        <h2 id="settings-sec-h">{{ sec.labelKey | translate }}</h2>
         <p>{{ sec.descKey | translate }}</p>
       </header>
 
-      <div class="settings-a-panel-body">
-        @switch (sec.path) {
-          @case ("company") { <app-settings-company /> }
-          @case ("branding") { <app-settings-branding /> }
-          @case ("planning") { <app-settings-planning /> }
-          @case ("booking") { <app-settings-booking /> }
-          @case ("roles") { <app-settings-roles /> }
-          @case ("data-exchange") { <app-data-exchange /> }
-          @case ("appearance") { <app-settings-appearance /> }
-        }
-      </div>
-    }
-  </section>
+      @switch (sec.path) {
+        @case ("company") { <app-settings-company /> }
+        @case ("branding") { <app-settings-branding /> }
+        @case ("planning") { <app-settings-planning /> }
+        @case ("booking") { <app-settings-booking /> }
+        @case ("roles") { <app-settings-roles /> }
+        @case ("data-exchange") { <app-data-exchange /> }
+        @case ("appearance") { <app-settings-appearance /> }
+      }
+    </section>
+  }
 </div>

@@ -66,6 +66,45 @@ export class SubscriptionComponent {
   /** Which field was just copied, so the button can say so for a moment. */
   readonly copied = signal<string | null>(null);
 
+  // ---- the tiers ----------------------------------------------------------
+  // The payload has carried the full tier comparison all along and nothing
+  // rendered it: an owner could see what they pay but never what the next
+  // tier costs. Prices are real SubscriptionPrice rows in the gym's own
+  // currency, so nothing here is invented.
+  readonly billingPeriod = signal<"monthly" | "yearly">("monthly");
+
+  readonly tiers = computed(() =>
+    (this.info()?.company_tiers ?? []).map((tier) => ({
+      limit: tier.company_limit,
+      // "Solo" / "Club" / "Réseau" — named by what they allow, not by a number.
+      nameKey: tier.company_limit === null ? "subscription.tier_unlimited" : `subscription.tier_${tier.company_limit}`,
+      price: (this.billingPeriod() === "yearly" ? tier.annual_cents : tier.monthly_cents) / 100,
+      // The owner's tier is the one whose limit matches theirs, unlimited
+      // included — both sides use null for it.
+      current: tier.company_limit === (this.info()?.company_limit ?? null),
+    }))
+  );
+
+  readonly currentTierName = computed(
+    () => this.tiers().find((t) => t.current)?.nameKey ?? "subscription.tier_1"
+  );
+
+  /** What this gym is using against what its tier allows. */
+  readonly usage = computed(() => {
+    const info = this.info();
+    if (!info) return [];
+
+    return [
+      {
+        key: "companies",
+        icon: "bi-building",
+        value: info.company_limit === null ? String(info.companies_count) : `${info.companies_count} / ${info.company_limit}`,
+      },
+      { key: "staff", icon: "bi-person-badge", value: String(info.staff_used) },
+      { key: "clients", icon: "bi-people", value: String(info.clients_used) },
+    ];
+  });
+
   constructor() {
     this.load();
   }
