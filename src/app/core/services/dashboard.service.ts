@@ -57,6 +57,13 @@ export interface AttentionRow {
   detail: AttentionDetail | null;
 }
 
+/** One month of takings. Every month is present, zero or not: a gap in a
+ *  line reads as missing data, not as a month where the gym took nothing. */
+export interface RevenueMonth {
+  month: string;
+  total: string;
+}
+
 export interface DashboardStats {
   total_clients: number;
   active_contracts: number;
@@ -69,6 +76,8 @@ export interface DashboardStats {
   contracts_expiring: ContractExpiringItem[];
   recent_payments: RecentPaymentItem[];
   recent_clients: RecentClientItem[];
+  /** Empty for a login that may not read what the gym earns. */
+  revenue_by_month: RevenueMonth[];
 }
 
 export interface DashboardResponse {

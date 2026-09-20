@@ -56,7 +56,8 @@
     "notes": "Notes",
     "view": "Voir",
     "saved": "Enregistré.",
-    "copied": "Copié"
+    "copied": "Copié",
+    "view_all": "Voir tout"
   },
   "auth": {
     "login": "Connexion",
@@ -127,7 +128,12 @@
     "subscriptions_active": "En cours",
     "plans": "Formules",
     "catalogue": "Offre",
-    "spaces": "Salles"
+    "spaces": "Salles",
+    "group_overview": "VUE D'ENSEMBLE",
+    "group_administration": "ADMINISTRATION",
+    "role_owner": "Propriétaire",
+    "role_coach": "Coach",
+    "role_staff": "Équipe"
   },
   "dashboard": {
     "total_clients": "Total clients",
@@ -164,7 +170,11 @@
     "session_done": "Terminée · {{count}} présents",
     "figures": "Chiffres de la salle",
     "attention_detail_expiring_today": "dont {{count}} arrivent à terme aujourd'hui",
-    "attention_detail_oldest_days": "Le plus ancien remonte à {{count}} jours"
+    "attention_detail_oldest_days": "Le plus ancien remonte à {{count}} jours",
+    "revenue": "Revenus",
+    "last_12_months": "12 derniers mois",
+    "revenue_chart_label": "Revenus mensuels sur les douze derniers mois",
+    "recent_payments": "Derniers paiements"
   },
   "data_exchange": {
     "select_module": "Choisir un module",

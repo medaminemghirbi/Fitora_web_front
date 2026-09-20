@@ -40,39 +40,42 @@
        error arms are the fallbacks anyway. -->
   @if (data(); as d) {
 
-    <!-- What needs you. First, because it is the only part of this page that
-         asks for a decision. -->
-    <section class="dash-section" aria-labelledby="dash-attention-h">
-      @if (allClear()) {
-        <p class="dash-allclear">
-          <i class="bi bi-check2-circle" aria-hidden="true"></i>
-          {{ "dashboard.nothing_pending" | translate }}
-        </p>
-      } @else {
-        <div class="dash-section-head">
-          <h2 id="dash-attention-h">{{ "dashboard.needs_attention" | translate }}</h2>
-          <span class="dash-section-count">{{ attention().length }}</span>
-        </div>
+    <!-- What needs you, in the best slot on the page. A day with nothing
+         outstanding still fills it — with one line saying so, not with a
+         blank. -->
+    <section class="dash-attn" [class.is-clear]="allClear()" aria-labelledby="dash-attention-h">
+      <div class="dash-attn-head">
+        <span class="dash-attn-mark" aria-hidden="true">
+          <i class="bi" [class.bi-check2]="allClear()" [class.bi-exclamation-triangle]="!allClear()"></i>
+        </span>
+        <h2 id="dash-attention-h">
+          {{ (allClear() ? "dashboard.nothing_pending" : "dashboard.needs_attention") | translate }}
+        </h2>
+        @if (!allClear()) {
+          <span class="dash-attn-count">{{ attention().length }}</span>
+        }
+      </div>
 
-        <ul class="dash-attention">
+      @if (!allClear()) {
+        <ul class="dash-attn-list">
           @for (row of attention(); track row.key) {
             <li>
               <a [routerLink]="row.route" [queryParams]="row.query" [attr.data-tone]="row.tone">
-                <span class="dash-attention-count">{{ row.count }}</span>
-                <span class="dash-attention-text">
-                  <span class="dash-attention-label">
+                <span class="dash-attn-n">{{ row.count }}</span>
+                <span class="dash-attn-text">
+                  <span class="dash-attn-label">
                     {{ ("dashboard.attention_" + row.key) | translate: { count: row.count } }}
                   </span>
                   @if (row.detail; as detail) {
-                    <span class="dash-attention-detail">
+                    <span class="dash-attn-detail">
                       {{ ("dashboard.attention_detail_" + detail.kind) | translate: { count: detail.count } }}
                     </span>
                   }
                 </span>
                 @if (row.amount !== null) {
-                  <strong class="dash-attention-amount">{{ row.amount | money: d.company.currency }}</strong>
+                  <strong class="dash-attn-amount">{{ row.amount | money: d.company.currency }}</strong>
                 }
-                <span class="dash-attention-cta">
+                <span class="dash-attn-cta">
                   {{ ("dashboard.attention_cta_" + row.key) | translate }}
                   <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </span>
@@ -83,8 +86,21 @@
       }
     </section>
 
+    <!-- The figures. They situate; they decide nothing — which is why they
+         come after what does, not before it. -->
+    <div class="dash-kpis" [attr.aria-label]="'dashboard.figures' | translate">
+      @for (kpi of kpis(); track kpi.key) {
+        <div class="dash-kpi">
+          <span class="dash-kpi-icon" [attr.data-tone]="kpi.tone"><i class="bi" [class]="kpi.icon"></i></span>
+          <span class="dash-kpi-value">{{ kpi.value }}</span>
+          <span class="dash-kpi-label">{{ ("dashboard." + kpi.key) | translate }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="dash-cols">
     <!-- The day itself: the body of the page, not a card among cards. -->
-    <section class="dash-section" aria-labelledby="dash-day-h">
+    <section class="dash-section dash-cols-main" aria-labelledby="dash-day-h">
       <div class="dash-section-head">
         <h2 id="dash-day-h">{{ "dashboard.todays_schedule" | translate }}</h2>
         <a routerLink="/owner/calendar" class="dash-section-link">
@@ -138,32 +154,46 @@
       }
     </section>
 
-    <!-- The numbers. They situate; they decide nothing, so they do not take a
-         third of the screen to say it. -->
-    <section class="dash-numbers" [attr.aria-label]="'dashboard.figures' | translate">
-      <div>
-        <span class="dash-numbers-value">{{ d.stats.total_clients }}</span>
-        <span class="dash-numbers-label">{{ "dashboard.total_clients" | translate }}</span>
-      </div>
-      <div>
-        <span class="dash-numbers-value">{{ d.stats.active_contracts }}</span>
-        <span class="dash-numbers-label">{{ "dashboard.active_contracts" | translate }}</span>
-      </div>
-      <div>
-        <span class="dash-numbers-value">{{ d.stats.todays_bookings }}</span>
-        <span class="dash-numbers-label">{{ "dashboard.todays_bookings" | translate }}</span>
-      </div>
-      <div>
-        <span class="dash-numbers-value">{{ d.stats.todays_attendance }}</span>
-        <span class="dash-numbers-label">{{ "dashboard.todays_attendance" | translate }}</span>
-      </div>
-      @if (d.stats.outstanding_payments !== null) {
-        <div>
-          <span class="dash-numbers-value is-owed">{{ d.stats.outstanding_payments | money: d.company.currency }}</span>
-          <span class="dash-numbers-label">{{ "dashboard.outstanding_payments" | translate }}</span>
-        </div>
+    <div class="dash-cols-side">
+      @if (d.stats.revenue_by_month.length > 0) {
+        <section class="app-card dash-chart" aria-labelledby="dash-rev-h">
+          <div class="dash-chart-head">
+            <span class="dash-chart-title">
+              <h2 id="dash-rev-h">{{ "dashboard.revenue" | translate }}</h2>
+              <strong>{{ revenueThisMonth() | money: d.company.currency }}</strong>
+            </span>
+            <span class="dash-chart-chip">{{ "dashboard.last_12_months" | translate }}</span>
+          </div>
+          <app-line-chart
+            [points]="revenuePoints()"
+            [marker]="revenueMarker()"
+            [tickLabel]="shortAmount"
+            [ariaLabel]="'dashboard.revenue_chart_label' | translate"
+          />
+        </section>
       }
-    </section>
+
+      @if (d.stats.recent_payments.length > 0) {
+        <section class="app-card dash-side-card" aria-labelledby="dash-pay-h">
+          <div class="dash-side-head">
+            <h2 id="dash-pay-h">{{ "dashboard.recent_payments" | translate }}</h2>
+            <a routerLink="/owner/payments">{{ "common.view_all" | translate }}</a>
+          </div>
+          <ul class="dash-side-list">
+            @for (payment of d.stats.recent_payments; track payment.id) {
+              <li>
+                <span class="dash-side-main">
+                  <span class="fx-strong">{{ payment.client_name }}</span>
+                  <span class="fx-muted">{{ payment.paid_at | date: "d MMM" }}</span>
+                </span>
+                <strong>{{ payment.amount | money: payment.currency }}</strong>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+    </div>
 
     <!-- Occasional tasks, collapsed. -->
     <div class="dashboard-utility-bar">

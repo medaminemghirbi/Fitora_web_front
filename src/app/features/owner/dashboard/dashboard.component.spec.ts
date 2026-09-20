@@ -58,6 +58,7 @@ describe("DashboardComponent", () => {
       ],
       contracts_expiring: [],
       recent_payments: [],
+      revenue_by_month: [],
       recent_clients: [],
     },
   };
@@ -115,23 +116,29 @@ describe("DashboardComponent", () => {
     expect(component.auditLogsLoading()).toBe(false);
   });
 
-  it("puts the figures on one line rather than in a wall of cards", () => {
-    // Five KPI cards took a third of the page to say what five numbers say.
-    expect(fixture.nativeElement.querySelectorAll("app-kpi-card").length).toBe(0);
-    expect(fixture.nativeElement.querySelectorAll(".dash-numbers > div").length).toBeGreaterThan(0);
+  it("shows one figure card per number, and the money one only with the money", () => {
+    expect(fixture.nativeElement.querySelectorAll(".dash-kpi").length).toBe(5);
+
+    const current = component.data()!;
+    component.data.set({ ...current, stats: { ...current.stats, outstanding_payments: null } });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll(".dash-kpi").length).toBe(4);
   });
 
   it("renders today's schedule rows", () => {
     expect(fixture.nativeElement.querySelectorAll(".dash-day li").length).toBe(1);
   });
 
-  it("leads with what needs attention, before the day and before the figures", () => {
-    const order = [...fixture.nativeElement.querySelectorAll(".dash-attention, .dash-day, .dash-numbers")].map(
+  // What asks for a decision comes before what only describes a situation.
+  // The figures became cards again, but below the block that needs acting on
+  // — which is the part of the old ordering that mattered.
+  it("leads with what needs attention, then the figures, then the day", () => {
+    const order = [...fixture.nativeElement.querySelectorAll(".dash-attn, .dash-kpis, .dash-day")].map(
       (el: Element) => el.className.split(" ")[0]
     );
 
-    expect(order.indexOf("dash-attention")).toBeLessThan(order.indexOf("dash-day"));
-    expect(order.indexOf("dash-day")).toBeLessThan(order.indexOf("dash-numbers"));
+    expect(order).toEqual(["dash-attn", "dash-kpis", "dash-day"]);
   });
 
   it("names the coach on a session that has one", () => {
@@ -163,7 +170,7 @@ describe("DashboardComponent", () => {
     });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector(".dash-attention-detail")).toBeTruthy();
+    expect(fixture.nativeElement.querySelector(".dash-attn-detail")).toBeTruthy();
   });
 
   describe("fillPct", () => {
@@ -295,6 +302,7 @@ describe("DashboardComponent", () => {
           ...response.stats,
           outstanding_payments: null,
           recent_payments: [],
+          revenue_by_month: [],
           attention: [{ key: "unpaid", count: 3, amount: null, detail: null }],
         },
       };

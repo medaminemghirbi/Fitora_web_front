@@ -34,6 +34,7 @@ function stats(schedule: TodaysScheduleItem[], extra: Record<string, unknown> = 
       attention: [],
       contracts_expiring: [],
       recent_payments: [],
+      revenue_by_month: [],
       recent_clients: [],
       ...extra,
     },

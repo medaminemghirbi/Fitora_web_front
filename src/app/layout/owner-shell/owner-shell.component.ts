@@ -9,11 +9,12 @@ import { BrandingService } from "../../core/services/branding.service";
 import { AppVersionService } from "../../core/services/app-version.service";
 import { MobileBarComponent } from "../mobile-bar/mobile-bar.component";
 import { NavbarComponent } from "../navbar/navbar.component";
+import { RailComponent } from "../rail/rail.component";
 
 @Component({
   selector: "app-owner-shell",
   standalone: true,
-  imports: [RouterLink, RouterOutlet, TranslateModule, NavbarComponent, MobileBarComponent],
+  imports: [RouterLink, RouterOutlet, TranslateModule, NavbarComponent, RailComponent, MobileBarComponent],
   templateUrl: "./owner-shell.component.html",
   styleUrl: "./owner-shell.component.scss",
 })

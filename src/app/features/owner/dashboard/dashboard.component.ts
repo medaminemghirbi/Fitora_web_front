@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { AuditLog } from "../../../core/models/audit-log.model";
 import { AuditLogsService } from "../../../core/services/audit-logs.service";
 import { AttentionRow, DashboardResponse, DashboardService, TodaysScheduleItem } from "../../../core/services/dashboard.service";
+import { ChartPoint, LineChartComponent } from "../../../shared/ui/line-chart.component";
 import { downloadBlob } from "../../../core/services/download.util";
 import { ReportPeriodType, ReportsService } from "../../../core/services/reports.service";
 import { ToastService } from "../../../core/services/toast.service";
@@ -39,6 +40,7 @@ import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
     SkeletonComponent,
     ErrorStateComponent,
     OnboardingStepsComponent,
+    LineChartComponent,
   ],
   templateUrl: "./dashboard.component.html",
   styleUrl: "./dashboard.component.scss",
@@ -96,6 +98,69 @@ export class DashboardComponent {
 
   dismissSetup(): void {
     this.onboarding.dismiss().subscribe();
+  }
+
+  // ---- the figures --------------------------------------------------------
+  /**
+   * Four cards, number above label, each with its own tint.
+   *
+   * Built here rather than written four times in the template: they differ
+   * only in which field they read, and a fifth (what is owed) exists only
+   * for someone allowed to see money.
+   */
+  readonly kpis = computed(() => {
+    const stats = this.data()?.stats;
+    if (!stats) return [];
+
+    const cards = [
+      { key: "total_clients", value: String(stats.total_clients), icon: "bi-people", tone: "ok" },
+      { key: "active_contracts", value: String(stats.active_contracts), icon: "bi-award", tone: "brand" },
+      { key: "todays_bookings", value: String(stats.todays_bookings), icon: "bi-calendar3", tone: "info" },
+      { key: "todays_attendance", value: String(stats.todays_attendance), icon: "bi-check2-square", tone: "accent" },
+    ];
+
+    if (stats.outstanding_payments !== null) {
+      cards.push({
+        key: "outstanding_payments",
+        value: this.money(stats.outstanding_payments),
+        icon: "bi-cash-coin",
+        tone: "warn",
+      });
+    }
+
+    return cards;
+  });
+
+  // ---- the chart ----------------------------------------------------------
+  readonly revenuePoints = computed<ChartPoint[]>(() =>
+    (this.data()?.stats.revenue_by_month ?? []).map((row) => ({
+      // "oct." — the month alone. The year is implied by twelve of them.
+      label: new Date(row.month).toLocaleDateString(this.translate.currentLang || "fr", { month: "short" }),
+      value: Number(row.total),
+    }))
+  );
+
+  readonly revenueThisMonth = computed(() => Number(this.data()?.stats.revenue_by_month.at(-1)?.total ?? 0));
+
+  readonly revenueMarker = computed(() => {
+    const points = this.revenuePoints();
+    return points.length === 0 ? "" : this.money(String(points.at(-1)?.value ?? 0));
+  });
+
+  /**
+   * A gridline's label. Thousands are shortened: an axis is a sense of
+   * scale, and "6k" gives it in two characters where "6 000,000 DT" would
+   * need the whole gutter.
+   */
+  readonly shortAmount = (value: number): string => {
+    if (value >= 1000) return `${Math.round(value / 100) / 10}k`;
+    return String(Math.round(value));
+  };
+
+  private money(amount: string): string {
+    const currency = this.data()?.company.currency_symbol ?? "";
+    const value = Number(amount);
+    return `${value.toLocaleString(this.translate.currentLang || "fr")} ${currency}`.trim();
   }
 
   // ---- checking people in ------------------------------------------------

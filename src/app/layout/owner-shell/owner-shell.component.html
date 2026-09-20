@@ -31,6 +31,11 @@
   }
 
   <div class="owner-shell-body">
+    <!-- Desktop navigation. The top bar keeps everything that is not
+         navigation and hides its own nav, so the blueprint is read in one
+         place (NavigationService) and rendered in one place per breakpoint. -->
+    <app-rail />
+
     <div class="owner-shell-main">
       <app-navbar
         [dashboardItem]="dashboardNavItem()"
@@ -40,8 +45,8 @@
         [brandLogoUrl]="branding.logoUrl()"
         [brandHome]="nav.homePath()"
         [brandSuffix]="versionSuffix()"
-        [showBrand]="true"
-        [showDesktopNav]="true"
+        [showBrand]="false"
+        [showDesktopNav]="false"
         [showNotifications]="true"
         [showSupport]="showOwnerOnlySections()"
       />

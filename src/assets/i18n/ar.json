@@ -56,7 +56,8 @@
     "notes": "ملاحظات",
     "view": "عرض",
     "saved": "تمّ الحفظ.",
-    "copied": "تمّ النسخ"
+    "copied": "تمّ النسخ",
+    "view_all": "عرض الكل"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -127,7 +128,12 @@
     "subscriptions_active": "الجارية",
     "plans": "الصيغ",
     "catalogue": "العروض",
-    "spaces": "القاعات"
+    "spaces": "القاعات",
+    "group_overview": "نظرة عامة",
+    "group_administration": "الإدارة",
+    "role_owner": "المالك",
+    "role_coach": "مدرّب",
+    "role_staff": "الفريق"
   },
   "dashboard": {
     "total_clients": "إجمالي العملاء",
@@ -164,7 +170,11 @@
     "session_done": "انتهت · {{count}} حاضرون",
     "figures": "أرقام القاعة",
     "attention_detail_expiring_today": "منها {{count}} تنتهي اليوم",
-    "attention_detail_oldest_days": "أقدمها يعود إلى {{count}} يومًا"
+    "attention_detail_oldest_days": "أقدمها يعود إلى {{count}} يومًا",
+    "revenue": "الإيرادات",
+    "last_12_months": "آخر 12 شهرًا",
+    "revenue_chart_label": "الإيرادات الشهرية خلال الأشهر الاثني عشر الماضية",
+    "recent_payments": "آخر المدفوعات"
   },
   "data_exchange": {
     "select_module": "اختر وحدة",

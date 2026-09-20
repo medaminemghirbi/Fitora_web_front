@@ -71,9 +71,12 @@
   --sidebar-section: #7a6c9a;
 
   // ---- Typography -------------------------------------------------------
-  --font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  // Display face — headings, KPI values, page titles. Warm, characterful.
-  --font-display: "Bricolage Grotesque", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  // Display face — headings, KPI values, page titles. One family across the
+  // product now: weight carries the hierarchy, not a second typeface. The
+  // token stays so every call site keeps working and a display face can
+  // come back without touching forty files.
+  --font-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-size-xs: 0.75rem;    // 12 — small metadata
   --font-size-sm: 0.8125rem;  // 13 — secondary
   --font-size-base: 0.9375rem;// 15 — body

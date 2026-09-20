@@ -56,7 +56,8 @@
     "notes": "Notes",
     "view": "View",
     "saved": "Saved.",
-    "copied": "Copied"
+    "copied": "Copied",
+    "view_all": "View all"
   },
   "auth": {
     "login": "Login",
@@ -127,7 +128,12 @@
     "subscriptions_active": "Active",
     "plans": "Plans",
     "catalogue": "Catalogue",
-    "spaces": "Rooms"
+    "spaces": "Rooms",
+    "group_overview": "OVERVIEW",
+    "group_administration": "ADMINISTRATION",
+    "role_owner": "Owner",
+    "role_coach": "Coach",
+    "role_staff": "Staff"
   },
   "dashboard": {
     "total_clients": "Total Clients",
@@ -164,7 +170,11 @@
     "session_done": "Done · {{count}} attended",
     "figures": "Gym figures",
     "attention_detail_expiring_today": "{{count}} of them run out today",
-    "attention_detail_oldest_days": "The oldest is {{count}} days old"
+    "attention_detail_oldest_days": "The oldest is {{count}} days old",
+    "revenue": "Revenue",
+    "last_12_months": "Last 12 months",
+    "revenue_chart_label": "Monthly revenue over the last twelve months",
+    "recent_payments": "Recent payments"
   },
   "data_exchange": {
     "select_module": "Choose a module",

@@ -1,5 +1,6 @@
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
+import { signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
@@ -50,7 +51,14 @@ describe("OwnerShellComponent", () => {
         { provide: AuthService, useValue: authStub },
         { provide: ConfigurationService, useValue: configStub },
         { provide: AccountRecoveryService, useValue: recoveryStub },
-        { provide: BrandingService, useValue: jasmine.createSpyObj<BrandingService>("BrandingService", ["logoUrl", "load"]) },
+        {
+          provide: BrandingService,
+          useValue: {
+            ...jasmine.createSpyObj<BrandingService>("BrandingService", ["logoUrl", "load"]),
+            // The rail names the gym you are in, so it reads the signal too.
+            branding: signal(null),
+          },
+        },
         { provide: AppVersionService, useValue: { current: () => version, load: jasmine.createSpy() } },
       ],
     });
