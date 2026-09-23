@@ -1,0 +1,60 @@
+// Plans and activities, facing each other.
+//
+// A price exists only where the two cross, so reading one without the other
+// was always half the picture. Plans take the wider column because that is
+// what a member buys; activities are what a plan is priced for.
+
+.cat-head {
+  margin-bottom: var(--space-5);
+
+  h1 {
+    margin: 0 0 0.15rem;
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+  }
+}
+
+.cat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 26rem;
+  gap: var(--space-6);
+  align-items: start;
+
+  // Below this the two columns would each be too narrow to read, so they
+  // stack — plans first, which is the order they are used in.
+  @media (max-width: 1199px) { grid-template-columns: minmax(0, 1fr); }
+}
+
+.cat-main,
+.cat-side { min-width: 0; }
+
+// The two halves are told apart by their headings, not by a frame each: the
+// plan cards and the activity list already carry their own surfaces, and
+// boxing them again only narrowed both columns.
+.cat-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+
+  // A rule running out to the column's edge, so the eye sees where one half
+  // ends and the other begins even when they stack.
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+}

@@ -23,16 +23,31 @@ export interface RecordPaymentPayload {
   booking_id?: string;
 }
 
+/** Rail counts, method tabs and the cash strip — computed on the searched set. */
+export interface PaymentListResponse {
+  payments: Payment[];
+  meta: PageMeta;
+  counts: Record<string, number>;
+  method_counts: Record<string, number>;
+  totals: {
+    collected_this_month: number;
+    collected_total: number;
+    refunded_value: number;
+    cancelled_value: number;
+    average_payment: number;
+  };
+}
+
 @Injectable({ providedIn: "root" })
 export class PaymentsService {
   constructor(private readonly http: HttpClient) {}
 
-  list(filters: PaymentFilters = {}): Observable<{ payments: Payment[]; meta: PageMeta }> {
+  list(filters: PaymentFilters = {}): Observable<PaymentListResponse> {
     const params: Record<string, string> = {};
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "") params[key] = String(value);
     });
-    return this.http.get<{ payments: Payment[]; meta: PageMeta }>(`${API_BASE_URL}/payments`, { params });
+    return this.http.get<PaymentListResponse>(`${API_BASE_URL}/payments`, { params });
   }
 
   get(id: string): Observable<{ payment: Payment }> {

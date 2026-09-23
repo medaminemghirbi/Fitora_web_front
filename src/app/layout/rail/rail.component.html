@@ -1,0 +1,65 @@
+<aside class="rail d-none d-lg-flex">
+  <a [routerLink]="nav.homePath()" class="rail-brand">
+    <span class="rail-brand-mark">
+      @if (branding.logoUrl(); as logoUrl) {
+        <img [src]="logoUrl" alt="" />
+      } @else {
+        <i class="bi bi-lightning-charge-fill"></i>
+      }
+    </span>
+    <span class="rail-brand-text">Fitora</span>
+  </a>
+
+  <div class="rail-who">
+    <app-avatar [name]="auth.currentUser()?.full_name || ''" [size]="34" />
+    <span class="rail-who-text">
+      <span class="rail-who-name">{{ auth.currentUser()?.first_name }}</span>
+      <span class="rail-who-role">
+        {{ roleLabelKey() | translate }}@if (gymName(); as gym) { · {{ gym }}}
+      </span>
+    </span>
+  </div>
+
+  <nav class="rail-nav" [attr.aria-label]="'nav.primary' | translate">
+    @if (nav.dashboardItem(); as dash) {
+      <div class="rail-group">
+        <span class="rail-group-label">{{ "nav.group_overview" | translate }}</span>
+        <a [routerLink]="dash.path" routerLinkActive="is-active" class="rail-item">
+          <i class="bi" [class]="dash.icon"></i>
+          {{ dash.labelKey | translate }}
+        </a>
+      </div>
+    }
+
+    @for (group of nav.groups(); track group.id) {
+      <div class="rail-group">
+        <span class="rail-group-label">{{ group.labelKey | translate }}</span>
+        @for (item of group.items; track item.path) {
+          <a [routerLink]="item.path" routerLinkActive="is-active" class="rail-item">
+            <i class="bi" [class]="item.icon"></i>
+            {{ item.labelKey | translate }}
+            @if (item.comingSoon) {
+              <span class="rail-soon">{{ "nav.coming_soon" | translate }}</span>
+            }
+          </a>
+        }
+      </div>
+    }
+
+    @if (nav.secondaryItems().length) {
+      <div class="rail-group">
+        <span class="rail-group-label">{{ "nav.group_administration" | translate }}</span>
+        @for (item of nav.secondaryItems(); track item.path) {
+          <a [routerLink]="item.path" routerLinkActive="is-active" class="rail-item">
+            <i class="bi" [class]="item.icon"></i>
+            {{ item.labelKey | translate }}
+          </a>
+        }
+      </div>
+    }
+  </nav>
+
+  @if (version.current(); as v) {
+    <span class="rail-version">v{{ v }} — Fitora</span>
+  }
+</aside>

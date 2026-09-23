@@ -33,10 +33,9 @@ export class NavbarComponent {
   @Input() brandSuffix: string | null = null;
   @Input() showActions = true;
   @Input() showNotifications = false;
-  // Set to false when a sidebar (see SidebarComponent) already renders the
-  // brand mark / full desktop nav — the mobile burger + panel still use
-  // [dashboardItem]/[groups]/[flatItems] regardless, since the sidebar is
-  // desktop-only.
+  // Set to false when the surrounding shell already renders the brand mark
+  // and the full desktop nav. The mobile burger + panel still read
+  // [dashboardItem]/[groups]/[flatItems] either way.
   @Input() showBrand = true;
   @Input() showDesktopNav = true;
   // Owner-only shortcut to the modules marketplace — pre-order a module,
@@ -50,6 +49,22 @@ export class NavbarComponent {
   private readonly companyService = inject(CompanyService);
   private readonly router = inject(Router);
 
+  /**
+   * Hidden while scrolling down, back on the first scroll up.
+   *
+   * Reading a long list should not cost 64px of every screen, and reaching
+   * the search should not cost a scroll to the top. Always visible near the
+   * top of the page, so the bar cannot get stuck away.
+   */
+  readonly hidden = signal(false);
+
+  /** Where the last scroll left us, to tell up from down. */
+  private lastScrollY = 0;
+  private scrollQueued = false;
+
+  /** Below this the bar always shows: there is nothing to gain from hiding. */
+  private static readonly REVEAL_ABOVE = 80;
+
   readonly openGroup = signal<string | null>(null);
   readonly userMenuOpen = signal(false);
   readonly mobileOpen = signal(false);
@@ -58,6 +73,34 @@ export class NavbarComponent {
 
   // Only an owner running more than one company sees this at all — a
   // single-company owner's navbar looks exactly as it always has.
+  /**
+   * Scroll arrives far faster than a frame; the reaction is coalesced into
+   * one rAF so a fling does not queue hundreds of signal writes.
+   */
+  @HostListener("window:scroll")
+  onWindowScroll(): void {
+    if (this.scrollQueued) return;
+    this.scrollQueued = true;
+
+    requestAnimationFrame(() => {
+      this.scrollQueued = false;
+      const y = Math.max(0, window.scrollY);
+
+      // A menu that is open belongs to a bar you can still see.
+      if (y <= NavbarComponent.REVEAL_ABOVE || this.anyMenuOpen()) {
+        this.hidden.set(false);
+      } else {
+        this.hidden.set(y > this.lastScrollY);
+      }
+
+      this.lastScrollY = y;
+    });
+  }
+
+  private anyMenuOpen(): boolean {
+    return this.openGroup() !== null || this.userMenuOpen() || this.companySwitcherOpen() || this.mobileOpen();
+  }
+
   readonly switchableCompanies = computed(() => {
     const companies = this.auth.currentUser()?.companies;
     return companies && companies.length > 1 ? companies : null;
@@ -93,6 +136,16 @@ export class NavbarComponent {
         this.closeAll();
         this.mobileOpen.set(false);
       });
+  }
+
+  /**
+   * A group left with a single visible entry is shown as a plain link, not a
+   * menu: "Équipe" (and "Finances", once permissions trim it) opened a
+   * dropdown holding exactly one row, which was a click for nothing. Returns
+   * that lone entry, or null when the group really needs a menu.
+   */
+  soloItem(group: NavGroup): NavLeaf | null {
+    return group.items.length === 1 ? group.items[0] : null;
   }
 
   toggleGroup(id: string): void {

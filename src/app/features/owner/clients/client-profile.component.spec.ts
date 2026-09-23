@@ -36,27 +36,32 @@ describe("ClientProfileComponent", () => {
   let toast: ToastService;
 
   const contractType: ContractType = {
-    id: "ct1", company_id: "1", name: "Basic", description: null, price: 100, currency: "TND",
+    id: "ct1", company_id: "1", name: "Basic", description: null, currency: "TND",
     billing_period: "monthly", duration_days: 30, session_count: 8, unlimited_bookings: false,
-    booking_limit: null, priority_booking: false, color: "#000", active: true, location_ids: [], activity_ids: [],
-  };
-  const contract: Contract = {
-    id: "m1", current_period_id: "p1", status: "active",
-    starts_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
-    expires_at: new Date(Date.now() + 25 * 86_400_000).toISOString(),
-    remaining_bookings: 5, auto_renew: true, discount: "0", final_price: "100",
-    payment_status: "paid", amount_due: "0", plan: contractType, client: { id: "cl1", full_name: "Amy", phone: null },
+    booking_limit: null, priority_booking: false, color: "#000", active: true, activity_ids: [],
+    activity_prices: [{ activity_id: "a1", activity_name: "Yoga", activity_emoji: "🧘", price: 100 }],
   };
   const activity: Activity = {
     id: "a1", company_id: "1", name: "Yoga", emoji: "🧘", description: null,
     session_format: "collective", duration: 60, capacity: 20, active: true,
   } as never;
+  const contract: Contract = {
+    id: "m1", current_period_id: "p1", status: "active",
+    starts_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
+    expires_at: new Date(Date.now() + 25 * 86_400_000).toISOString(),
+    remaining_bookings: 5, auto_renew: true, discount: "0", base_price: "100", final_price: "100",
+    payment_status: "paid", amount_due: "0", plan: contractType,
+    activity: { id: activity.id, name: activity.name, emoji: activity.emoji },
+    all_access: false, upcoming_periods: [], payable_period_id: null,
+    activity_label: activity.name,
+    client: { id: "cl1", full_name: "Amy", phone: null },
+  };
   const session: Session = { id: "s1", starts_at: "2026-01-05T10:00:00Z", ends_at: "2026-01-05T11:00:00Z" } as never;
   const booking: Booking = {
     id: "b1", status: "confirmed", amount: 20, currency: "TND", payment_status: "unpaid",
     created_at: "2026-01-01T00:00:00Z", covered_by: null,
     client: { id: "cl1", full_name: "Amy Client", email: null, phone: null },
-    session: { id: "s1", starts_at: new Date().toISOString(), ends_at: "2026-01-01T11:00:00Z", status: "scheduled", activity_name: "Yoga", activity_emoji: "🧘", location_name: "Main", coach_name: null },
+    session: { id: "s1", starts_at: new Date().toISOString(), ends_at: "2026-01-01T11:00:00Z", status: "scheduled", activity_name: "Yoga", activity_emoji: "🧘", company_name: "Main", company_id: "g1",  coach_name: null },
   };
   const payment: Payment = {
     id: "pay1", amount: 20, currency: "TND", payment_method: "cash", status: "paid", notes: null,
@@ -65,14 +70,15 @@ describe("ClientProfileComponent", () => {
   };
   const client: ClientDetail = {
     id: "cl1", first_name: "Amy", last_name: "Client", full_name: "Amy Client", email: null, phone: "123",
-    active: true, login_enabled: false, email_verified: false, joined_at: "2026-01-01",
+    active: true, login_enabled: false,
+    joined_at: "2026-01-01",
     current_contract: contract, date_of_birth: null, gender: null, address: null,
     emergency_contact_name: null, emergency_contact_phone: null, notes: "some notes",
     outstanding_balance: "0", attendance_rate: null, last_visit_at: null,
   };
 
   beforeEach(async () => {
-    clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["get", "update", "setLogin"]);
+    clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["get", "update"]);
     contractTypesService = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list"]);
     contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["create", "update", "renew", "cancel", "destroy", "receipt"]);
     activitiesService = jasmine.createSpyObj<ActivitiesService>("ActivitiesService", ["list"]);
@@ -116,7 +122,6 @@ describe("ClientProfileComponent", () => {
     expect(component.contracts()).toEqual([contract]);
     expect(component.contractTypes().length).toBe(1);
     expect(component.activities().length).toBe(1);
-    expect(component.notesForm.value.notes).toBe("some notes");
     expect(component.contractProgress()).not.toBeNull();
   });
 
@@ -126,18 +131,38 @@ describe("ClientProfileComponent", () => {
     expect(component.error()).toBe(true);
   });
 
-  it("setTab switches the active tab", () => {
-    component.setTab("contracts");
-    expect(component.activeTab()).toBe("contracts");
-  });
+  describe("the timeline", () => {
+    it("tells one story out of bookings and payments, newest first", () => {
+      expect(component.timeline().length).toBe(component.bookings().length + component.payments().length);
 
-  it("bookingsWithAttendance keeps only confirmed/completed/no_show", () => {
-    component.bookings.set([
-      { ...booking, status: "confirmed" },
-      { ...booking, status: "cancelled" },
-      { ...booking, status: "completed" },
-    ]);
-    expect(component.bookingsWithAttendance().length).toBe(2);
+      const dates = component.timeline().map((e) => new Date(e.at).getTime());
+      expect(dates).toEqual([...dates].sort((a, b) => b - a));
+    });
+
+    it("reads a booking's status as whether they turned up", () => {
+      const kinds = component.timeline().filter((e) => e.stream === "sessions").map((e) => e.kind);
+
+      expect(kinds.every((k) => ["attended", "missed", "cancelled", "booked"].includes(k))).toBe(true);
+    });
+
+    it("narrows without splitting the story back into tabs", () => {
+      component.filter.set("payments");
+      expect(component.timeline().every((e) => e.stream === "payments")).toBe(true);
+
+      component.filter.set("sessions");
+      expect(component.timeline().every((e) => e.stream === "sessions")).toBe(true);
+
+      component.filter.set("all");
+      expect(component.timeline().length).toBeGreaterThan(0);
+    });
+
+    it("gives every kind of event its own mark", () => {
+      const kinds = ["attended", "missed", "cancelled", "booked", "paid", "refunded"] as const;
+      const icons = kinds.map((k) => component.timelineIcon(k));
+
+      expect(icons.every((i) => i.startsWith("bi-"))).toBe(true);
+      expect(new Set(icons).size).toBe(kinds.length);
+    });
   });
 
   it("balanceTone is danger for a positive balance, success otherwise", () => {
@@ -162,7 +187,6 @@ describe("ClientProfileComponent", () => {
       of({ client: { ...client, notes: null, current_contract: null }, contracts: [contract], bookings: [booking], payments: [payment] })
     );
     component.load();
-    expect(component.notesForm.value.notes).toBe("");
     expect(component.contractProgress()).toBeNull();
   });
 
@@ -186,16 +210,30 @@ describe("ClientProfileComponent", () => {
     expect(component.contractProgress()?.percent).toBe(100);
   });
 
-  it("selectedPlan / contractFormTotal reflect the chosen plan and discount", () => {
+  it("selectedPlan / contractFormTotal reflect the chosen plan, activity and discount", () => {
     expect(component.selectedPlan()).toBeNull();
     expect(component.contractFormTotal()).toBe(0);
-    component.contractForm.patchValue({ contract_type_id: "ct1", discount: 20 });
+    component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1", discount: 20 });
     expect(component.selectedPlan()).toEqual(contractType);
     expect(component.contractFormTotal()).toBe(80);
   });
 
   it("contractFormTotal clamps at 0", () => {
-    component.contractForm.patchValue({ contract_type_id: "ct1", discount: 500 });
+    component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1", discount: 500 });
+    expect(component.contractFormTotal()).toBe(0);
+  });
+
+  it("selectedActivityPrice is null until both the plan and the activity are chosen", () => {
+    component.contractForm.patchValue({ contract_type_id: "ct1" });
+    expect(component.selectedActivityPrice()).toBeNull();
+
+    component.contractForm.patchValue({ activity_id: "a1" });
+    expect(component.selectedActivityPrice()).toBe(100);
+  });
+
+  it("selectedActivityPrice is null for an activity the plan has no tariff for", () => {
+    component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a-unpriced" });
+    expect(component.selectedActivityPrice()).toBeNull();
     expect(component.contractFormTotal()).toBe(0);
   });
 
@@ -216,30 +254,37 @@ describe("ClientProfileComponent", () => {
       expect(contractsService.create).not.toHaveBeenCalled();
     });
 
-    it("submitContract creates the contract and reloads", () => {
+    it("submitContract does nothing when a plan is chosen but no activity is", () => {
       component.contractForm.patchValue({ contract_type_id: "ct1" });
+      component.submitContract();
+      expect(contractsService.create).not.toHaveBeenCalled();
+    });
+
+    it("submitContract creates the contract and reloads", () => {
+      component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1" });
       contractsService.create.and.returnValue(of({ contract, payment: null }));
       component.submitContract();
+      expect(contractsService.create).toHaveBeenCalledWith(jasmine.objectContaining({ contract_type_id: "ct1", activity_id: "a1" }));
       expect(component.contractModalOpen()).toBe(false);
       expect(toast.toasts()[0].kind).toBe("success");
     });
 
     it("submitContract shows the backend error on failure", () => {
-      component.contractForm.patchValue({ contract_type_id: "ct1" });
+      component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1" });
       contractsService.create.and.returnValue(throwError(() => new Error("nope")));
       component.submitContract();
       expect(component.formError()).toBeTruthy();
     });
 
     it("submitContract collects payment immediately when collect_payment is checked", () => {
-      component.contractForm.patchValue({ contract_type_id: "ct1", collect_payment: true });
+      component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1", collect_payment: true });
       contractsService.create.and.returnValue(of({ contract, payment: null }));
       component.submitContract();
       expect(contractsService.create).toHaveBeenCalledWith(jasmine.objectContaining({ collect_payment: true, payment_method: "cash" }));
     });
 
-    it("contractFormTotal uses the plan's full price when no discount is entered", () => {
-      component.contractForm.patchValue({ contract_type_id: "ct1" });
+    it("contractFormTotal uses the activity's full tariff when no discount is entered", () => {
+      component.contractForm.patchValue({ contract_type_id: "ct1", activity_id: "a1" });
       expect(component.contractFormTotal()).toBe(100);
     });
 
@@ -534,52 +579,4 @@ describe("ClientProfileComponent", () => {
     });
   });
 
-  describe("notes", () => {
-    it("saveNotes saves and shows a success toast", () => {
-      clientsService.update.and.returnValue(of({ client }));
-      component.saveNotes();
-      expect(clientsService.update).toHaveBeenCalledWith("cl1", { notes: "some notes" });
-      expect(component.notesSaving()).toBe(false);
-      expect(toast.toasts()[0].kind).toBe("success");
-    });
-
-    it("saveNotes shows an error toast on failure", () => {
-      clientsService.update.and.returnValue(throwError(() => new Error("nope")));
-      component.saveNotes();
-      expect(toast.toasts()[0].kind).toBe("error");
-    });
-  });
-
-  describe("mobile login", () => {
-    it("openLoginModal resets the form", () => {
-      component.openLoginModal();
-      expect(component.loginModalOpen()).toBe(true);
-    });
-
-    it("closeLoginModal closes it", () => {
-      component.loginModalOpen.set(true);
-      component.closeLoginModal();
-      expect(component.loginModalOpen()).toBe(false);
-    });
-
-    it("submitLogin does nothing with an invalid form", () => {
-      component.submitLogin();
-      expect(clientsService.setLogin).not.toHaveBeenCalled();
-    });
-
-    it("submitLogin sets the login and reloads", () => {
-      component.loginForm.setValue({ password: "secret123" });
-      clientsService.setLogin.and.returnValue(of({ client }));
-      component.submitLogin();
-      expect(component.loginModalOpen()).toBe(false);
-      expect(toast.toasts()[0].kind).toBe("success");
-    });
-
-    it("submitLogin shows the backend error on failure", () => {
-      component.loginForm.setValue({ password: "secret123" });
-      clientsService.setLogin.and.returnValue(throwError(() => new Error("nope")));
-      component.submitLogin();
-      expect(component.loginFormError()).toBeTruthy();
-    });
-  });
 });

@@ -1,12 +1,36 @@
-@import "styles/bootstrap-vars";
-@import "bootstrap/scss/bootstrap";
+// Bootstrap is gone. Its components were already fully restyled in
+// styles/fitora, so the framework was shipping a stylesheet whose every
+// visible rule we overrode; what was genuinely in use was a bounded set of
+// layout utilities and five small components, now styles/utilities and
+// styles/leftovers. The icon font stays — it is a font, not a framework.
+//
+// scripts/check-css.mjs fails the build if a template uses a class nothing
+// defines, which is what makes removing a framework safe to do at all.
 @import "bootstrap-icons/font/bootstrap-icons.css";
 @import "styles/tokens";
-@import "styles/fitora";
-@import "styles/adminlte";
+// The element reset the component layer assumes. Was Bootstrap's Reboot.
+@import "styles/reset";
+@import "styles/utilities";
+// Fitora's own component layer, one file per concern. Was a single 1208-line
+// _fitora.scss, which is why screens drifted: nobody could see what was
+// already there before writing it again.
+@import "styles/components/base";
+@import "styles/components/buttons";
+@import "styles/components/forms";
+@import "styles/components/tables";
+@import "styles/components/feedback";
+@import "styles/components/page";
+@import "styles/components/cards";
+@import "styles/components/filters";
+@import "styles/components/navigation";
+@import "styles/components/overlays";
+@import "styles/components/list";
+@import "styles/components/list-page";
+@import "styles/components/calendar";
+@import "styles/components/misc";
+@import "styles/leftovers";
+@import "styles/shell";
 @import "styles/marketing";
-
-* { box-sizing: border-box; }
 
 html, body { height: 100%; }
 
@@ -32,6 +56,9 @@ ng-progress {
 
 .text-primary { color: var(--color-primary) !important; }
 .text-muted-token { color: var(--color-text-secondary) !important; }
+.text-warning-token { color: var(--color-warning) !important; }
+.text-danger-token { color: var(--color-danger) !important; }
+.text-success-token { color: var(--color-success) !important; }
 .cursor-pointer { cursor: pointer; }
 
 // Global visible focus ring for keyboard users

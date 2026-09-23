@@ -1,11 +1,15 @@
 <div class="fx-page">
-  <app-page-header [title]="'notifications.inbox_title' | translate">
+  <header class="lst-head">
+    <h1>{{ "notifications.inbox_title" | translate }}</h1>
+    @if (unreadCount() > 0) {
+      <span class="lst-head-count">{{ unreadCount() }}</span>
+    }
     @if (unreadCount() > 0) {
       <button type="button" class="btn btn-sm btn-outline-secondary" (click)="markAllRead()">
         {{ "notifications.mark_all_read" | translate }}
       </button>
     }
-  </app-page-header>
+  </header>
 
   <div class="fx-toolbar">
     <div class="fx-segmented">

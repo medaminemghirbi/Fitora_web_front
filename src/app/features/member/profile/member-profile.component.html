@@ -1,0 +1,72 @@
+<div class="mb-page">
+  @if (loading()) {
+    <app-skeleton variant="line" width="60%" />
+    <app-skeleton variant="line" width="100%" />
+  } @else if (error()) {
+    <app-error-state (retry)="load()" />
+  } @else {
+    @if (member.profile(); as p) {
+      <h1 class="mb-title">{{ p.client.full_name }}</h1>
+      <p class="mb-contact">
+        @if (p.client.email) { <span dir="ltr">{{ p.client.email }}</span> }
+        @if (p.client.phone) { <span dir="ltr"> · {{ p.client.phone }}</span> }
+      </p>
+
+      <!-- The one thing a member opens this page to find out. It was a muted
+           line under two other muted lines; it is the page's headline now. -->
+      @if (p.subscription; as sub) {
+        <section class="mb-hero">
+          @if (sub.remaining_bookings !== null) {
+            <span class="mb-hero-value">{{ sub.remaining_bookings }}</span>
+            <span class="mb-hero-label">{{ "member.sessions_left_label" | translate }}</span>
+          } @else {
+            <span class="mb-hero-value">∞</span>
+            <span class="mb-hero-label">{{ "member.unlimited" | translate }}</span>
+          }
+
+          <span class="mb-hero-plan">
+            {{ sub.activity_emoji ? sub.activity_emoji + " " : "" }}{{ sub.activity_name }} · {{ sub.plan_name }}
+          </span>
+          @if (sub.expires_at) {
+            <span class="mb-hero-until">
+              {{ "member.valid_until" | translate }} {{ sub.expires_at | date: "d MMMM y" }}
+            </span>
+          }
+        </section>
+      } @else {
+        <section class="mb-card">
+          <app-empty-state
+            [title]="'member.no_subscription_title' | translate"
+            [body]="'member.no_subscription_body' | translate"
+            icon="bi-award"
+          />
+        </section>
+      }
+
+      <section class="mb-card">
+        <h2 class="mb-card-head">{{ "member.attendance" | translate }}</h2>
+        @if (p.attendance.rate !== null) {
+          <p class="mb-rate">{{ p.attendance.rate }}%</p>
+          <p class="mb-muted">{{ "member.attendance_rate_hint" | translate }}</p>
+        }
+
+        @if (p.attendance.recent.length === 0) {
+          <app-empty-state [title]="'member.no_attendance' | translate" body="" icon="bi-clock-history" />
+        } @else {
+          <ul class="mb-list mb-list--flush">
+            @for (entry of p.attendance.recent; track entry.id) {
+              <li class="mb-slot">
+                <span class="mb-slot-main">
+                  <span class="mb-slot-name">
+                    {{ entry.activity_emoji ? entry.activity_emoji + " " : "" }}{{ entry.activity_name }}
+                  </span>
+                  <span class="mb-slot-sub">{{ entry.starts_at | date: "mediumDate" }}</span>
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  }
+</div>

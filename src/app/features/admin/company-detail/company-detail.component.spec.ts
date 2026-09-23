@@ -1,82 +1,172 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { ActivatedRoute, convertToParamMap } from "@angular/router";
+import { ActivatedRoute, convertToParamMap, provideRouter } from "@angular/router";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { TranslateModule } from "@ngx-translate/core";
 import { Subject, of, throwError } from "rxjs";
 import { AdminCompany } from "../../../core/models/admin-company.model";
-import { AuthService } from "../../../core/auth/auth.service";
+import { Invoice } from "../../../core/models/subscription.model";
 import { AdminCompaniesService } from "../../../core/services/admin-companies.service";
-import { ToastService } from "../../../core/services/toast.service";
+import { ConfirmService } from "../../../core/services/confirm.service";
 import { AdminCompanyDetailComponent } from "./company-detail.component";
 
 describe("AdminCompanyDetailComponent", () => {
   let fixture: ComponentFixture<AdminCompanyDetailComponent>;
   let component: AdminCompanyDetailComponent;
   let service: jasmine.SpyObj<AdminCompaniesService>;
-  let toast: ToastService;
-  let authStub: { startImpersonation: jasmine.Spy };
+  let confirm: ConfirmService;
 
-  const company: AdminCompany = {
+  const company = {
     id: "c1",
-    name: "Acme Gym",
-    city: "Tunis",
+    name: "Salle Sousse",
+    city: "Sousse",
     country: "TN",
     currency: "TND",
     currency_symbol: "DT",
     locale: "fr",
     active: true,
-    mobile_auth_key: "key",
     created_at: "2026-01-01T00:00:00Z",
-    locations_count: 1,
-    owner: { id: "o1", full_name: "Sami Owner", email: "sami@x.test", phone: null },
-    trial_locked: false,
-    trial_days_remaining: null,
-    monthly_subscription_cents: 15000,
-    annual_subscription_cents: 162000,
-    annual_discount_percent: 10,
-    debt_cents: 5000,
-    included_modules: [],
+    owner: { id: "u1", full_name: "Amine", email: "a@x.test", phone: null, company_limit: 1, companies_count: 1 },
     subscription: {
-      status: "active",
-      expires_at: "2026-12-01T00:00:00Z",
+      id: "s1",
+      active: true,
       billing_period: "monthly",
-      upgrade_requested_at: null,
-      upgrade_requested_period: null,
-    } as never,
-  };
+      lock_reason: null,
+      paid_through: "2099-12-31",
+      current_period_paid: true,
+      days_before_lock: null,
+    },
+    access_open: true,
+    arrears_cents: 0,
+    usage: { clients: 0, staff: 0, activities: 0, sessions_last_30_days: 0, last_session_at: null },
+    monthly_subscription_cents: 9900,
+    annual_subscription_cents: 100_980,
+    annual_discount_percent: 15,
+    included_modules: [],
+  } as unknown as AdminCompany;
 
-  beforeEach(async () => {
+  function invoice(patch: Partial<Invoice> = {}): Invoice {
+    return {
+      id: "inv1",
+      number: "FIT-2026-0042",
+      period_start: "2026-09-01",
+      period_end: "2026-09-30",
+      amount: 99,
+      currency: "TND",
+      billing_period: "monthly",
+      issued_at: "2026-09-02T00:00:00Z",
+      issued_by: "Amine",
+      notes: null,
+      ...patch,
+    } as Invoice;
+  }
+
+  function build(patch: Partial<AdminCompany> = {}, invoices: Invoice[] = []): void {
+    TestBed.resetTestingModule();
     service = jasmine.createSpyObj<AdminCompaniesService>("AdminCompaniesService", [
       "get",
+      "invoices",
+      "issueInvoice",
+      "voidInvoice",
       "updateSubscription",
       "updateSettings",
-      "updateDebt",
+      "updateCompanyLimit",
       "impersonate",
     ]);
-    service.get.and.returnValue(of({ company, currency_options: [], locale_options: ["fr", "en"] }));
-    authStub = { startImpersonation: jasmine.createSpy() };
+    service.get.and.returnValue(
+      of({ company: { ...company, ...patch } as AdminCompany, currency_options: [], locale_options: [] })
+    );
+    service.invoices.and.returnValue(of({ invoices }));
 
-    await TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       imports: [AdminCompanyDetailComponent, TranslateModule.forRoot()],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
         { provide: AdminCompaniesService, useValue: service },
-        { provide: AuthService, useValue: authStub },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: "c1" }) } } },
       ],
-    }).compileComponents();
+    });
 
     fixture = TestBed.createComponent(AdminCompanyDetailComponent);
     component = fixture.componentInstance;
-    toast = TestBed.inject(ToastService);
+    confirm = TestBed.inject(ConfirmService);
     fixture.detectChanges();
+  }
+
+  beforeEach(() => build());
+
+  // The tier governs the owner, so it is read off them, and a plan
+  // narrower than the gyms they already run is refused before it is sent.
+  describe("the plan", () => {
+    function withOwner(limit: number | null, gyms: number): void {
+      build({ owner: { ...company.owner, company_limit: limit, companies_count: gyms } });
+    }
+
+    it("reads the owner's tier, with unlimited as the blank option", () => {
+      withOwner(3, 2);
+      expect(component.plan()).toBe("3");
+      expect(component.ownerGyms()).toBe(2);
+
+      withOwner(null, 5);
+      expect(component.plan()).toBe("");
+    });
+
+    it("moves the owner to the chosen tier", () => {
+      withOwner(1, 1);
+      service.updateCompanyLimit.and.returnValue(
+        of({ company: { ...company, owner: { ...company.owner, company_limit: 3, companies_count: 1 } } as AdminCompany })
+      );
+
+      component.changePlan("3");
+
+      expect(service.updateCompanyLimit).toHaveBeenCalledWith("c1", 3);
+      expect(component.plan()).toBe("3");
+      expect(component.savingPlan()).toBeFalse();
+    });
+
+    it("sends null for unlimited", () => {
+      withOwner(3, 2);
+      service.updateCompanyLimit.and.returnValue(
+        of({ company: { ...company, owner: { ...company.owner, company_limit: null, companies_count: 2 } } as AdminCompany })
+      );
+
+      component.changePlan("");
+
+      expect(service.updateCompanyLimit).toHaveBeenCalledWith("c1", null);
+    });
+
+    it("refuses a plan narrower than the gyms the owner already runs", () => {
+      withOwner(null, 4);
+
+      component.changePlan("3");
+
+      expect(service.updateCompanyLimit).not.toHaveBeenCalled();
+    });
+
+    it("does nothing when the tier picked is the one already in force", () => {
+      withOwner(3, 1);
+
+      component.changePlan("3");
+
+      expect(service.updateCompanyLimit).not.toHaveBeenCalled();
+    });
+
+    it("stops saving and reports when the change fails", () => {
+      withOwner(1, 1);
+      service.updateCompanyLimit.and.returnValue(throwError(() => new Error("nope")));
+
+      component.changePlan("3");
+
+      expect(component.savingPlan()).toBeFalse();
+      expect(component.plan()).toBe("1");
+    });
   });
 
-  it("loads the company by route id and hydrates every form", () => {
+  it("loads the gym and its invoices", () => {
     expect(service.get).toHaveBeenCalledWith("c1");
-    expect(component.status()).toBe("active");
-    expect(component.expiresAt()).toBe("2026-12-01");
-    expect(component.billingPeriod()).toBe("monthly");
-    expect(component.currency()).toBe("TND");
-    expect(component.debtAmount()).toBe(50);
+    expect(service.invoices).toHaveBeenCalledWith("c1");
   });
 
   it("sets the error flag when loading fails", () => {
@@ -85,164 +175,248 @@ describe("AdminCompanyDetailComponent", () => {
     expect(component.error()).toBe(true);
   });
 
-  it("formuleLabelKey reflects the company's actual billing period", () => {
-    expect(component.formuleLabelKey()).toBe("subscription.plan_monthly");
+  describe("what needs deciding", () => {
+    it("says nothing about a gym that is open and paid up", () => {
+      expect(component.attention()).toBeNull();
+    });
 
-    service.get.and.returnValue(of({ company: { ...company, subscription: { ...company.subscription, billing_period: "yearly" } as never }, currency_options: [], locale_options: [] }));
-    component.load();
-    expect(component.formuleLabelKey()).toBe("subscription.plan_yearly");
+    it("warns while the period is unsettled but access is still open", () => {
+      build({ subscription: { ...company.subscription!, current_period_paid: false, days_before_lock: 2 } });
+      expect(component.attention()).toBe("due");
+    });
 
-    service.get.and.returnValue(of({ company: { ...company, subscription: { ...company.subscription, billing_period: null } as never }, currency_options: [], locale_options: [] }));
-    component.load();
-    expect(component.formuleLabelKey()).toBe("admin.formule_trial");
+    // With no invoice there is no period to count down from, and the "due"
+    // message interpolated a null straight into the page as {{days}}.
+    it("says so plainly when nothing was ever invoiced, rather than counting from nothing", () => {
+      build({ subscription: { ...company.subscription!, current_period_paid: false, paid_through: null, days_before_lock: null } });
+
+      expect(component.attention()).toBe("never");
+      expect(fixture.nativeElement.textContent).not.toContain("{{days}}");
+    });
+
+    it("reports the money when access closed for want of it", () => {
+      build({ access_open: false, subscription: { ...company.subscription!, active: false, lock_reason: "unpaid" } });
+      expect(component.attention()).toBe("unpaid");
+    });
+
+    it("reports a decision as a decision, never as money", () => {
+      build({ access_open: false, subscription: { ...company.subscription!, active: false, lock_reason: "suspended" } });
+      expect(component.attention()).toBe("suspended");
+    });
   });
 
-  it("upgradeRequest is null with no pending request", () => {
-    expect(component.upgradeRequest()).toBeNull();
+  describe("the ledger", () => {
+    it("paints a month green when an invoice covers its first day", () => {
+      const year = new Date().getFullYear();
+      build({}, [invoice({ period_start: `${year}-01-01`, period_end: `${year}-01-31` })]);
+
+      component.ledgerYear.set(year);
+      expect(component.ledger()[0].state).toBe("paid");
+      expect(component.ledger()[0].invoice?.number).toBe("FIT-2026-0042");
+    });
+
+    // A yearly invoice is one row that has to paint twelve cells.
+    it("paints a whole year from a single yearly invoice", () => {
+      const year = new Date().getFullYear();
+      build({}, [invoice({ period_start: `${year}-01-01`, period_end: `${year}-12-31`, billing_period: "yearly" })]);
+
+      component.ledgerYear.set(year);
+      expect(component.ledger().every((c) => c.state === "paid")).toBe(true);
+      expect(component.ledgerPaidCount()).toBe(12);
+    });
+
+    it("leaves a month with no invoice as a hole, never as paid", () => {
+      const year = new Date().getFullYear();
+      build({}, [invoice({ period_start: `${year}-01-01`, period_end: `${year}-01-31` })]);
+
+      component.ledgerYear.set(year);
+      expect(component.ledger()[1].state).not.toBe("paid");
+      expect(component.ledger()[1].invoice).toBeNull();
+    });
+
+    it("counts only what the invoices actually collected", () => {
+      const year = new Date().getFullYear();
+      build({}, [
+        invoice({ id: "a", period_start: `${year}-01-01`, period_end: `${year}-01-31`, amount: 99 }),
+        invoice({ id: "b", period_start: `${year}-02-01`, period_end: `${year}-02-28`, amount: 120 }),
+      ]);
+
+      component.ledgerYear.set(year);
+      expect(component.ledgerCollected()).toBe(219);
+    });
+
+    // One yearly invoice paints twelve cells, and was paid once.
+    it("counts a yearly invoice once, however many months it paints", () => {
+      const year = new Date().getFullYear();
+      build({}, [invoice({ period_start: `${year}-01-01`, period_end: `${year}-12-31`, billing_period: "yearly", amount: 1069.2 })]);
+
+      component.ledgerYear.set(year);
+      expect(component.ledgerCollected()).toBe(1069.2);
+    });
+
+    it("leaves the months before the gym signed up blank", () => {
+      const year = new Date().getFullYear();
+      build({ created_at: `${year}-06-15T00:00:00Z` });
+
+      component.ledgerYear.set(year);
+      expect(component.ledger().slice(0, 5).every((c) => c.state === "before")).toBe(true);
+      expect(component.ledger()[5].state).not.toBe("before");
+    });
+
+    it("never counts the free period as collected", () => {
+      const year = new Date().getFullYear();
+      build({ created_at: `${year}-01-01T00:00:00Z` }, [
+        invoice({ period_start: `${year}-01-01`, period_end: `${year}-01-14`, amount: 0, trial: true }),
+      ]);
+
+      component.ledgerYear.set(year);
+      expect(component.ledger()[0].state).toBe("trial");
+      expect(component.ledgerPaidCount()).toBe(0);
+    });
   });
 
-  it("upgradeRequest surfaces a pending upgrade", () => {
-    service.get.and.returnValue(
-      of({
-        company: { ...company, subscription: { ...company.subscription, upgrade_requested_at: "2026-01-01T00:00:00Z", upgrade_requested_period: "yearly" } } as never,
-        currency_options: [],
-        locale_options: [],
+  // Choosing a formula during the free days changes nothing until money
+  // arrives, so the page must show the trial and still offer the payment.
+  describe("a gym on its free days", () => {
+    const next = { period_start: "2026-10-07", period_end: "2027-10-06", amount_cents: 106_920 };
+
+    beforeEach(() =>
+      build({
+        subscription: { ...company.subscription!, billing_period: "yearly", trial: true, trial_days_left: 13 },
+        next_invoice: next,
       })
     );
-    component.load();
-    expect(component.upgradeRequest()).toEqual({ at: "2026-01-01T00:00:00Z", period: "yearly" });
-  });
 
-  it("subDirty/settingsDirty/debtDirty are false right after loading", () => {
-    expect(component.subDirty()).toBe(false);
-    expect(component.settingsDirty()).toBe(false);
-    expect(component.debtDirty()).toBe(false);
-  });
-
-  it("subDirty flips when the status changes", () => {
-    component.status.set("cancelled");
-    expect(component.subDirty()).toBe(true);
-  });
-
-  it("settingsDirty flips when the currency changes", () => {
-    component.currency.set("EUR");
-    expect(component.settingsDirty()).toBe(true);
-  });
-
-  it("debtDirty flips when the debt amount changes", () => {
-    component.debtAmount.set(100);
-    expect(component.debtDirty()).toBe(true);
-  });
-
-  it("saveSubscription() saves, re-hydrates, and shows a success toast", () => {
-    service.updateSubscription.and.returnValue(of({ company }));
-    component.saveSubscription();
-    expect(service.updateSubscription).toHaveBeenCalledWith("c1", { status: "active", expires_at: "2026-12-01", billing_period: "monthly" });
-    expect(component.savingSub()).toBe(false);
-    expect(toast.toasts()[0].kind).toBe("success");
-  });
-
-  it("saveSubscription() shows an error toast on failure", () => {
-    service.updateSubscription.and.returnValue(throwError(() => new Error("nope")));
-    component.saveSubscription();
-    expect(component.savingSub()).toBe(false);
-    expect(toast.toasts()[0].kind).toBe("error");
-  });
-
-  it("saveSettings() saves and re-hydrates", () => {
-    service.updateSettings.and.returnValue(of({ company }));
-    component.saveSettings();
-    expect(service.updateSettings).toHaveBeenCalledWith("c1", { currency: "TND", locale: "fr" });
-    expect(component.savingSettings()).toBe(false);
-  });
-
-  it("saveSettings() shows an error toast on failure", () => {
-    service.updateSettings.and.returnValue(throwError(() => new Error("nope")));
-    component.saveSettings();
-    expect(toast.toasts()[0].kind).toBe("error");
-  });
-
-  it("saveDebt() converts units to cents and saves", () => {
-    component.debtAmount.set(75.5);
-    service.updateDebt.and.returnValue(of({ company }));
-    component.saveDebt();
-    expect(service.updateDebt).toHaveBeenCalledWith("c1", 7550);
-    expect(component.savingDebt()).toBe(false);
-  });
-
-  it("saveDebt() shows an error toast on failure", () => {
-    service.updateDebt.and.returnValue(throwError(() => new Error("nope")));
-    component.saveDebt();
-    expect(toast.toasts()[0].kind).toBe("error");
-  });
-
-  it("impersonate() starts the impersonation session on success", () => {
-    service.impersonate.and.returnValue(of({ token: "t", user: {} as never }));
-    component.impersonate();
-    expect(authStub.startImpersonation).toHaveBeenCalledWith({ token: "t", user: {} }, "Acme Gym");
-  });
-
-  it("impersonate() resets the flag and shows an error toast on failure", () => {
-    service.impersonate.and.returnValue(throwError(() => new Error("nope")));
-    component.impersonate();
-    expect(component.impersonating()).toBe(false);
-    expect(toast.toasts()[0].kind).toBe("error");
-  });
-
-  it("hydrates fallbacks (active/'') for a company with no subscription yet", () => {
-    service.get.and.returnValue(of({ company: { ...company, subscription: null }, currency_options: [], locale_options: [] }));
-    component.load();
-    expect(component.status()).toBe("active");
-    expect(component.expiresAt()).toBe("");
-    expect(component.billingPeriod()).toBe("");
-  });
-
-  it("subDirty compares against the fallback values for a company with no subscription", () => {
-    service.get.and.returnValue(of({ company: { ...company, subscription: null }, currency_options: [], locale_options: [] }));
-    component.load();
-    expect(component.subDirty()).toBe(false);
-    component.status.set("cancelled");
-    expect(component.subDirty()).toBe(true);
-  });
-
-  it("defaults currency/locale options to [] when the backend omits them", () => {
-    service.get.and.returnValue(
-      of({ company, currency_options: undefined, locale_options: undefined } as unknown as { company: AdminCompany; currency_options: never[]; locale_options: never[] })
-    );
-    component.load();
-    expect(component.currencyOptions()).toEqual([]);
-    expect(component.localeOptions()).toEqual([]);
-  });
-
-  it("saveSubscription sends null instead of an empty string for expires_at/billing_period", () => {
-    service.get.and.returnValue(of({ company: { ...company, subscription: null }, currency_options: [], locale_options: [] }));
-    component.load();
-    service.updateSubscription.and.returnValue(of({ company }));
-    component.saveSubscription();
-    expect(service.updateSubscription).toHaveBeenCalledWith("c1", { status: "active", expires_at: null, billing_period: null });
-  });
-
-  describe("before the company has loaded", () => {
-    let fresh: ComponentFixture<AdminCompanyDetailComponent>;
-
-    beforeEach(() => {
-      // A fresh component whose very first `get()` never resolves — company()
-      // stays null throughout, unlike reusing the outer fixture (already
-      // hydrated by the shared beforeEach's synchronous `of(...)`).
-      service.get.and.returnValue(new Subject());
-      fresh = TestBed.createComponent(AdminCompanyDetailComponent);
-      fresh.detectChanges();
+    it("is shown as on trial, not as on the formula picked for later", () => {
+      expect(component.onTrial()).toBe(true);
+      expect(fixture.nativeElement.querySelector(".ac-stat--trial")).not.toBeNull();
     });
 
-    it("subDirty/settingsDirty/debtDirty are false with no company loaded", () => {
-      expect(fresh.componentInstance.subDirty()).toBe(false);
-      expect(fresh.componentInstance.settingsDirty()).toBe(false);
-      expect(fresh.componentInstance.debtDirty()).toBe(false);
+    it("can be recorded as paid before the trial runs out, with the period it will buy", () => {
+      expect(component.attention()).toBeNull();
+      expect(component.nextInvoice()).toEqual(next);
+
+      service.issueInvoice.and.returnValue(of({ invoice: invoice(), company }));
+      (fixture.nativeElement.querySelector(".ac-next button") as HTMLButtonElement).click();
+      expect(service.issueInvoice).toHaveBeenCalledWith("c1");
+    });
+  });
+
+  describe("the money arriving", () => {
+    it("issues an invoice and takes the new state from the answer", () => {
+      service.issueInvoice.and.returnValue(of({ invoice: invoice(), company }));
+
+      component.issueInvoice();
+
+      expect(service.issueInvoice).toHaveBeenCalledWith("c1");
+      expect(component.savingInvoice()).toBe(false);
     });
 
-    it("impersonate() does nothing with no company loaded", () => {
-      fresh.componentInstance.impersonate();
-      expect(service.impersonate).not.toHaveBeenCalled();
+    it("refuses a second click while one is in flight", () => {
+      service.issueInvoice.and.returnValue(new Subject<never>().asObservable() as never);
+
+      component.issueInvoice();
+      component.issueInvoice();
+
+      expect(service.issueInvoice).toHaveBeenCalledTimes(1);
+    });
+
+    it("stops spinning when it is refused", () => {
+      service.issueInvoice.and.returnValue(throwError(() => new Error("no subscription")));
+      component.issueInvoice();
+      expect(component.savingInvoice()).toBe(false);
+    });
+
+    it("asks before voiding one, and does nothing when told no", async () => {
+      const pending = component.voidInvoice(invoice());
+      confirm.resolve(false);
+      await pending;
+
+      expect(service.voidInvoice).not.toHaveBeenCalled();
+    });
+
+    it("voids one once confirmed", async () => {
+      service.voidInvoice.and.returnValue(of({ company }));
+
+      const pending = component.voidInvoice(invoice());
+      confirm.resolve(true);
+      await pending;
+
+      expect(service.voidInvoice).toHaveBeenCalledWith("c1", "inv1");
+    });
+  });
+
+  describe("access", () => {
+    it("closes an open gym and opens a closed one", () => {
+      service.updateSubscription.and.returnValue(of({ company }));
+
+      component.toggleAccess();
+      expect(service.updateSubscription).toHaveBeenCalledWith("c1", { active: false });
+    });
+
+    it("sets what an invoice covers", () => {
+      service.updateSubscription.and.returnValue(of({ company }));
+
+      component.changeBillingPeriod("yearly");
+      expect(service.updateSubscription).toHaveBeenCalledWith("c1", { billing_period: "yearly" });
+    });
+  });
+
+    // A fixed window around today left a long-standing gym's oldest invoices
+    // reachable by nothing at all.
+    it("offers every year its invoices touch, however far back", () => {
+      build({}, [
+        invoice({ id: "old", period_start: "2023-03-01", period_end: "2023-03-31" }),
+        invoice({ id: "new", period_start: "2026-09-01", period_end: "2026-09-30" }),
+      ]);
+
+      expect(component.ledgerYears()).toContain(2023);
+      expect(component.ledgerYears()).toContain(2026);
+    });
+
+    it("still offers the current year for a gym with no invoices at all", () => {
+      build({}, []);
+      expect(component.ledgerYears()).toEqual([new Date().getFullYear()]);
+    });
+
+  describe("the two tabs", () => {
+    it("opens on billing — the question the page is usually open for", () => {
+      expect(component.activeTab()).toBe("billing");
+    });
+
+    it("switches to the gym and back", () => {
+      component.setTab("gym");
+      expect(component.activeTab()).toBe("gym");
+
+      component.setTab("billing");
+      expect(component.activeTab()).toBe("billing");
+    });
+
+    // Something that needs deciding must not sit behind a tab: that is how
+    // an activation request went unseen before.
+    it("keeps the banner visible whichever tab is open", () => {
+      build({ subscription: { ...company.subscription!, current_period_paid: false, days_before_lock: 2 } });
+      expect(fixture.nativeElement.querySelector(".ac-attention")).not.toBeNull();
+
+      component.setTab("gym");
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".ac-attention")).not.toBeNull();
+    });
+
+    it("shows the ledger only under billing", () => {
+      expect(fixture.nativeElement.querySelector(".ac-ledger")).not.toBeNull();
+
+      component.setTab("gym");
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".ac-ledger")).toBeNull();
+    });
+
+    it("shows usage only under the gym", () => {
+      expect(fixture.nativeElement.querySelector(".ac-usage")).toBeNull();
+
+      component.setTab("gym");
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(".ac-usage")).not.toBeNull();
     });
   });
 });

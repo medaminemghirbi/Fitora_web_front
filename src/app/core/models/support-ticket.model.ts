@@ -1,4 +1,6 @@
 export type SupportTicketStatus = "open" | "resolved";
+/** `upgrade` is a plan request from the subscription page. */
+export type SupportTicketKind = "general" | "upgrade";
 
 export interface SupportTicketAttachment {
   id: string;
@@ -13,6 +15,9 @@ export interface SupportTicket {
   subject: string;
   message: string;
   status: SupportTicketStatus;
+  kind: SupportTicketKind;
+  /** The number to call back on. Always set on a plan request. */
+  contact_phone: string | null;
   created_at: string;
   attachments: SupportTicketAttachment[];
 }

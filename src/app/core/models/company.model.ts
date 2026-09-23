@@ -1,3 +1,34 @@
+/**
+ * How a gym has configured the engine to behave.
+ *
+ * The values are the gym's; the keys are code (see CompanySettings on the
+ * backend, which drops anything it does not declare). A boxing club and an
+ * EMS studio differ by what is in here, not by a type column.
+ */
+export interface CompanySettings {
+  features: {
+    bookings: boolean;
+    /** Rooms. Off unless the gym has more than one place to be. */
+    spaces: boolean;
+    attendance: boolean;
+    revenue: boolean;
+    reports: boolean;
+    /** Whether members book themselves, or the desk books for them. */
+    online_booking: boolean;
+    /** Whether a full session takes a queue. */
+    waitlist: boolean;
+  };
+  booking: {
+    /** Hours before the start a member may still cancel. 0 = up to the start. */
+    cancellation_hours: number;
+    /** How far ahead the schedule is bookable. */
+    booking_opens_days: number;
+    no_show_consumes_session: boolean;
+  };
+  hours: { start: string; end: string; working_days: number[] };
+  branding: { primary_color: string | null };
+}
+
 export interface Company {
   id: string;
   name: string;
@@ -21,8 +52,13 @@ export interface Company {
   active: boolean;
   slug: string | null;
   primary_color: string | null;
+  settings: CompanySettings;
   logo_url: string | null;
-  mobile_auth_key: string;
+  // Opening hours — on the company since the site was merged into it.
+  business_hours_start: string;
+  business_hours_end: string;
+  // Set once the owner publishes the gym in the public directory.
+  listed_at: string | null;
   // Every feature is included — the key list the subscription page renders
   // as "what's included".
   included_modules: string[];
@@ -32,5 +68,4 @@ export interface Company {
   annual_discount_percent: number;
   // What the company currently owes Fitora, in cents — set by hand by an
   // admin, shown read-only on the owner's subscription page.
-  debt_cents: number;
 }

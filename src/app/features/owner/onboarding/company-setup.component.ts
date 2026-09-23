@@ -12,7 +12,7 @@ import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { SearchableSelectComponent, SearchableOption } from "../../../shared/ui/searchable-select.component";
 
 const PREP_MS = 5000;
-const PREP_STEPS = ["onboarding.prep_step_1", "onboarding.prep_step_2", "onboarding.prep_step_3", "onboarding.prep_step_4"];
+const PREP_STEPS = ["company_setup.prep_step_1", "company_setup.prep_step_2", "company_setup.prep_step_3", "company_setup.prep_step_4"];
 
 @Component({
   selector: "app-company-setup",

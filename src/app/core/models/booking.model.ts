@@ -22,8 +22,8 @@ export interface Booking {
     ends_at: string;
     status: SessionStatusLike;
     activity_name: string;
-    activity_emoji: string | null;
-    location_name: string;
+    activity_emoji: string | null;    company_id: string;
+    company_name: string;
     coach_name: string | null;
   };
 }

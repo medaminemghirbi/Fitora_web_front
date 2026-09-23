@@ -5,15 +5,30 @@ import { Observable, map, tap } from "rxjs";
 import * as Sentry from "@sentry/angular";
 import { ConfigurationService } from "../configuration/configuration.service";
 import { API_BASE_URL } from "../models/api-config";
+import { Client } from "../models/client.model";
 import { User } from "../models/user.model";
 
 const TOKEN_KEY = "fitora_token";
 const USER_KEY = "fitora_user";
+const CLIENT_KEY = "fitora_client";
 const IMPERSONATOR_KEY = "fitora_impersonator";
 
+// One door, two kinds of account: a platform login (owner, staff, Fitora
+// admin) or a member whose gym enabled their access. account_type says which
+// came back, so nobody is asked who they are before signing in.
 interface AuthResponse {
   token: string;
-  user: User;
+  account_type?: "user" | "client";
+  user?: User;
+  client?: Client;
+}
+
+export interface RegisterPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  locale?: string;
 }
 
 interface ImpersonatorStash {
@@ -22,27 +37,38 @@ interface ImpersonatorStash {
   companyName: string;
 }
 
-export interface RegisterPayload {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-  phone?: string;
-  locale?: string;
-}
-
 @Injectable({ providedIn: "root" })
 export class AuthService {
   private readonly currentUserSignal = signal<User | null>(this.readStoredUser());
   readonly currentUser = this.currentUserSignal.asReadonly();
-  readonly isAuthenticated = computed(() => this.currentUserSignal() !== null);
   readonly isOwner = computed(() => this.currentUserSignal()?.role === "owner");
   readonly isAdmin = computed(() => this.currentUserSignal()?.role === "admin");
   readonly isStaff = computed(() => this.currentUserSignal()?.role === "staff");
 
+  // A member signed in on their own app. Mutually exclusive with
+  // currentUser — never both, see setSession.
+  private readonly currentClientSignal = signal<Client | null>(this.readStoredClient());
+  readonly currentClient = this.currentClientSignal.asReadonly();
+  readonly isClient = computed(() => this.currentClientSignal() !== null);
+
+  readonly isAuthenticated = computed(
+    () => this.currentUserSignal() !== null || this.currentClientSignal() !== null
+  );
+
   private readonly impersonatorStashSignal = signal<ImpersonatorStash | null>(this.readImpersonatorStash());
   readonly isImpersonating = computed(() => this.impersonatorStashSignal() !== null);
   readonly impersonatedCompanyName = computed(() => this.impersonatorStashSignal()?.companyName ?? null);
+
+  /**
+   * An owner who signed up and has not clicked the emailed link yet. Nothing
+   * past sign-up opens for them — the backend refuses it with
+   * `email_unverified` — so every route sends them to /confirmation-email.
+   * An admin impersonating them is let through, as the backend does.
+   */
+  readonly emailConfirmationPending = computed(() => {
+    const user = this.currentUserSignal();
+    return user?.role === "owner" && user.email_verified === false && !this.isImpersonating();
+  });
 
   // Configuration (company, branding, permissions, modules, subscription) is
   // owned by ConfigurationService and hydrated from GET /api/v1/bootstrap;
@@ -55,14 +81,30 @@ export class AuthService {
     private readonly http: HttpClient,
     private readonly router: Router
   ) {
-    // Attributes any error caught after this to the tenant it happened for
-    // — a no-op call when Sentry was never initialized (no DSN, see
-    // main.ts), so this is safe to always run.
-    this.syncSentryUser(this.currentUserSignal());
+    // Attributes any error caught after this to whoever it happened to — a
+    // no-op call when Sentry was never initialized (no DSN, see main.ts), so
+    // this is safe to always run.
+    const client = this.currentClientSignal();
+    if (client) {
+      Sentry.setUser({ id: client.id, email: client.email ?? undefined });
+    } else {
+      this.syncSentryUser(this.currentUserSignal());
+    }
   }
 
   private syncSentryUser(user: User | null): void {
     Sentry.setUser(user ? { id: user.id, email: user.email, company_id: user.company_id ?? undefined, role: user.role } : null);
+  }
+
+  /**
+   * A gym opening its own account. Creates the owner's login and nothing
+   * else — the gym itself is named on the next screen, which is also where
+   * the 14 days start.
+   */
+  register(payload: RegisterPayload): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${API_BASE_URL}/auth/register`, { user: payload })
+      .pipe(tap((res) => this.setSession(res)));
   }
 
   login(email: string, password: string): Observable<AuthResponse> {
@@ -71,17 +113,17 @@ export class AuthService {
       .pipe(tap((res) => this.setSession(res)));
   }
 
-  register(payload: RegisterPayload): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${API_BASE_URL}/auth/register`, payload)
-      .pipe(tap((res) => this.setSession(res)));
-  }
-
   // (Re)hydrate ConfigurationService from /bootstrap. Safe to call
   // repeatedly; failures leave the last known value in place. Skipped for a
   // platform admin — the /admin surface isn't tenant-scoped — but the admin
-  // still gets the real-time system_update notification feed.
+  // still gets the real-time system_update notification feed. Skipped for a
+  // member too: /bootstrap is built entirely around current_user (role,
+  // permissions) and holds nothing their app needs.
   loadConfiguration(): void {
+    if (this.isClient()) {
+      this.config.clear();
+      return;
+    }
     if (this.currentUserSignal()?.role === "admin") {
       this.config.clear();
       this.config.connectAdminNotifications();
@@ -97,6 +139,28 @@ export class AuthService {
     return this.config.hasPermission(key);
   }
 
+  /**
+   * Whether this tenant has the feature turned on.
+   *
+   * A different question from hasPermission: this says what the product
+   * OFFERS here, not who may use it. Both are asked, and both are asked
+   * again on the backend.
+   */
+  hasFeature(key: string): boolean {
+    return this.config.features()[key] === true;
+  }
+
+  /** Drops the session without leaving the page. */
+  clearSession(): void {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(CLIENT_KEY);
+    this.currentUserSignal.set(null);
+    this.currentClientSignal.set(null);
+    this.syncSentryUser(null);
+    this.config.clear();
+  }
+
   logout(): void {
     // Logging out of an impersonated session should drop back to the admin
     // account that started it, not destroy that admin's session too — the
@@ -107,12 +171,8 @@ export class AuthService {
       return;
     }
 
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    this.currentUserSignal.set(null);
-    this.syncSentryUser(null);
-    this.config.clear();
-    this.router.navigate(["/auth/login"]);
+    this.clearSession();
+    this.router.navigate(["/connexion"]);
   }
 
   // Called by the admin companies page after POST .../impersonate
@@ -137,7 +197,7 @@ export class AuthService {
     localStorage.removeItem(IMPERSONATOR_KEY);
     this.impersonatorStashSignal.set(null);
     this.setSession({ token: stash.token, user: stash.user });
-    this.router.navigate(["/admin/companies"]);
+    this.router.navigate(["/admin/overview"]);
   }
 
   getToken(): string | null {
@@ -145,45 +205,98 @@ export class AuthService {
   }
 
   homeRouteForCurrentUser(): string {
+    if (this.isClient()) return "/member/home";
     const user = this.currentUserSignal();
-    if (user?.role === "admin") return "/admin/companies";
-    // A "coach"-role staff uses the dedicated coach shell ("My schedule" /
-    // attendance).
-    if (user?.staff_role === "coach") return "/coach/today";
-    // A freshly-signed-up owner lands on the "Premiers pas" guide until the
-    // foundational setup is done (or they skip it).
-    const setup = this.config.setup();
-    if (user?.role === "owner" && setup && !setup.complete && !setup.dismissed) return "/owner/getting-started";
+    if (user?.role === "admin") return "/admin/overview";
+    // The address first: nothing else opens until it is confirmed.
+    if (this.emailConfirmationPending()) return "/confirmation-email";
+    // Anyone who coaches uses the dedicated coach shell ("My schedule" /
+    // attendance) — whatever their role happens to be called.
+    if (user?.is_coach) return "/coach/today";
+    // Staff who check people in and book them work the front desk, which has
+    // a shell of its own. The owner is deliberately not sent here: their
+    // shell already does all of this and more.
+    if (this.deskShellApplies()) return "/desk/dashboard";
+    // A freshly-signed-up owner lands in the setup flow until it is done (or
+    // they leave it). Read from the bootstrap payload rather than
+    // OnboardingService: this runs before any page has loaded one.
+    const onboarding = this.config.onboarding();
+    if (user?.role === "owner" && onboarding && !onboarding.complete && !onboarding.dismissed) {
+      return "/owner/onboarding";
+    }
     // The dashboard needs only the base `reports` permission — the safe
     // universal landing for every other role.
     return "/owner/dashboard";
   }
 
-  // Whether a "coach"-role staff should use the dedicated coach shell.
+  // Whether this login should use the dedicated coach shell.
   coachShellApplies(): boolean {
-    return this.currentUserSignal()?.staff_role === "coach";
+    return this.currentUserSignal()?.is_coach === true;
+  }
+
+  /**
+   * Whether this login works the front desk.
+   *
+   * Checking people in AND booking them — `checkin` alone is a coach. Mirrors
+   * deskAreaGuard, which is what actually enforces it.
+   */
+  deskShellApplies(): boolean {
+    const user = this.currentUserSignal();
+    if (!user || user.role !== "staff" || user.is_coach) return false;
+
+    return this.hasPermission("checkin") && this.hasPermission("bookings");
   }
 
   // Re-fetches the current user — used after an action that changes something
   // the cached user object doesn't auto-update for, e.g. creating an
   // company (company_id is only known once one exists).
   refreshCurrentUser(): Observable<User> {
+    return this.fetchCurrentUser().pipe(tap(() => this.loadConfiguration()));
+  }
+
+  /**
+   * The same re-fetch without re-hydrating the configuration — cheap enough
+   * for the "check your inbox" screen to ask every few seconds whether the
+   * link has been clicked yet.
+   */
+  fetchCurrentUser(): Observable<User> {
     return this.http.get<{ user: User }>(`${API_BASE_URL}/auth/me`).pipe(
       map((res) => res.user),
       tap((user) => {
         localStorage.setItem(USER_KEY, JSON.stringify(user));
         this.currentUserSignal.set(user);
-        this.loadConfiguration();
       })
     );
   }
 
   private setSession(res: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, res.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-    this.currentUserSignal.set(res.user);
-    this.syncSentryUser(res.user);
+
+    if (res.account_type === "client" && res.client) {
+      localStorage.removeItem(USER_KEY);
+      localStorage.setItem(CLIENT_KEY, JSON.stringify(res.client));
+      this.currentUserSignal.set(null);
+      this.currentClientSignal.set(res.client);
+      Sentry.setUser({ id: res.client.id, email: res.client.email ?? undefined });
+    } else if (res.user) {
+      localStorage.removeItem(CLIENT_KEY);
+      localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+      this.currentClientSignal.set(null);
+      this.currentUserSignal.set(res.user);
+      this.syncSentryUser(res.user);
+    }
+
     this.loadConfiguration();
+  }
+
+  private readStoredClient(): Client | null {
+    const raw = localStorage.getItem(CLIENT_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as Client;
+    } catch {
+      return null;
+    }
   }
 
   private readStoredUser(): User | null {

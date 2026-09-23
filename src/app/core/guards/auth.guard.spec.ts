@@ -34,6 +34,6 @@ describe("authGuard", () => {
   it("redirects to /auth/login when not authenticated", () => {
     authStub.isAuthenticated.and.returnValue(false);
     expect(run()).toBe(tree);
-    expect(router.createUrlTree).toHaveBeenCalledWith(["/auth/login"]);
+    expect(router.createUrlTree).toHaveBeenCalledWith(["/connexion"]);
   });
 });

@@ -17,5 +17,4 @@ export interface StaffMember {
     phone: string | null;
   };
   coach_id: string | null;
-  location_ids: string[];
 }

@@ -34,7 +34,7 @@ describe("ContractsService", () => {
   });
 
   it("create POSTs the raw payload", () => {
-    const payload = { client_id: "c1", contract_type_id: "ct1" };
+    const payload = { client_id: "c1", contract_type_id: "ct1", activity_id: "a1" };
     service.create(payload).subscribe();
     const req = httpMock.expectOne(`${API_BASE_URL}/contracts`);
     expect(req.request.method).toBe("POST");

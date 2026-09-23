@@ -1,0 +1,84 @@
+<div class="member-shell">
+  <header class="member-topbar">
+    <!-- One gym is a link home. Two or more is a choice, so it becomes one:
+         a person who trains at both places has to be able to reach both. -->
+    @if (member.hasSeveralGyms()) {
+      <div class="dropdown-wrap">
+        <button type="button" class="member-brand member-brand--switch" (click)="gymMenuOpen.set(!gymMenuOpen())">
+          <span class="member-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span>
+          <span class="member-brand-text">{{ member.companyName() || "Fitora" }}</span>
+          <i class="bi bi-chevron-down member-brand-caret" aria-hidden="true"></i>
+        </button>
+        @if (gymMenuOpen()) {
+          <div class="dropdown-menu-custom">
+            @for (gym of member.gyms(); track gym.id) {
+              <button type="button" class="dropdown-item-custom" (click)="switchGym(gym.id)">
+                @if (gym.id === member.companyId()) {
+                  <i class="bi bi-check2"></i>
+                } @else {
+                  <i class="bi"></i>
+                }
+                {{ gym.name }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <a routerLink="/member/home" class="member-brand">
+        <span class="member-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span>
+        <span class="member-brand-text">{{ member.companyName() || "Fitora" }}</span>
+      </a>
+    }
+
+    <div class="member-topbar-actions">
+      <button type="button" class="icon-btn" (click)="theme.toggle()" [attr.aria-label]="'common.toggle_theme' | translate">
+        <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
+      </button>
+
+      <div class="dropdown-wrap">
+        <button type="button" class="user-menu-trigger" (click)="userMenuOpen.set(!userMenuOpen())" [attr.aria-label]="auth.currentClient()?.full_name || ''">
+          <app-avatar [name]="auth.currentClient()?.full_name || ''" [size]="32" />
+        </button>
+        @if (userMenuOpen()) {
+          <div class="dropdown-menu-custom dropdown-menu-end">
+            <div class="dropdown-user-info">
+              <strong>{{ auth.currentClient()?.full_name }}</strong>
+              <span>{{ auth.currentClient()?.email }}</span>
+            </div>
+            <a routerLink="/member/profile" class="dropdown-item-custom" (click)="userMenuOpen.set(false)">
+              <i class="bi bi-person"></i> {{ "member.nav.profile" | translate }}
+            </a>
+            <button type="button" class="dropdown-item-custom" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i> {{ "auth.logout" | translate }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  <div class="member-body">
+    <nav class="member-rail d-none d-lg-flex" [attr.aria-label]="'nav.primary' | translate">
+      @for (item of navItems; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="is-active" class="member-rail-link">
+          <i class="bi" [class]="item.icon"></i>
+          <span>{{ item.labelKey | translate }}</span>
+        </a>
+      }
+    </nav>
+
+    <main class="member-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <nav class="member-tabbar d-lg-none" [attr.aria-label]="'nav.primary' | translate">
+    @for (item of navItems; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="is-active" class="member-tabbar-link">
+        <i class="bi" [class]="item.icon"></i>
+        <span>{{ item.labelKey | translate }}</span>
+      </a>
+    }
+  </nav>
+</div>

@@ -8,9 +8,15 @@ export interface Client {
   email: string | null;
   phone: string | null;
   active: boolean;
+  /** Whether the gym has switched on this member's own app. */
   login_enabled: boolean;
-  email_verified: boolean;
   joined_at: string;
+  /**
+   * When they last actually turned up at this gym, or null if never. Sent on
+   * the list as one grouped query for the whole page — the column that says
+   * who is drifting away.
+   */
+  last_visit_at: string | null;
   current_contract: Contract | null;
 }
 
@@ -23,5 +29,4 @@ export interface ClientDetail extends Client {
   notes: string | null;
   outstanding_balance: string;
   attendance_rate: number | null;
-  last_visit_at: string | null;
 }

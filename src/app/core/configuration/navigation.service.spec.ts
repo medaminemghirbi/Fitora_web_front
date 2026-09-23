@@ -4,13 +4,14 @@ import { NavigationService } from "./navigation.service";
 
 describe("NavigationService", () => {
   let service: NavigationService;
-  let authStub: { currentUser: jasmine.Spy; hasPermission: jasmine.Spy };
+  let authStub: { currentUser: jasmine.Spy; hasPermission: jasmine.Spy; hasFeature: jasmine.Spy };
 
-  function build(role: string, permissions: string[]): void {
+  function build(role: string, permissions: string[], features: string[] = []): void {
     TestBed.resetTestingModule();
     authStub = {
       currentUser: jasmine.createSpy().and.returnValue({ role }),
       hasPermission: jasmine.createSpy().and.callFake((p: string) => permissions.includes(p)),
+      hasFeature: jasmine.createSpy().and.callFake((f: string) => features.includes(f)),
     };
     TestBed.configureTestingModule({ providers: [{ provide: AuthService, useValue: authStub }] });
     service = TestBed.inject(NavigationService);
@@ -23,6 +24,27 @@ describe("NavigationService", () => {
     // calendar carries no `permission` — visible to anyone.
     const planning = service.groups().find((g) => g.id === "planning")!;
     expect(planning.items.map((i) => i.path)).toContain("/owner/calendar");
+  });
+
+  it("hides rooms from a gym that has not turned them on, permission or not", () => {
+    build("owner", ["spaces"]);
+
+    const planning = service.groups().find((g) => g.id === "planning")!;
+    expect(planning.items.map((i) => i.path)).not.toContain("/owner/spaces");
+  });
+
+  it("shows rooms once the feature is on and the permission is held", () => {
+    build("owner", ["spaces"], ["spaces"]);
+
+    const planning = service.groups().find((g) => g.id === "planning")!;
+    expect(planning.items.map((i) => i.path)).toContain("/owner/spaces");
+  });
+
+  it("still hides rooms from a login without the permission, feature or not", () => {
+    build("staff", [], ["spaces"]);
+
+    const planning = service.groups().find((g) => g.id === "planning")!;
+    expect(planning.items.map((i) => i.path)).not.toContain("/owner/spaces");
   });
 
   it("hides the dashboard without the 'reports' permission", () => {
@@ -47,9 +69,10 @@ describe("NavigationService", () => {
   });
 
   it("filters items within a visible group by permission", () => {
-    build("staff", ["clients"]);
-    const management = service.groups().find((g) => g.id === "management")!;
-    expect(management.items.map((i) => i.path)).toEqual(["/owner/clients"]);
+    build("staff", ["contracts"]);
+    const subscriptions = service.groups().find((g) => g.id === "subscriptions")!;
+    // The catalogue entries need "contract_types", which this login lacks.
+    expect(subscriptions.items.map((i) => i.path)).toEqual(["/owner/contracts"]);
   });
 
   it("secondaryItems is empty for a non-owner (every entry is ownerOnly)", () => {
@@ -59,7 +82,10 @@ describe("NavigationService", () => {
 
   it("secondaryItems lists everything for an owner", () => {
     build("owner", []);
-    expect(service.secondaryItems().length).toBe(3);
+    expect(service.secondaryItems().map((i) => i.path)).toEqual([
+      "/owner/subscription",
+      "/owner/settings",
+    ]);
   });
 
   it("homePath is the dashboard path when visible", () => {

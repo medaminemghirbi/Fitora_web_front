@@ -1,29 +1,41 @@
-import { AfterViewInit, Component, computed, ElementRef, inject, signal } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
+import { Component, computed, inject, signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
 import { LocaleService, Locale, LOCALES } from "../../core/services/locale.service";
 import { ThemeService } from "../../core/services/theme.service";
 
+interface TodayClass {
+  time: string;
+  name: string;
+  coach: string;
+  room: string;
+  booked: number;
+  capacity: number;
+  waitlist: number;
+}
+
 /**
- * Public landing page — light, app-native direction: the same tokens the
- * product itself runs on (src/styles/_tokens.scss), rather than a separate
- * dark marketing skin. The product is evoked with a "cockpit" panel and an
- * illustrated bento built from divs — no screenshots. The signature
- * gradient (violet → raspberry → sunglow) carries the hero, the primary CTA
- * and the brand mark. Nav and footer are inline here rather than the shared
- * light <app-landing-header>/<app-landing-footer> used on the auth pages.
+ * Public landing page — "Éditorial" direction (2026-09-22): a serif
+ * display face (Fraunces, --font-editorial) over the app's own sans, on the
+ * app's own tokens, so it follows the light / dark toggle like the product.
+ *
+ * Sections: nav → hero with today's classes → a band naming the modules →
+ * six numbered features → "comme une séance" in three steps → the trial →
+ * questions → closing call → footer. Everything is visible at rest; no
+ * scroll-reveal, no screenshots to go stale — the hero card is built from
+ * divs and its data is illustrative.
+ *
+ * Nav and footer are inline rather than shared components: nothing else
+ * uses them (the account screens have their own frame, AuthProShell).
  */
 @Component({
   selector: "app-landing",
   standalone: true,
-  imports: [RouterLink, TranslateModule, FormsModule, CommonModule],
+  imports: [RouterLink, TranslateModule],
   templateUrl: "./landing.component.html",
   styleUrl: "./landing.component.scss",
 })
-export class LandingComponent implements AfterViewInit {
-  private readonly elRef = inject(ElementRef<HTMLElement>);
+export class LandingComponent {
   readonly theme = inject(ThemeService);
   readonly locale = inject(LocaleService);
 
@@ -32,47 +44,48 @@ export class LandingComponent implements AfterViewInit {
   readonly locales = LOCALES;
   readonly year = signal(new Date().getFullYear());
 
-  // A gym week, purely illustrative — the mini planning grid in the first
-  // feature card. `f` = full (waitlist), `on` = a class runs, "" = free slot.
-  readonly week = [
-    { time: "07h", cells: [{ n: "RPM", s: "on" }, { n: "", s: "" }, { n: "RPM", s: "on" }, { n: "", s: "" }, { n: "RPM", s: "on" }] },
-    { time: "09h", cells: [{ n: "Pilates", s: "f" }, { n: "Yoga", s: "on" }, { n: "Pilates", s: "f" }, { n: "Yoga", s: "on" }, { n: "Pilates", s: "f" }] },
-    { time: "18h", cells: [{ n: "Cross", s: "on" }, { n: "Cross", s: "on" }, { n: "", s: "" }, { n: "Cross", s: "on" }, { n: "Cross", s: "on" }] },
-  ];
-
-  // Illustrative testimonial quotes — clearly tagged as example content in
-  // the section itself (landing.testimonials_tag) until replaced with real
-  // customer quotes.
-  readonly testimonials = [
-    { quote: "landing.testimonials_quote_1", who: "landing.testimonials_who_1" },
-    { quote: "landing.testimonials_quote_2", who: "landing.testimonials_who_2" },
-    { quote: "landing.testimonials_quote_3", who: "landing.testimonials_who_3" },
-  ];
-
-  readonly benefits = [
-    { icon: "bi-rocket-takeoff", textKey: "landing.stats_benefit_1" },
-    { icon: "bi-cloud-arrow-up", textKey: "landing.stats_benefit_2" },
-    { icon: "bi-headset", textKey: "landing.stats_benefit_3" },
-    { icon: "bi-percent", textKey: "landing.stats_benefit_4" },
-  ];
-
-  // ---- "how much are late payments and lost renewals costing you" calculator ----
-  readonly roiMembers = signal(180);
-  readonly roiPrice = signal(90);
-  readonly roiLatePct = signal(10);
-  readonly roiChurnPct = signal(15);
-
-  private readonly roiAnnualRevenue = computed(() => this.roiMembers() * this.roiPrice() * 12);
-
-  readonly roiAtRisk = computed(() => {
-    const late = Math.min(100, Math.max(0, this.roiLatePct()));
-    const churn = Math.min(100, Math.max(0, this.roiChurnPct()));
-    return this.roiAnnualRevenue() * ((late + churn) / 100);
+  /** Today's date in the page's language — the hero card is "today". */
+  readonly todayLabel = computed(() => {
+    const code = this.locale.locale() === "ar" ? "ar-TN" : this.locale.locale();
+    const label = new Intl.DateTimeFormat(code, { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+    return label.charAt(0).toLocaleUpperCase(code) + label.slice(1);
   });
 
-  // Recovery hypothesis: automated reminders + expiry alerts typically claw
-  // back a majority, not all, of at-risk revenue.
-  readonly roiRecoverable = computed(() => this.roiAtRisk() * 0.6);
+  /** One gym's day, for the hero card. Illustrative. */
+  readonly todayClasses: TodayClass[] = [
+    { time: "07:00", name: "RPM", coach: "Sami", room: "Studio 1", booked: 18, capacity: 20, waitlist: 0 },
+    { time: "09:00", name: "Pilates", coach: "Sarah", room: "Studio 2", booked: 12, capacity: 12, waitlist: 3 },
+    { time: "12:30", name: "EMS", coach: "Amine", room: "Cabine", booked: 2, capacity: 4, waitlist: 0 },
+    { time: "18:30", name: "Cross Training", coach: "Yassine", room: "Plateau", booked: 11, capacity: 16, waitlist: 0 },
+  ];
+
+  readonly heroPoints = ["landing.hero_point_1", "landing.hero_point_2", "landing.hero_point_3"];
+
+  readonly band = ["landing.band_1", "landing.band_2", "landing.band_3", "landing.band_4", "landing.band_5", "landing.band_6"];
+
+  /** The six features, in the order a gym meets them during a day. */
+  readonly features = [
+    { title: "landing.f_planning_t", text: "landing.f_planning_d" },
+    { title: "landing.f_memberships_t", text: "landing.f_memberships_d" },
+    { title: "landing.f_checkin_t", text: "landing.f_checkin_d" },
+    { title: "landing.f_member_t", text: "landing.f_member_d" },
+    { title: "landing.f_cash_t", text: "landing.f_cash_d" },
+    { title: "landing.f_hr_t", text: "landing.f_hr_d" },
+  ];
+
+  readonly steps = [1, 2, 3];
+
+  readonly pricingItems = [
+    "landing.pricing_item_1",
+    "landing.pricing_item_2",
+    "landing.pricing_item_3",
+    "landing.pricing_item_4",
+    "landing.pricing_item_5",
+    "landing.pricing_item_6",
+  ];
+
+  /** Which of the landing.faq_q_N / faq_a_N pairs to show, in order. */
+  readonly faqs = [1, 4, 9, 3, 8, 7];
 
   // ---- FAQ accordion — one open panel at a time ----
   readonly openFaq = signal<number | null>(1);
@@ -81,41 +94,16 @@ export class LandingComponent implements AfterViewInit {
     this.openFaq.set(this.openFaq() === i ? null : i);
   }
 
+  fill(c: TodayClass): number {
+    return Math.min(100, Math.round((c.booked / c.capacity) * 100));
+  }
+
+  isFull(c: TodayClass): boolean {
+    return c.booked >= c.capacity;
+  }
+
   setLocale(code: Locale): void {
     this.locale.setLocale(code);
     this.langMenuOpen.set(false);
-  }
-
-  // ---- cockpit 3D tilt on hover ----
-  readonly cockpitTilt = signal("");
-
-  onCockpitMove(ev: MouseEvent): void {
-    const el = ev.currentTarget as HTMLElement;
-    const r = el.getBoundingClientRect();
-    const px = (ev.clientX - r.left) / r.width - 0.5;
-    const py = (ev.clientY - r.top) / r.height - 0.5;
-    this.cockpitTilt.set(`rotateX(${(-py * 8).toFixed(2)}deg) rotateY(${(px * 10).toFixed(2)}deg)`);
-  }
-
-  onCockpitLeave(): void {
-    this.cockpitTilt.set("");
-  }
-
-  ngAfterViewInit(): void {
-    if (typeof IntersectionObserver === "undefined") return;
-    const root = this.elRef.nativeElement as HTMLElement;
-
-    const revealObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            revealObserver.unobserve(entry.target);
-          }
-        }
-      },
-      { threshold: 0.15 },
-    );
-    root.querySelectorAll(".lp-reveal").forEach((node) => revealObserver.observe(node));
   }
 }

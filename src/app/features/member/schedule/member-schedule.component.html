@@ -1,0 +1,58 @@
+<div class="mb-page">
+  <h1 class="mb-title">{{ "member.schedule_title" | translate }}</h1>
+
+  @if (loading()) {
+    <app-skeleton variant="line" width="100%" />
+    <app-skeleton variant="line" width="90%" />
+    <app-skeleton variant="line" width="95%" />
+  } @else if (error()) {
+    <app-error-state (retry)="load()" />
+  } @else if (days().length === 0) {
+    <app-empty-state
+      [title]="'member.no_sessions_title' | translate"
+      [body]="'member.no_sessions_body' | translate"
+      icon="bi-calendar-week"
+    />
+  } @else {
+    @for (day of days(); track day.date) {
+      <section class="mb-day">
+        <h2 class="mb-day-head">{{ day.date | date: "EEEE d MMMM" }}</h2>
+
+        <ul class="mb-list">
+          @for (s of day.sessions; track s.id) {
+            <li class="mb-slot" [class.is-booked]="s.already_booked">
+              <span class="mb-slot-time">{{ s.starts_at | date: "HH:mm" }}</span>
+
+              <span class="mb-slot-main">
+                <span class="mb-slot-name">
+                  {{ s.activity_emoji ? s.activity_emoji + " " : "" }}{{ s.activity_name }}
+                </span>
+                <span class="mb-slot-sub">
+                  @if (s.coach_name) { {{ s.coach_name }} · }
+                  @if (s.full) {
+                    {{ "member.full" | translate }}
+                  } @else {
+                    {{ "member.spots_left" | translate: { count: s.spots_left } }}
+                  }
+                </span>
+              </span>
+
+              @if (s.already_booked) {
+                <span class="mb-slot-state"><i class="bi bi-check-lg"></i> {{ "member.booked_state" | translate }}</span>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary mb-slot-cta"
+                  [disabled]="s.full || booking() !== null"
+                  (click)="book(s)"
+                >
+                  {{ "member.book" | translate }}
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</div>

@@ -2,6 +2,20 @@ import { Component, Input, computed, signal } from "@angular/core";
 
 export type BadgeTone = "success" | "warning" | "danger" | "info" | "neutral";
 
+/**
+ * One vocabulary for the whole app, in four colours:
+ *
+ *   success — in order, nothing to do
+ *   warning — worth watching, will need doing
+ *   danger  — needs doing now
+ *   neutral — no longer applies
+ *
+ * `info` is for a state that is neither good nor bad and asks nothing of
+ * anyone (a finished session, a refund that went through).
+ *
+ * Every status string in the app resolves through here, so a member's
+ * "expiré" and a payment's "impayé" read the same red wherever they appear.
+ */
 const TONE_BY_STATUS: Record<string, BadgeTone> = {
   scheduled: "success",
   confirmed: "success",
@@ -9,26 +23,22 @@ const TONE_BY_STATUS: Record<string, BadgeTone> = {
   available: "success",
   paid: "success",
   present: "success",
-  approved: "success",
   completed: "info",
   no_show: "warning",
   late: "warning",
   full: "warning",
   pending: "warning",
-  pending_payment: "warning",
-  partial: "warning",
-  expired: "warning",
-  cancelled: "danger",
+  // Running out is worth watching; having run out needs doing.
+  expiring: "warning",
+  expiring_soon: "warning",
+  expired: "danger",
+  cancelled: "neutral",
   failed: "danger",
   absent: "danger",
   unpaid: "danger",
-  rejected: "danger",
   refunded: "info",
+  trial: "info",
   inactive: "neutral",
-  in_service: "success",
-  in_repair: "warning",
-  maintenance: "warning",
-  retired: "neutral",
 };
 
 @Component({

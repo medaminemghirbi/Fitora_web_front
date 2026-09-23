@@ -26,11 +26,18 @@ describe("SettingsSectionsService", () => {
     expect(service.sections().every((s) => !s.ownerOnly)).toBe(true);
   });
 
-  it("a non-owner sees a permission-gated section only with that permission", () => {
+  it("leaves a non-owner with nothing but Appearance — Settings is the owner's alone", () => {
     build("staff");
-    authStub.hasPermission.and.callFake((key: string) => key === "activities");
-    expect(service.sections().some((s) => s.path === "activities")).toBe(true);
-    expect(service.sections().some((s) => s.path === "contract-types")).toBe(false);
+    authStub.hasPermission.and.returnValue(true);
+    expect(service.sections()).toEqual([]);
+    expect(service.navGroups().map((g) => g.key)).toEqual(["appearance"]);
+  });
+
+  it("no longer carries the catalogue — activities and plans live with the subscriptions", () => {
+    build("owner");
+    const paths = service.sections().map((s) => s.path);
+    expect(paths).not.toContain("activities");
+    expect(paths).not.toContain("contract-types");
   });
 
   it("groupedSections groups visible sections and drops empty groups", () => {
@@ -50,5 +57,14 @@ describe("SettingsSectionsService", () => {
     const bare: SettingsSection = { path: "x", icon: "bi-x", labelKey: "x", descKey: "x", group: "planning" };
     const isVisible = (service as unknown as { isVisible(s: SettingsSection): boolean }).isVisible.bind(service);
     expect(isVisible(bare)).toBe(true);
+  });
+
+  it("offers import/export as a settings section, for the owner only", () => {
+    build("owner");
+    expect(service.sections().some((s) => s.path === "data-exchange")).toBe(true);
+
+    build("staff");
+    authStub.hasPermission.and.returnValue(true);
+    expect(service.sections().some((s) => s.path === "data-exchange")).toBe(false);
   });
 });

@@ -1,0 +1,134 @@
+<div class="fx-stack">
+  @if (!embedded) {
+    <app-page-header [title]="'spaces.title' | translate" [description]="'spaces.subtitle' | translate"></app-page-header>
+  }
+
+  @if (!loading() && !error() && spaces().length > 0) {
+    <div class="fx-toolbar">
+      <div class="fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          [placeholder]="'spaces.search_placeholder' | translate"
+        />
+      </div>
+      <button type="button" class="btn btn-primary ms-auto" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> {{ "spaces.new" | translate }}
+      </button>
+    </div>
+  }
+
+  <div class="app-card">
+    @if (loading()) {
+      <div class="app-card-body"><app-skeleton variant="table" [rows]="4" [cols]="5" /></div>
+    } @else if (error()) {
+      <div class="app-card-body"><app-error-state (retry)="load()" /></div>
+    } @else if (spaces().length === 0) {
+      <div class="app-card-body">
+        <app-empty-state [title]="'spaces.empty_title' | translate" [body]="'spaces.empty_body' | translate" icon="bi-door-open">
+          <button type="button" class="btn btn-primary" (click)="openCreate()">
+            <i class="bi bi-plus-lg"></i> {{ "spaces.new" | translate }}
+          </button>
+        </app-empty-state>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="app-card-body"><app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" /></div>
+    } @else {
+      <div class="fx-table-scroll">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{{ "spaces.name" | translate }}</th>
+              <th>{{ "spaces.kind" | translate }}</th>
+              <th>{{ "spaces.capacity" | translate }}</th>
+              <th>{{ "spaces.restricted_to" | translate }}</th>
+              <th>{{ "common.status" | translate }}</th>
+              <th class="text-end">{{ "common.actions" | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (space of pagedSpaces(); track space.id) {
+              <tr>
+                <td class="fx-strong"><span [innerHTML]="space.name | highlight: search()"></span></td>
+                <td>{{ space.kind || "—" }}</td>
+                <td>{{ space.capacity || "—" }}</td>
+                <td class="text-muted-token">{{ restrictionLabel(space) }}</td>
+                <td>
+                  <app-status-badge [status]="space.active ? 'active' : 'inactive'">
+                    {{ (space.active ? "common.active" : "common.inactive") | translate }}
+                  </app-status-badge>
+                </td>
+                <td class="text-end">
+                  <app-action-menu>
+                    <button type="button" class="fx-menu-item" (click)="openEdit(space)">
+                      <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
+                    </button>
+                    <div class="fx-menu-divider"></div>
+                    <button type="button" class="fx-menu-item is-danger" (click)="remove(space)">
+                      <i class="bi bi-slash-circle"></i>
+                      {{ (space.deletable ? "common.delete" : "common.deactivate") | translate }}
+                    </button>
+                  </app-action-menu>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination [meta]="meta()" (pageChange)="page.set($event)" />
+    }
+  </div>
+</div>
+
+<app-modal [open]="modalOpen()" [title]="(editing() ? 'spaces.edit' : 'spaces.new') | translate" (closed)="closeModal()">
+  @if (formError()) {
+    <div class="alert alert-danger">{{ formError() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="row">
+      <div class="col-7 mb-3">
+        <label for="space-name">{{ "spaces.name" | translate }} *</label>
+        <input id="space-name" class="form-control" formControlName="name" />
+      </div>
+      <div class="col-5 mb-3">
+        <label for="space-kind">{{ "spaces.kind" | translate }}</label>
+        <input id="space-kind" class="form-control" formControlName="kind" [placeholder]="'spaces.kind_placeholder' | translate" />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="space-capacity">{{ "spaces.capacity" | translate }}</label>
+      <input id="space-capacity" type="number" min="1" class="form-control" formControlName="capacity" />
+      <div class="form-text">{{ "spaces.capacity_hint" | translate }}</div>
+    </div>
+
+    <!-- Restrictions, not permissions: a room with nothing ticked takes
+         anything, which is what most rooms do. -->
+    @if (activities().length > 0) {
+      <fieldset class="sp-restrict mb-3">
+        <legend>{{ "spaces.restricted_to" | translate }}</legend>
+        <p class="form-text">{{ "spaces.restricted_to_hint" | translate }}</p>
+        <div class="sp-restrict-list">
+          @for (activity of activities(); track activity.id) {
+            <label class="sp-restrict-item">
+              <input type="checkbox" class="form-check-input" [checked]="isRestrictedTo(activity.id)" (change)="toggleActivity(activity.id)" />
+              <span>{{ activity.emoji ? activity.emoji + " " : "" }}{{ activity.name }}</span>
+            </label>
+          }
+        </div>
+      </fieldset>
+    }
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">{{ "common.cancel" | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ (saving() ? "common.saving" : "common.save") | translate }}
+      </button>
+    </div>
+  </form>
+</app-modal>

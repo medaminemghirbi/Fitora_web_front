@@ -211,145 +211,349 @@
 .incl-name { font-size: var(--font-size-base); font-weight: 600; color: var(--color-text); }
 .incl-desc { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.45; margin-top: 2px; }
 
-// ---- Contact tab (ported from the old marketplace page) --------------
-.contact-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: var(--space-5);
-  align-items: start;
-  animation: fx-fade var(--transition-base);
+// ---------- where you stand, in one line ----------
+.sub-state {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  border-inline-start: 4px solid var(--color-success);
+  background: var(--color-surface);
+
+  &[data-state="due"] { border-inline-start-color: var(--color-warning); }
+  &[data-state="closed"] { border-inline-start-color: var(--color-danger); }
+  // The free days: open, but not paid for — the brand colour, not "all good".
+  &[data-state="trial"] { border-inline-start-color: var(--color-primary); }
 }
 
-@media (max-width: 900px) {
-  .contact-layout { grid-template-columns: 1fr; }
+.sub-state-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
 }
 
-.contact-file-drop {
+.sub-state-head {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 0.3rem;
+}
+
+.sub-state-sub {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.sub-arrears { color: var(--color-danger); }
+
+// ---------- What you are on, and what you are using ----------------------
+.sub-usage {
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--color-primary-border);
+  border-radius: 14px;
+  background: var(--color-primary-soft);
+}
+
+.sub-usage-head {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.9rem 1rem;
-  border: 1.5px dashed var(--color-border-strong);
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  gap: 0.625rem;
+  margin-bottom: 1rem;
 
-  i { font-size: 1.2rem; color: var(--color-primary); }
-  &:hover { border-color: var(--color-primary-border); background: var(--color-primary-soft); }
-}
+  i {
+    color: var(--color-primary);
+    font-size: 1.125rem;
+  }
 
-.contact-file-error {
-  margin: 0.4rem 0 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-danger);
-}
-
-.contact-file-list {
-  list-style: none;
-  margin: 0.6rem 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.6rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-sm);
-    background: var(--color-surface-sunken);
-
-    i { color: var(--color-primary); }
-    .icon-btn { margin-inline-start: auto; }
+  h2 {
+    margin: 0;
+    font-size: 0.96875rem;
+    font-weight: 700;
   }
 }
-.contact-file-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
-.contact-history-title {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  margin: 0 0 var(--space-3);
-}
-
-.ticket-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.ticket-item {
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+.sub-usage-badge {
+  padding: 0.1875rem 0.625rem;
+  border: 1px solid var(--color-primary-border);
+  border-radius: 999px;
   background: var(--color-surface);
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  color: var(--color-primary-hover);
+  font-size: 0.71875rem;
+  font-weight: 700;
+
+  &.is-over {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
 }
 
-.ticket-item-head {
+.sub-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem 2rem;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3125rem;
+  }
+}
+
+.sub-usage-label {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-
-  strong { font-size: var(--font-size-base); }
+  gap: 0.4375rem;
+  font-size: 0.78125rem;
+  color: var(--color-text-secondary);
 }
 
-.ticket-status {
+.sub-usage-value {
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+// ---------- The tiers ----------------------------------------------------
+.sub-period {
+  display: flex;
+  justify-content: center;
+}
+
+.sub-period-off {
+  margin-inline-start: 0.4375rem;
+  padding: 0.125rem 0.4375rem;
+  border-radius: 999px;
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+// ---------- The comparison ------------------------------------------------
+// Three cards would have repeated the six modules three times and left the
+// cheapest one half empty. A table keeps every feature on one line across
+// the tiers, which is the comparison the reader came for.
+.sub-cmp-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 15px;
+  background: var(--color-surface);
+}
+
+.sub-cmp {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  text-align: start;
+
+  th,
+  td {
+    padding: 0.6875rem 1rem;
+    vertical-align: middle;
+  }
+
+  // The feature column carries the reading; the tier columns carry marks.
+  tbody th {
+    font-size: 0.84375rem;
+    font-weight: 500;
+    color: var(--color-text);
+    text-align: start;
+  }
+
+  tbody td {
+    width: 1%;
+    min-width: 8.75rem;
+    text-align: center;
+  }
+
+  tbody tr + tr th,
+  tbody tr + tr td {
+    border-top: 1px solid var(--color-surface-sunken);
+  }
+
+  tbody + tbody tr:first-child th {
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+.sub-cmp-corner {
+  width: auto;
+  background: transparent;
+}
+
+// ---- the head: one tier per column --------------------------------------
+.sub-cmp-tier {
+  position: relative;
+  padding: 1.75rem 1rem 1.25rem !important;
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
+  font-weight: inherit;
+
+  // The tier in force is a tinted column, top to bottom, rather than a
+  // badge that has to be hunted for.
+  &.is-current {
+    background: var(--color-primary-soft);
+    border-radius: 14px 14px 0 0;
+  }
+}
+
+.sub-cmp-ribbon {
+  position: absolute;
+  top: 0.5rem;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-pill);
-  color: var(--color-warning);
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.625rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sub-cmp-name {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.sub-cmp-for {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.71875rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.sub-cmp-price {
+  display: block;
+  margin-top: 0.625rem;
+
+  strong {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  small {
+    margin-inline-start: 0.1875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+}
+
+.sub-cmp-limit {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 999px;
+  background: var(--color-surface-sunken);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.sub-cmp-tier.is-current .sub-cmp-limit {
+  background: var(--color-surface);
+  color: var(--color-primary-hover);
+}
+
+// ---- the rows ------------------------------------------------------------
+.sub-cmp-group th {
+  padding-top: 1.0625rem !important;
+  padding-bottom: 0.4375rem !important;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-align: start;
+}
+
+.sub-cmp tbody td.is-current {
+  background: var(--color-primary-soft);
+}
+
+.sub-cmp-yes {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.sub-cmp-no {
+  color: var(--color-border-strong);
+}
+
+// Sold, being built. Saying so in the cell beats a tick that promises
+// something the gym cannot use tonight.
+.sub-cmp-soon {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
   background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+// ---- the foot: what there is to do --------------------------------------
+.sub-cmp-act {
+  padding: 1rem !important;
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+
+  &.is-current {
+    background: var(--color-primary-soft);
+    border-radius: 0 0 14px 14px;
+  }
+}
+
+.sub-cmp-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: 100%;
+  height: 40px;
+  padding: 0 0.875rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
   white-space: nowrap;
 
-  &.is-resolved { color: var(--color-success); background: var(--color-success-soft); }
+  &.is-request {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-primary-hover);
+    }
+  }
+
+  &.is-current {
+    background: transparent;
+    color: var(--color-primary-hover);
+  }
+
+  &.is-sent {
+    border-color: var(--color-warning);
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+  }
 }
 
-.ticket-item-message {
+.sub-cmp-note {
   margin: 0;
-  font-size: var(--font-size-sm);
+  font-size: 0.8125rem;
   color: var(--color-text-secondary);
-  white-space: pre-wrap;
-}
-
-.ticket-attachments {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-.ticket-attachment {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: var(--font-size-xs);
-  padding: 0.25rem 0.55rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-primary);
-  text-decoration: none;
-  background: var(--color-surface-sunken);
-
-  &:hover { text-decoration: underline; }
-}
-
-.ticket-item-date {
-  font-size: var(--font-size-xs);
-  color: var(--color-muted);
 }

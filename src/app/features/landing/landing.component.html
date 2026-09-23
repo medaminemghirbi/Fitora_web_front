@@ -1,514 +1,252 @@
 <div class="lp">
-  <div class="lp-topline"></div>
-
   <header class="lp-nav">
     <div class="lp-shell lp-nav-in">
-      <a routerLink="/" class="lp-brand"><span class="lp-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span> FITORA</a>
+      <a routerLink="/" class="lp-brand">
+        <span class="lp-brand-mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 4v16M18 4v16M3 8v8M21 8v8M6 12h12" /></svg>
+        </span>
+        Fitora
+      </a>
 
-      <nav class="lp-nav-links">
+      <nav class="lp-nav-links" [attr.aria-label]="'landing.nav_menu' | translate">
         <a [routerLink]="['/']" fragment="features">{{ "landing.nav_features" | translate }}</a>
-        <a [routerLink]="['/']" fragment="solutions">{{ "landing.nav_solutions" | translate }}</a>
         <a [routerLink]="['/']" fragment="flow">{{ "landing.nav_how" | translate }}</a>
+        <a [routerLink]="['/']" fragment="pricing">{{ "landing.pricing_kicker" | translate }}</a>
+        <a [routerLink]="['/']" fragment="faq">{{ "landing.footer_faq" | translate }}</a>
       </nav>
 
       <div class="lp-nav-right">
         <button type="button" class="lp-icon-btn" (click)="theme.toggle()" [attr.aria-label]="'common.toggle_theme' | translate">
-          <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
+          <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'" aria-hidden="true"></i>
         </button>
 
         <div class="lp-dropdown">
           <button type="button" class="lp-icon-btn" (click)="langMenuOpen.set(!langMenuOpen())"
                   [attr.aria-label]="'common.change_language' | translate" [attr.aria-expanded]="langMenuOpen()">
-            <i class="bi bi-translate"></i>
+            <i class="bi bi-translate" aria-hidden="true"></i>
           </button>
           @if (langMenuOpen()) {
             <div class="lp-lang-menu">
               @for (l of locales; track l.code) {
-                <button type="button" [class.is-active]="locale.locale() === l.code" (click)="setLocale(l.code)">{{ l.label }}</button>
+                <button type="button" [class.is-active]="locale.locale() === l.code" [attr.lang]="l.code" (click)="setLocale(l.code)">{{ l.label }}</button>
               }
             </div>
           }
         </div>
 
-        <a routerLink="/auth/login" class="lp-nav-login lp-nav-hide-sm">{{ "auth.login" | translate }}</a>
-        <a routerLink="/auth/register" class="lp-btn lp-btn--grad lp-nav-hide-sm">{{ "landing.cta_start" | translate }}</a>
+        <a routerLink="/connexion" class="lp-nav-login lp-hide-md">{{ "auth.sign_in" | translate }}</a>
+        <a routerLink="/inscription" class="lp-btn lp-btn--sm lp-hide-md">{{ "landing.cta_start" | translate }}</a>
 
         <button type="button" class="lp-icon-btn lp-nav-burger" (click)="mobileOpen.set(!mobileOpen())"
                 [attr.aria-label]="'landing.nav_menu' | translate" [attr.aria-expanded]="mobileOpen()">
-          <i class="bi" [class.bi-list]="!mobileOpen()" [class.bi-x-lg]="mobileOpen()"></i>
+          <i class="bi" [class.bi-list]="!mobileOpen()" [class.bi-x-lg]="mobileOpen()" aria-hidden="true"></i>
         </button>
       </div>
     </div>
 
     <div class="lp-mobile-menu" [class.is-open]="mobileOpen()">
       <a [routerLink]="['/']" fragment="features" (click)="mobileOpen.set(false)">{{ "landing.nav_features" | translate }}</a>
-      <a [routerLink]="['/']" fragment="solutions" (click)="mobileOpen.set(false)">{{ "landing.nav_solutions" | translate }}</a>
       <a [routerLink]="['/']" fragment="flow" (click)="mobileOpen.set(false)">{{ "landing.nav_how" | translate }}</a>
+      <a [routerLink]="['/']" fragment="pricing" (click)="mobileOpen.set(false)">{{ "landing.pricing_kicker" | translate }}</a>
+      <a [routerLink]="['/']" fragment="faq" (click)="mobileOpen.set(false)">{{ "landing.footer_faq" | translate }}</a>
       <div class="lp-mobile-cta">
-        <a routerLink="/auth/login" class="lp-btn lp-btn--ghost" (click)="mobileOpen.set(false)">{{ "auth.login" | translate }}</a>
-        <a routerLink="/auth/register" class="lp-btn lp-btn--grad" (click)="mobileOpen.set(false)">{{ "landing.cta_start" | translate }}</a>
+        <a routerLink="/connexion" class="lp-btn lp-btn--ghost" (click)="mobileOpen.set(false)">{{ "auth.sign_in" | translate }}</a>
+        <a routerLink="/inscription" class="lp-btn" (click)="mobileOpen.set(false)">{{ "landing.cta_start" | translate }}</a>
       </div>
     </div>
   </header>
 
   <main>
     <!-- HERO -->
-    <section class="lp-hero">
-      <span class="lp-glow"></span>
-      <span class="lp-blob lp-blob--1" aria-hidden="true"></span>
-      <span class="lp-blob lp-blob--2" aria-hidden="true"></span>
-      <span class="lp-blob lp-blob--3" aria-hidden="true"></span>
-      <div class="lp-shell lp-hero-grid">
-        <div class="lp-hero-copy">
-          <span class="lp-eyebrow">{{ "landing.eyebrow" | translate }}</span>
-          <h1 class="lp-h1">{{ "landing.hero_title_1" | translate }}<br /><span class="lp-grad-text lp-shimmer">{{ "landing.hero_title_2" | translate }}</span></h1>
-          <p class="lp-hero-sub">{{ "landing.hero_subtitle" | translate }}</p>
-          <div class="lp-hero-cta">
-            <a routerLink="/auth/register" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.hero_cta_primary" | translate }}</a>
+    <section class="lp-shell lp-hero">
+      <div class="lp-hero-copy">
+        <span class="lp-kicker lp-kicker--rule">{{ "landing.eyebrow" | translate }}</span>
+        <h1 class="lp-h1">
+          {{ "landing.hero_title_1" | translate }}
+          <em>{{ "landing.hero_title_2" | translate }}</em>
+        </h1>
+        <p class="lp-lead">{{ "landing.hero_subtitle" | translate }}</p>
+        <div class="lp-hero-cta">
+          <a routerLink="/inscription" class="lp-btn lp-btn--lg">
+            {{ "landing.hero_cta_primary" | translate }}
+            <i class="bi bi-arrow-right lp-arrow" aria-hidden="true"></i>
+          </a>
+          <a href="mailto:contact@fitora.io" class="lp-btn lp-btn--ghost lp-btn--lg">{{ "landing.hero_cta_demo" | translate }}</a>
+        </div>
+        <ul class="lp-hero-points">
+          @for (p of heroPoints; track p) {
+            <li><i class="bi bi-check-lg" aria-hidden="true"></i>{{ p | translate }}</li>
+          }
+        </ul>
+      </div>
+
+      <!-- Today at one gym, built from divs. Illustrative data. -->
+      <div class="lp-today" aria-hidden="true">
+        <div class="lp-today-card">
+          <div class="lp-today-head">
+            <div>
+              <span class="lp-today-context">{{ "landing.panel_today" | translate }} · {{ "landing.panel_context" | translate }}</span>
+              <span class="lp-today-date">{{ todayLabel() }}</span>
+            </div>
+            <span class="lp-pill">{{ "landing.panel_classes_count" | translate: { count: 12 } }}</span>
           </div>
-          <p class="lp-hero-note">{{ "landing.hero_note" | translate }}</p>
+          <ul class="lp-today-list">
+            @for (c of todayClasses; track c.time) {
+              <li>
+                <span class="lp-today-time">{{ c.time }}</span>
+                <span class="lp-today-class">
+                  <b>{{ c.name }}</b>
+                  <span>{{ c.coach }} · {{ c.room }}</span>
+                </span>
+                <span class="lp-today-fill" [class.is-full]="isFull(c)">
+                  <span class="lp-today-count">
+                    @if (isFull(c)) {
+                      {{ "landing.panel_full_waitlist" | translate: { count: c.waitlist } }}
+                    } @else {
+                      {{ c.booked }} / {{ c.capacity }}
+                    }
+                  </span>
+                  <span class="lp-bar"><span [style.width.%]="fill(c)"></span></span>
+                </span>
+              </li>
+            }
+          </ul>
         </div>
 
-        <div class="lp-cockpit-wrap">
-          <div class="lp-cockpit" [style.transform]="cockpitTilt() ? 'perspective(1200px) ' + cockpitTilt() : 'perspective(1200px)'"
-               (mousemove)="onCockpitMove($event)" (mouseleave)="onCockpitLeave()">
-            <div class="lp-cp-head">
-              <span class="lp-cp-title">{{ "landing.panel_today" | translate }}</span>
-              <span class="lp-cp-ctx">{{ "landing.panel_context" | translate }}</span>
-            </div>
-
-            <div class="lp-cp-tiles">
-              <div class="lp-cp-tile">
-                <div class="lp-cp-k">{{ "landing.panel_appointments" | translate }}</div>
-                <div class="lp-cp-v">6</div>
-              </div>
-              <div class="lp-cp-tile is-accent">
-                <div class="lp-cp-k">{{ "landing.panel_collected" | translate }}</div>
-                <div class="lp-cp-v">1 240 DT</div>
-              </div>
-            </div>
-
-            <div class="lp-cp-chart">
-              <div class="lp-cp-chart-head"><span>{{ "landing.panel_revenue" | translate }}</span><b>{{ "landing.panel_trend" | translate }}</b></div>
-              <svg viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
-                <defs>
-                  <linearGradient id="lpArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#e8005f" stop-opacity="0.28" />
-                    <stop offset="1" stop-color="#e8005f" stop-opacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d="M10,53.7 L60,47 L110,49.8 L160,37.6 L210,42 L260,28.2 L310,19.3 L310,88 L10,88 Z" fill="url(#lpArea)" />
-                <path d="M10,53.7 L60,47 L110,49.8 L160,37.6 L210,42 L260,28.2 L310,19.3" fill="none" stroke="#e8005f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <circle cx="310" cy="19.3" r="3.6" fill="#e8005f" />
-              </svg>
-            </div>
-
-            <div class="lp-cp-cal">
-              <div class="lp-cp-cal-head">
-                <span></span><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span>
-              </div>
-              @for (row of week; track row.time; let ri = $index) {
-                <div class="lp-cp-cal-row" [style.animation-delay.ms]="ri * 90">
-                  <span class="lp-cp-cal-time">{{ row.time }}</span>
-                  @for (c of row.cells; track $index) {
-                    <span class="lp-cp-cal-cell" [class.on]="c.s === 'on'" [class.full]="c.s === 'f'" [class.grad1]="c.s === 'on' && (ri + $index) % 3 === 0" [class.grad2]="c.s === 'on' && (ri + $index) % 3 === 1" [class.grad3]="c.s === 'on' && (ri + $index) % 3 === 2">{{ c.n }}</span>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-          <span class="lp-cp-float">{{ "landing.panel_checkins" | translate }}</span>
+        <div class="lp-today-chip">
+          <span class="lp-today-chip-k">{{ "landing.panel_collected_today" | translate }}</span>
+          <span class="lp-today-chip-v">1 240 <small>DT</small></span>
+          <span class="lp-today-chip-s">{{ "landing.panel_checkins" | translate }}</span>
         </div>
       </div>
     </section>
 
-    <!-- MARQUEE -->
-    <div class="lp-marquee" aria-hidden="true">
-      <div class="lp-marquee-track">
-        @for (i of [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]; track $index) {
-          <span>{{ "landing.marquee_" + i | translate }}</span>
-          <span class="lp-marquee-dot">✦</span>
+    <!-- The modules, named once -->
+    <section class="lp-band">
+      <div class="lp-shell lp-band-in">
+        @for (b of band; track b; let last = $last) {
+          <span class="lp-band-item">{{ b | translate }}</span>
+          @if (!last) { <span class="lp-band-dot" aria-hidden="true"></span> }
         }
       </div>
-    </div>
-
-    <!-- OVERVIEW -->
-    <section class="lp-section lp-reveal">
-      <div class="lp-shell">
-        <div class="lp-sec-head">
-          <span class="lp-eyebrow">{{ "landing.overview_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.overview_title" | translate }}</h2>
-          <p>{{ "landing.overview_lead" | translate }}</p>
-        </div>
-        <div class="lp-overview-grid">
-          <article class="lp-overview-card lp-overview-card--grad">
-            <span class="lp-overview-tag">{{ "landing.overview_1_tag" | translate }}</span>
-            <h3>{{ "landing.overview_1_title" | translate }}</h3>
-            <p>{{ "landing.overview_1_desc" | translate }}</p>
-          </article>
-          <article class="lp-overview-card">
-            <span class="lp-overview-tag">{{ "landing.overview_2_tag" | translate }}</span>
-            <h3>{{ "landing.overview_2_title" | translate }}</h3>
-            <p>{{ "landing.overview_2_desc" | translate }}</p>
-          </article>
-          <article class="lp-overview-card">
-            <span class="lp-overview-tag">{{ "landing.overview_3_tag" | translate }}</span>
-            <h3>{{ "landing.overview_3_title" | translate }}</h3>
-            <p>{{ "landing.overview_3_desc" | translate }}</p>
-          </article>
-          <article class="lp-overview-card">
-            <span class="lp-overview-tag">{{ "landing.overview_4_tag" | translate }}</span>
-            <h3>{{ "landing.overview_4_title" | translate }}</h3>
-            <p>{{ "landing.overview_4_desc" | translate }}</p>
-          </article>
-        </div>
-      </div>
     </section>
 
-    <!-- BENEFITS -->
-    <section class="lp-benefits-band lp-reveal">
-      <div class="lp-shell">
-        <div class="lp-benefits-grid">
-          @for (b of benefits; track b.icon) {
-            <div class="lp-benefit-card">
-              <span class="lp-benefit-icon"><i class="bi" [ngClass]="b.icon"></i></span>
-              <p>{{ b.textKey | translate }}</p>
-            </div>
-          }
-        </div>
+    <!-- FEATURES -->
+    <section class="lp-shell lp-section" id="features">
+      <div class="lp-split-head">
+        <h2 class="lp-h2">
+          {{ "landing.features_title" | translate }}
+          <em class="lp-em-quiet">{{ "landing.features_title_2" | translate }}</em>
+        </h2>
+        <p class="lp-lead">{{ "landing.features_lead" | translate }}</p>
       </div>
-    </section>
-
-    <!-- INTEGRATIONS -->
-    <section class="lp-section lp-reveal">
-      <div class="lp-shell">
-        <div class="lp-sec-head">
-          <span class="lp-eyebrow">{{ "landing.integrations_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.integrations_title" | translate }}</h2>
-          <p>{{ "landing.integrations_lead" | translate }}</p>
-        </div>
-        <div class="lp-int-tabs">
-          @for (i of [1, 2, 3, 4, 5]; track i; let first = $first) {
-            <span class="lp-int-tab" [class.is-active]="first">{{ "landing.integrations_tab_" + i | translate }}</span>
-          }
-        </div>
-        <div class="lp-int-chips">
-          @for (i of [1, 2, 3, 4, 5]; track i) {
-            <span class="lp-int-chip">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M2 10h20" stroke="currentColor" stroke-width="1.8"/></svg>
-              {{ "landing.integrations_chip_" + i | translate }}
-            </span>
-          }
-        </div>
-      </div>
-    </section>
-
-    <!-- PROBLEMS -->
-    <section class="lp-section lp-section--alt lp-reveal">
-      <div class="lp-shell">
-        <div class="lp-sec-head">
-          <span class="lp-eyebrow">{{ "landing.problems_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.problems_title" | translate }}</h2>
-          <p>{{ "landing.problems_lead" | translate }}</p>
-        </div>
-        <div class="lp-problems-grid">
-          <div class="lp-member-view">
-            @for (i of [1, 2, 3]; track i) {
-              <div class="lp-member-step"><span class="lp-member-step-n">{{ i }}</span> {{ "landing.problems_step_" + i | translate }}</div>
-            }
-          </div>
-          <div class="lp-problems-list">
-            @for (i of [1, 2, 3, 4, 5, 6]; track i) {
-              <div class="lp-problem">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>
-                {{ "landing.problems_item_" + i | translate }}
-              </div>
-            }
-            <div class="lp-problems-cta">
-              <a [routerLink]="['/']" fragment="features" class="lp-btn lp-btn--grad">{{ "landing.problems_cta" | translate }}</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FEATURES / MODULES -->
-    <section class="lp-section lp-reveal" id="features">
-      <div class="lp-shell">
-        <div class="lp-sec-head">
-          <span class="lp-eyebrow">{{ "landing.features_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.features_title" | translate }} {{ "landing.features_title_2" | translate }}</h2>
-          <p>{{ "landing.features_lead" | translate }}</p>
-        </div>
-
-        <div class="lp-bento">
-          <article class="lp-card lp-card--big">
-            <span class="lp-tag">{{ "landing.tag_planning" | translate }}</span>
-            <h3>{{ "landing.f_planning_t" | translate }}</h3>
-            <p>{{ "landing.f_planning_d" | translate }}</p>
-            <div class="lp-weekgrid" aria-hidden="true">
-              <span></span><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span>
-              @for (row of week; track row.time) {
-                <span>{{ row.time }}</span>
-                @for (c of row.cells; track $index) {
-                  <span class="slot" [class.on]="c.s === 'on'" [class.full]="c.s === 'f'">{{ c.n }}</span>
-                }
-              }
-            </div>
-          </article>
-
-          <article class="lp-card lp-card--med">
-            <span class="lp-tag">{{ "landing.tag_memberships" | translate }}</span>
-            <h3>{{ "landing.f_memberships_t" | translate }}</h3>
-            <p>{{ "landing.f_memberships_d" | translate }}</p>
-          </article>
-
-          <article class="lp-card lp-card--half">
-            <span class="lp-tag">{{ "landing.tag_access" | translate }}</span>
-            <h3>{{ "landing.f_checkin_t" | translate }}</h3>
-            <p>{{ "landing.f_checkin_d" | translate }}</p>
-          </article>
-
-          <article class="lp-card lp-card--half">
-            <span class="lp-tag">{{ "landing.tag_member" | translate }}</span>
-            <h3>{{ "landing.f_member_t" | translate }}</h3>
-            <p>{{ "landing.f_member_d" | translate }}</p>
-          </article>
-
-          <article class="lp-card lp-card--big">
-            <span class="lp-tag">{{ "landing.tag_hr" | translate }}</span>
-            <h3>{{ "landing.f_hr_t" | translate }}</h3>
-            <p>{{ "landing.f_hr_d" | translate }}</p>
-          </article>
-
-          <article class="lp-card lp-card--med">
-            <span class="lp-tag">{{ "landing.tag_cash" | translate }}</span>
-            <h3>{{ "landing.f_cash_t" | translate }}</h3>
-            <p>{{ "landing.f_cash_d" | translate }}</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- VERTICALS / SOLUTIONS -->
-    <section class="lp-section lp-section--alt lp-reveal" id="solutions">
-      <div class="lp-shell">
-        <div class="lp-sec-head">
-          <span class="lp-eyebrow">{{ "landing.solutions_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.solutions_title" | translate }}</h2>
-          <p>{{ "landing.solutions_lead" | translate }}</p>
-        </div>
-        <div class="lp-verticals">
-          @for (i of [1, 2, 3, 4]; track i) {
-            <div class="lp-vert-card">
-              <span class="lp-vert-icon">
-                @switch (i) {
-                  @case (1) { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="#fff" stroke-width="1.8"><path d="M6 7v10M18 7v10M2 12h4M18 12h4M6 12h12"/></svg> }
-                  @case (2) { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="#fff" stroke-width="1.8"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M8.5 12h7"/></svg> }
-                  @case (3) { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg> }
-                  @default { <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> }
-                }
-              </span>
-              <h3>{{ "landing.solutions_" + i | translate }}</h3>
-            </div>
-          }
-        </div>
-      </div>
-    </section>
-
-    <!-- TESTIMONIALS -->
-    <section class="lp-section lp-reveal">
-      <div class="lp-shell">
-        <div class="lp-sec-head">
-          <span class="lp-eyebrow">{{ "landing.testimonials_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.testimonials_title" | translate }}</h2>
-          <span class="lp-testi-tag">{{ "landing.testimonials_tag" | translate }}</span>
-        </div>
-        <div class="lp-testis">
-          @for (t of testimonials; track t.who) {
-            <div class="lp-testi-card">
-              <p class="lp-testi-quote">{{ t.quote | translate }}</p>
-              <div class="lp-testi-who"><span class="lp-testi-avatar"></span> {{ t.who | translate }}</div>
-            </div>
-          }
-        </div>
-        <div class="lp-logo-strip">
-          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
-            <span class="lp-logo-chip">{{ "landing.testimonials_logo_" + i | translate }}</span>
-          }
-        </div>
-        <p class="lp-placeholder-note">{{ "landing.testimonials_note" | translate }}</p>
-      </div>
-    </section>
-
-    <!-- MOBILE APP -->
-    <section class="lp-section lp-section--alt lp-reveal">
-      <div class="lp-shell lp-mobile">
-        <div>
-          <span class="lp-eyebrow">{{ "landing.mobile_kicker" | translate }}</span>
-          <h2 class="lp-h2" style="margin-top: 12px;">{{ "landing.mobile_title" | translate }}</h2>
-          <p class="lp-hero-sub" style="margin-top: 12px; max-width: none;">{{ "landing.mobile_subtitle" | translate }}</p>
-          <div class="lp-mobile-features">
-            @for (i of [1, 2, 3]; track i) {
-              <div class="lp-mfeat">
-                <span class="lp-mfeat-icon">
-                  @switch (i) {
-                    @case (1) { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> }
-                    @case (2) { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> }
-                    @default { <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> }
-                  }
-                </span>
-                <div>
-                  <h4>{{ "landing.mobile_feat_" + i + "_t" | translate }}</h4>
-                  <p>{{ "landing.mobile_feat_" + i + "_d" | translate }}</p>
-                </div>
-              </div>
-            }
-          </div>
-          <div class="lp-store-badges">
-            <span class="lp-store-badge"><i class="bi bi-apple"></i> {{ "landing.mobile_ios" | translate }}</span>
-            <span class="lp-store-badge"><i class="bi bi-google-play"></i> {{ "landing.mobile_android" | translate }}</span>
-          </div>
-        </div>
-        <div class="lp-mobile-art">
-          <img src="assets/images/dispo.jpeg" [alt]="'landing.mobile_title' | translate" loading="lazy" />
-        </div>
-      </div>
+      <ol class="lp-features">
+        @for (f of features; track f.title; let i = $index) {
+          <li>
+            <span class="lp-feature-n">0{{ i + 1 }}</span>
+            <h3>{{ f.title | translate }}</h3>
+            <p>{{ f.text | translate }}</p>
+          </li>
+        }
+      </ol>
     </section>
 
     <!-- FLOW -->
-    <section class="lp-section lp-reveal" id="flow">
-      <div class="lp-shell">
-        <div class="lp-sec-head">
-          <span class="lp-eyebrow">{{ "landing.flow_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.flow_title" | translate }}</h2>
-          <p>{{ "landing.flow_lead" | translate }}</p>
-        </div>
-        <div class="lp-flow">
-          @for (n of [1, 2, 3]; track n) {
-            <article class="lp-step">
-              <span class="lp-step-n">{{ n }}</span>
-              <h3>{{ "landing.flow_" + n + "_t" | translate }}</h3>
-              <p>{{ "landing.flow_" + n + "_d" | translate }}</p>
-            </article>
-          }
-        </div>
+    <section class="lp-flow" id="flow">
+      <div class="lp-flow-head">
+        <span class="lp-kicker">{{ "landing.flow_kicker" | translate }}</span>
+        <h2 class="lp-h2">
+          {{ "landing.flow_title_1" | translate }}
+          <em>{{ "landing.flow_title_2" | translate }}</em>
+        </h2>
+        <p class="lp-lead">{{ "landing.flow_lead" | translate }}</p>
       </div>
+      <ol class="lp-flow-steps">
+        @for (n of steps; track n) {
+          <li>
+            <span class="lp-flow-n">{{ n }}</span>
+            <h3>{{ "landing.flow_" + n + "_t" | translate }}</h3>
+            <p>{{ "landing.flow_" + n + "_d" | translate }}</p>
+          </li>
+        }
+      </ol>
     </section>
 
-    <!-- ROI CALCULATOR -->
-    <section class="lp-section lp-section--alt lp-reveal">
-      <div class="lp-shell">
-        <div class="lp-sec-head">
-          <span class="lp-eyebrow">{{ "landing.roi_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.roi_title" | translate }}</h2>
-          <p>{{ "landing.roi_lead" | translate }}</p>
+    <!-- PRICING — the trial; the monthly price depends on the modules kept -->
+    <section class="lp-shell lp-section lp-pricing" id="pricing">
+      <div class="lp-pricing-copy">
+        <span class="lp-kicker">{{ "landing.pricing_kicker" | translate }}</span>
+        <h2 class="lp-h2">
+          {{ "landing.pricing_title_1" | translate }}
+          <em>{{ "landing.pricing_title_2" | translate }}</em>
+        </h2>
+        <p class="lp-lead">{{ "landing.pricing_lead" | translate }}</p>
+      </div>
+
+      <div class="lp-plan">
+        <div class="lp-plan-head">
+          <span class="lp-plan-name">{{ "landing.pricing_plan" | translate }}</span>
+          <span class="lp-pill lp-pill--accent">{{ "landing.pricing_badge" | translate }}</span>
         </div>
-        <div class="lp-roi">
-          <div>
-            <div class="lp-roi-field">
-              <label for="roiMembers">{{ "landing.roi_label_members" | translate }}</label>
-              <input id="roiMembers" type="number" min="0" [ngModel]="roiMembers()" (ngModelChange)="roiMembers.set($event)" />
-            </div>
-            <div class="lp-roi-field">
-              <label for="roiPrice">{{ "landing.roi_label_price" | translate }}</label>
-              <input id="roiPrice" type="number" min="0" [ngModel]="roiPrice()" (ngModelChange)="roiPrice.set($event)" />
-            </div>
-            <div class="lp-roi-field">
-              <label for="roiLate">{{ "landing.roi_label_late" | translate }}</label>
-              <input id="roiLate" type="number" min="0" max="100" [ngModel]="roiLatePct()" (ngModelChange)="roiLatePct.set($event)" />
-            </div>
-            <div class="lp-roi-field">
-              <label for="roiChurn">{{ "landing.roi_label_churn" | translate }}</label>
-              <input id="roiChurn" type="number" min="0" max="100" [ngModel]="roiChurnPct()" (ngModelChange)="roiChurnPct.set($event)" />
-            </div>
-          </div>
-          <div class="lp-roi-result">
-            <div class="lp-roi-card">
-              <div class="k">{{ "landing.roi_atrisk_label" | translate }}</div>
-              <div class="v">{{ roiAtRisk() | number: "1.0-0" }} DT</div>
-            </div>
-            <div class="lp-roi-card">
-              <div class="k">{{ "landing.roi_recoverable_label" | translate }}</div>
-              <div class="v grad">{{ roiRecoverable() | number: "1.0-0" }} DT</div>
-            </div>
-            <p class="lp-roi-foot">{{ "landing.roi_foot" | translate }}</p>
-          </div>
+        <div class="lp-plan-price">
+          <span class="lp-plan-big">{{ "landing.pricing_big" | translate }}</span>
+          <span class="lp-plan-small">{{ "landing.pricing_small" | translate }}</span>
         </div>
+        <ul class="lp-plan-items">
+          @for (item of pricingItems; track item) {
+            <li><i class="bi bi-check-lg" aria-hidden="true"></i>{{ item | translate }}</li>
+          }
+        </ul>
+        <p class="lp-plan-after">{{ "landing.pricing_after" | translate }}</p>
+        <a routerLink="/inscription" class="lp-btn lp-btn--lg lp-btn--block">{{ "auth.register_cta" | translate }}</a>
       </div>
     </section>
 
     <!-- FAQ -->
-    <section class="lp-section lp-reveal" id="faq">
-      <div class="lp-shell">
-        <div class="lp-sec-head" style="margin-inline: auto; text-align: center; align-items: center;">
-          <span class="lp-eyebrow">{{ "landing.faq_kicker" | translate }}</span>
-          <h2 class="lp-h2">{{ "landing.faq_title" | translate }}</h2>
-        </div>
-        <div class="lp-faq">
-          @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track i) {
-            <div class="lp-faq-item" [class.is-open]="openFaq() === i">
-              <button type="button" class="lp-faq-q" [attr.aria-expanded]="openFaq() === i" (click)="toggleFaq(i)">
+    <section class="lp-shell lp-section lp-faq" id="faq">
+      <h2 class="lp-h2">
+        {{ "landing.faq_title_1" | translate }}
+        <em>{{ "landing.faq_title_2" | translate }}</em>
+      </h2>
+      <div class="lp-faq-list">
+        @for (i of faqs; track i) {
+          <div class="lp-faq-item" [class.is-open]="openFaq() === i">
+            <h3>
+              <button type="button" (click)="toggleFaq(i)" [attr.aria-expanded]="openFaq() === i" [attr.aria-controls]="'faq-a-' + i">
                 <span>{{ "landing.faq_q_" + i | translate }}</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <i class="bi" [class.bi-plus-lg]="openFaq() !== i" [class.bi-dash-lg]="openFaq() === i" aria-hidden="true"></i>
               </button>
-              <div class="lp-faq-a-wrap">
-                <div class="lp-faq-a-inner">
-                  <div class="lp-faq-a">{{ "landing.faq_a_" + i | translate }}</div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
+            </h3>
+            <div class="lp-faq-a" [id]="'faq-a-' + i" [hidden]="openFaq() !== i">{{ "landing.faq_a_" + i | translate }}</div>
+          </div>
+        }
       </div>
     </section>
 
     <!-- FINAL CTA -->
-    <section class="lp-final lp-reveal">
-      <div class="lp-shell lp-final-in">
-        <h2>{{ "landing.final_title" | translate }}</h2>
-        <p>{{ "landing.final_lead" | translate }}</p>
-        <a routerLink="/auth/register" class="lp-btn lp-btn--grad lp-btn--lg">{{ "landing.final_cta" | translate }}</a>
+    <section class="lp-final">
+      <h2 class="lp-h2">
+        {{ "landing.final_title_1" | translate }}
+        <em>{{ "landing.final_title_2" | translate }}</em>
+      </h2>
+      <div class="lp-final-cta">
+        <a routerLink="/inscription" class="lp-btn lp-btn--lg lp-btn--invert">{{ "landing.hero_cta_primary" | translate }}</a>
+        <span>{{ "landing.final_lead" | translate }}</span>
       </div>
     </section>
   </main>
 
-  <footer class="lp-foot">
-    <div class="lp-shell">
-      <div class="lp-foot-grid">
-        <div class="lp-foot-brand">
-          <a routerLink="/" class="lp-brand"><span class="lp-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span> FITORA</a>
-          <p class="lp-foot-tag">{{ "landing.footer_tag" | translate }}</p>
-          <p class="lp-foot-made">{{ "landing.footer_made" | translate }}</p>
-          <div class="lp-foot-social">
-            <a href="mailto:contact@fitora.io" class="lp-foot-social-btn" [attr.aria-label]="'landing.footer_contact' | translate"><i class="bi bi-envelope"></i></a>
-            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" class="lp-foot-social-btn" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" class="lp-foot-social-btn" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
-            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" class="lp-foot-social-btn" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-          </div>
-        </div>
-
-        <nav class="lp-foot-col">
-          <h4>{{ "landing.footer_col_product" | translate }}</h4>
-          <a [routerLink]="['/']" fragment="features">{{ "landing.nav_features" | translate }}</a>
-          <a [routerLink]="['/']" fragment="solutions">{{ "landing.nav_solutions" | translate }}</a>
-          <a [routerLink]="['/']" fragment="flow">{{ "landing.nav_how" | translate }}</a>
-        </nav>
-
-        <nav class="lp-foot-col">
-          <h4>{{ "landing.footer_col_resources" | translate }}</h4>
-          <a [routerLink]="['/']" fragment="faq">{{ "landing.footer_faq" | translate }}</a>
-          <a href="mailto:contact@fitora.io">{{ "landing.footer_contact" | translate }}</a>
-        </nav>
-
-        <nav class="lp-foot-col">
-          <h4>{{ "landing.footer_col_account" | translate }}</h4>
-          <a routerLink="/auth/login">{{ "auth.login" | translate }}</a>
-          <a routerLink="/auth/register">{{ "landing.cta_start" | translate }}</a>
-        </nav>
-      </div>
-
-      <p class="lp-foot-copy">© {{ year() }} Fitora · {{ "landing.footer_rights" | translate }}</p>
+  <footer class="lp-shell lp-foot">
+    <div class="lp-foot-brand">
+      <span class="lp-brand">Fitora</span>
+      <p>{{ "landing.footer_tag" | translate }}</p>
     </div>
+    <nav class="lp-foot-links" [attr.aria-label]="'landing.footer_col_product' | translate">
+      <a [routerLink]="['/']" fragment="features">{{ "landing.nav_features" | translate }}</a>
+      <a [routerLink]="['/']" fragment="pricing">{{ "landing.pricing_kicker" | translate }}</a>
+      <a href="mailto:contact@fitora.io">{{ "landing.footer_contact" | translate }}</a>
+      <a routerLink="/connexion">{{ "auth.sign_in" | translate }}</a>
+    </nav>
+    <p class="lp-foot-copy">© {{ year() }} Fitora. {{ "landing.footer_rights" | translate }}</p>
   </footer>
 </div>

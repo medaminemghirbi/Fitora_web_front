@@ -15,20 +15,20 @@ import { TeamComponent, TeamMember } from "./team.component";
 const coach: Coach = {
   id: "c1", company_id: "1", first_name: "Sarah", last_name: "Martin", full_name: "Sarah Martin",
   email: "sarah@x.test", phone: null, bio: null, photo_url: null, birthdate: null, active: true,
-  has_login: true, login_email: "sarah@x.test", location_ids: [],
+  has_login: true, login_email: "sarah@x.test",
 };
 
 const receptionist: StaffMember = {
   id: "s1", role: "receptionist", role_key: "receptionist", role_name: "Réception",
   permissions: ["clients", "bookings"], active: true, birthdate: null,
   user: { id: "u1", full_name: "Khaled Zaidi", email: "khaled@x.test", phone: null },
-  coach_id: null, location_ids: [],
+  coach_id: null,
 };
 
 const coachStaff: StaffMember = {
   id: "s2", role: "coach", role_key: "coach", role_name: "Coach", permissions: ["checkin"],
   active: true, birthdate: null, user: { id: "u2", full_name: "Sarah Martin", email: "sarah@x.test", phone: null },
-  coach_id: "c1", location_ids: [],
+  coach_id: "c1",
 };
 
 const receptionRole = { id: "r1", key: "receptionist", name: "Réception", permissions: ["clients"], builtin: true };
@@ -129,6 +129,32 @@ describe("TeamComponent", () => {
     component.tab.set("coaches");
     fixture.detectChanges();
     expect(component.page()).toBe(1);
+  });
+
+  it("hasFilters / resetFilters", () => {
+    component.search.set("sarah");
+    component.applyTab("coaches");
+    expect(component.hasFilters()).toBe(true);
+    component.resetFilters();
+    expect(component.hasFilters()).toBe(false);
+    expect(component.search()).toBe("");
+    expect(component.tab()).toBe("all");
+  });
+
+  it("filterChips is empty with no active filters", () => {
+    expect(component.filterChips()).toEqual([]);
+  });
+
+  it("filterChips reflects search and tab, each clearing independently", () => {
+    component.search.set("sarah");
+    component.applyTab("coaches");
+    const chips = component.filterChips();
+    expect(chips.length).toBe(2);
+    expect(chips[0].label).toContain("sarah");
+
+    chips[1].clear();
+    expect(component.tab()).toBe("all");
+    expect(component.search()).toBe("sarah");
   });
 
   it("tabs includes backoffice only for an owner", () => {
@@ -387,6 +413,36 @@ describe("TeamComponent", () => {
       coachesService.deactivate.and.returnValue(throwError(() => new Error("nope")));
       await component.deactivate(coachMember);
       expect(toast.toasts()[0].kind).toBe("error");
+    });
+  });
+
+  describe("what a role lets someone do", () => {
+    function staffWith(permissions: string[]) {
+      return { staff: { permissions } } as never;
+    }
+
+    it("says nothing for a coach, who has no back-office role to describe", () => {
+      expect(component.permissionSummary({ staff: null } as never)).toBe("");
+    });
+
+    it("names what differs, in the order it matters", () => {
+      const summary = component.permissionSummary(staffWith(["clients", "checkin", "payments"]));
+
+      // Money first, attendance last — the order the constant declares, not
+      // the order the backend happened to send.
+      expect(summary).toBe("team.access_payments · team.access_clients · team.access_checkin");
+    });
+
+    it("says 'everything' rather than listing all of them", () => {
+      const summary = component.permissionSummary(
+        staffWith(["revenue", "payments", "clients", "sessions", "bookings", "checkin", "reports"])
+      );
+
+      expect(summary).toBe("team.access_everything");
+    });
+
+    it("says so plainly when a role grants nothing worth naming", () => {
+      expect(component.permissionSummary(staffWith(["reports"]))).toBe("team.access_nothing");
     });
   });
 });

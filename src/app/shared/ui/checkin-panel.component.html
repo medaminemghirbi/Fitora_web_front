@@ -1,0 +1,58 @@
+@if (loading()) {
+  <app-skeleton variant="line" width="100%" />
+  <app-skeleton variant="line" width="90%" />
+  <app-skeleton variant="line" width="80%" />
+} @else if (error()) {
+  <app-error-state (retry)="load()" />
+} @else if (bookings().length === 0) {
+  <app-empty-state [title]="'coach.no_bookings_title' | translate" body="" icon="bi-people" />
+} @else {
+  <div class="ckin-head">
+    <div class="fx-input-icon">
+      <i class="bi bi-search"></i>
+      <input
+        type="search"
+        class="form-control form-control-sm"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        [placeholder]="'checkin.search_placeholder' | translate"
+        [attr.aria-label]="'checkin.search_placeholder' | translate"
+      />
+    </div>
+    <span class="ckin-count" dir="ltr">{{ presentCount() }}/{{ bookings().length }}</span>
+  </div>
+
+  @if (filtered().length === 0) {
+    <app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" />
+  } @else {
+    <ul class="ckin-list">
+      @for (b of filtered(); track b.booking_id) {
+        <li class="ckin-row" [class.is-busy]="marking() === b.booking_id">
+          <span class="ckin-name" [innerHTML]="b.client.full_name | highlight: search()"></span>
+          <div class="ckin-actions">
+            <button
+              type="button"
+              class="ckin-btn ckin-btn--present"
+              [class.is-on]="statusOf(b) === 'present'"
+              [disabled]="marking() !== null"
+              (click)="mark(b, 'present')"
+            >
+              <i class="bi bi-check-lg"></i>
+              <span class="ckin-btn-label">{{ "coach.attendance_present" | translate }}</span>
+            </button>
+            <button
+              type="button"
+              class="ckin-btn ckin-btn--absent"
+              [class.is-on]="statusOf(b) === 'absent'"
+              [disabled]="marking() !== null"
+              (click)="mark(b, 'absent')"
+            >
+              <i class="bi bi-x-lg"></i>
+              <span class="ckin-btn-label">{{ "coach.attendance_absent" | translate }}</span>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+}

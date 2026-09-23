@@ -1,306 +1,160 @@
 <div class="fx-page">
 @if (client(); as c) {
-  <div class="fx-profile-header">
-    <app-avatar [name]="c.full_name" [size]="56" />
-    <div class="fx-profile-header-id">
-      <a routerLink="/owner/clients" class="fx-profile-header-back">
-        <i class="bi bi-arrow-left"></i> {{ "clients.title" | translate }}
-      </a>
-      <h1 class="fx-profile-header-name">
-        {{ c.full_name }}
-        <app-status-badge [status]="c.active ? 'active' : 'inactive'">
+  <a routerLink="/owner/clients" class="prof-back">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i> {{ "clients.title" | translate }}
+  </a>
+
+  <!-- The whole state of the relationship in one block: who, what they are
+       on, what is left, what is owed. Nothing below repeats any of it, which
+       is what let five cards and a side column go. -->
+  <section class="prof-banner">
+    <span class="prof-banner-avatar" aria-hidden="true">{{ initials(c.full_name) }}</span>
+
+    <div class="prof-banner-id">
+      <div class="prof-banner-name">
+        <h1>{{ c.full_name }}</h1>
+        <span class="prof-banner-badge" [class.is-off]="!c.active">
           {{ (c.active ? "common.active" : "common.inactive") | translate }}
-        </app-status-badge>
-      </h1>
-      <p class="fx-profile-header-contact">
-        <span dir="ltr">{{ c.phone }}</span>@if (c.email) { <span> · {{ c.email }}</span> }
+        </span>
+      </div>
+      <p class="prof-banner-sub">
+        @if (c.current_contract; as contract) {
+          {{ contract.plan.name }} · {{ contract.activity_label }}
+          @if (contract.expires_at) {
+            · {{ "clients.until" | translate: { date: (contract.expires_at | date: "d MMM y") } }}
+          }
+          <!-- A renewal taken before the term ran out queues behind it
+               instead of replacing it, so say how far they are covered. -->
+          @if (contract.upcoming_periods.length) {
+            <span class="fx-renewal-queued">
+              <i class="bi bi-arrow-repeat"></i>
+              {{ "contracts.renewed_until" | translate: { date: (renewedThrough(contract) | date: "d MMM y") } }}
+            </span>
+          }
+          ·
+        }
+        {{ "clients.member_since" | translate }} {{ c.joined_at | date: "MMM y" }}
       </p>
     </div>
-    <div class="fx-profile-header-actions">
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="checkIn()">
-        <i class="bi bi-check2-circle"></i> {{ "clients.check_in" | translate }}
+
+    <!-- Only the figures this member actually has. An empty column saying
+         "—" is a column earning nothing. -->
+    @if (c.current_contract; as contract) {
+      <div class="prof-banner-stat">
+        @if (contract.remaining_bookings !== null) {
+          <span class="prof-banner-value">{{ contract.remaining_bookings }}</span>
+          <span class="prof-banner-label">{{ "clients.sessions_left_short" | translate }}</span>
+        } @else {
+          <span class="prof-banner-value">∞</span>
+          <span class="prof-banner-label">{{ "contract_types.unlimited_bookings" | translate }}</span>
+        }
+      </div>
+    }
+
+    @if (c.attendance_rate !== null) {
+      <div class="prof-banner-stat">
+        <span class="prof-banner-value">{{ c.attendance_rate }}<small>%</small></span>
+        <span class="prof-banner-label">{{ "clients.attendance" | translate }}</span>
+      </div>
+    }
+
+    @if (+c.outstanding_balance > 0) {
+      <div class="prof-banner-stat">
+        <span class="prof-banner-value is-owed">{{ +c.outstanding_balance }}</span>
+        <span class="prof-banner-label">{{ "clients.owed" | translate }}</span>
+      </div>
+    }
+  </section>
+
+  <!-- At a desk these are pressed far more often than anything is read, so
+       they get their own row at full size rather than a corner of a header. -->
+  <div class="prof-actions-row">
+    @if (+c.outstanding_balance > 0) {
+      <button type="button" class="btn btn-primary" (click)="openPaymentModal()">
+        {{ "clients.collect" | translate: { amount: +c.outstanding_balance } }}
       </button>
-      <button type="button" class="btn btn-sm btn-primary" (click)="openContractModal()">
-        <i class="bi bi-file-earmark-text"></i> {{ "clients.add_subscription" | translate }}
-      </button>
-      <app-action-menu>
-        <button type="button" class="fx-menu-item" (click)="openBookingModal()">
-          <i class="bi bi-calendar-plus"></i> {{ "clients.add_booking" | translate }}
-        </button>
+    }
+    <button type="button" class="btn btn-outline-secondary" (click)="checkIn()">
+      <i class="bi bi-check2-circle"></i> {{ "clients.check_in" | translate }}
+    </button>
+    <button type="button" class="btn btn-outline-secondary" (click)="openContractModal()">
+      <i class="bi bi-file-earmark-text"></i>
+      {{ (c.current_contract ? "contracts.renew" : "clients.add_subscription") | translate }}
+    </button>
+    <button type="button" class="btn btn-outline-secondary" (click)="openBookingModal()">
+      <i class="bi bi-calendar-plus"></i> {{ "clients.add_booking" | translate }}
+    </button>
+
+    <div class="prof-actions-spacer"></div>
+
+    <app-action-menu>
+      @if (+c.outstanding_balance <= 0) {
         <button type="button" class="fx-menu-item" (click)="openPaymentModal()">
           <i class="bi bi-cash-coin"></i> {{ "clients.add_payment" | translate }}
         </button>
-      </app-action-menu>
-    </div>
+      }
+      <button type="button" class="fx-menu-item" [disabled]="!c.email" (click)="openLoginModal()">
+        <i class="bi bi-phone"></i>
+        {{ (c.login_enabled ? "clients.reset_login" : "clients.set_login") | translate }}
+      </button>
+    </app-action-menu>
   </div>
 
-  <ul class="nav nav-tabs mb-4">
-    @for (tab of tabs; track tab) {
-      <li class="nav-item">
-        <button type="button" class="nav-link" [class.active]="activeTab() === tab" (click)="setTab(tab)">
-          {{ ("clients.tab_" + tab) | translate }}
-        </button>
-      </li>
-    }
-  </ul>
-
-  @if (activeTab() === "overview") {
-    <div class="fx-stack">
-      <div class="fx-kpi-grid">
-        <app-kpi-card
-          [label]="'clients.last_visit' | translate"
-          [value]="c.last_visit_at ? ((c.last_visit_at | date: 'mediumDate') ?? '—') : '—'"
-          icon="bi-clock-history" tone="info"
-        />
-        <app-kpi-card
-          [label]="'clients.attendance_rate' | translate"
-          [value]="c.attendance_rate !== null ? c.attendance_rate + '%' : '—'"
-          icon="bi-graph-up-arrow" tone="primary"
-        />
-        <app-kpi-card
-          [label]="'clients.outstanding_balance' | translate"
-          [value]="+c.outstanding_balance"
-          icon="bi-exclamation-circle" [tone]="balanceTone(+c.outstanding_balance)"
-        />
-      </div>
-
-      <div class="app-card">
-        <div class="app-card-header"><h2>{{ "clients.current_subscription" | translate }}</h2></div>
-        <div class="app-card-body">
-          @if (c.current_contract; as contract) {
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-              <div>
-                <p class="fx-strong mb-1">{{ contract.plan.name }}</p>
-                <p class="fx-muted mb-0" style="font-size: 0.8125rem">
-                  {{ contract.starts_at | date: "mediumDate" }} → {{ contract.expires_at | date: "mediumDate" }}
-                  @if (contractProgress(); as progress) { · {{ progress.percent | number: "1.0-0" }}% {{ "clients.elapsed" | translate }} }
-                </p>
-              </div>
-              <button type="button" class="btn btn-sm btn-ghost" (click)="setTab('contracts')">
-                {{ "clients.tab_contracts" | translate }} <i class="bi bi-arrow-right"></i>
-              </button>
-            </div>
-            @if (contractProgress(); as progress) {
-              <div class="contract-progress mt-2">
-                <div class="contract-progress-bar contract-progress-bar--{{ progress.tone }}" [style.width.%]="progress.percent"></div>
-              </div>
-            }
-          } @else {
-            <app-empty-state [title]="'clients.no_subscription' | translate" body="" icon="bi-file-earmark-text" />
+  <!-- What actually happened. One stream, because "did they come" and "did
+       they pay" are the same story told about the same person. -->
+  <div>
+    <div class="prof-main-head">
+        <h2 class="prof-label">{{ "clients.recent_activity" | translate }}</h2>
+        <div class="prof-filters">
+          @for (option of ["all", "sessions", "payments"]; track option) {
+            <button type="button" class="prof-filter" [class.is-active]="filter() === option"
+                    (click)="filter.set($any(option))">
+              {{ ("clients.filter_" + option) | translate }}
+            </button>
           }
         </div>
       </div>
 
-      <div class="mobile-login-banner" [class.mobile-login-banner--active]="c.login_enabled" [class.mobile-login-banner--pending]="!c.login_enabled">
-        <div class="d-flex align-items-center gap-2" style="font-size: 0.8125rem">
-          <i class="bi" [class.bi-phone-fill]="c.login_enabled" [class.bi-phone]="!c.login_enabled"></i>
-          @if (c.login_enabled) {
-            <span>{{ "clients.mobile_login_active" | translate }} · {{ c.email }}</span>
-          } @else if (!c.email) {
-            <span>{{ "clients.mobile_login_needs_email" | translate }}</span>
-          } @else {
-            <span>{{ "clients.mobile_login_none" | translate }}</span>
-          }
-        </div>
-        <button type="button" class="btn btn-sm" [class.btn-outline-success]="c.login_enabled" [class.btn-outline-warning]="!c.login_enabled" [disabled]="!c.email" (click)="openLoginModal()">
-          {{ (c.login_enabled ? "clients.reset_login" : "clients.set_login") | translate }}
-        </button>
-      </div>
-    </div>
-  }
-
-  @if (activeTab() === "contracts") {
-    @if (contracts().length === 0) {
-      <div class="app-card"><div class="app-card-body">
-        <app-empty-state [title]="'clients.no_subscription' | translate" body="" icon="bi-file-earmark-text" />
-      </div></div>
-    } @else {
-      <div class="abo-list">
-        @for (row of aboRows(); track row.contract.id) {
-          @if (row.contract; as m) {
-            <div class="abo" [class.is-off]="m.status === 'expired' || m.status === 'cancelled'">
-              <span class="abo-rail" [style.background]="m.plan.color"></span>
-              <div class="abo-body">
-                <div class="abo-top">
-                  <div>
-                    <div class="abo-name">{{ m.plan.name }}</div>
-                    <div class="abo-dates">
-                      {{ m.starts_at | date: "mediumDate" }} → {{ m.expires_at | date: "mediumDate" }}
-                      · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}
-                    </div>
-                  </div>
-                  <span class="abo-status" [class.st-ok]="m.status === 'active' && m.payment_status === 'paid'"
-                        [class.st-due]="m.status === 'active' && m.payment_status === 'unpaid'"
-                        [class.st-off]="m.status !== 'active'">
-                    <span class="dot"></span>
-                    @switch (m.status) {
-                      @case ('active') {
-                        @if (m.payment_status === 'paid') { {{ "clients.abo_active_paid" | translate }} }
-                        @else { {{ "clients.abo_active_due" | translate: { amount: (m.amount_due | money: m.plan.currency) } }} }
-                      }
-                      @case ('pending') { {{ "contract.status_pending" | translate }} }
-                      @case ('cancelled') { {{ "contract.status_cancelled" | translate }} }
-                      @default { {{ "contract.status_expired" | translate }} }
-                    }
-                  </span>
-                </div>
-
-                <div>
-                  <div class="abo-track" [class.warn]="m.payment_status === 'unpaid' && m.status === 'active'" [class.off]="m.status !== 'active'">
-                    <span [style.width.%]="row.percent"></span>
-                  </div>
-                  <div class="abo-track-note">
-                    @if (row.sessionCount && row.remaining !== null) {
-                      {{ "clients.abo_sessions_used" | translate: { used: (row.sessionCount - row.remaining), total: row.sessionCount } }}
-                    } @else if (m.status === 'active') {
-                      {{ row.percent | number: "1.0-0" }}% {{ "clients.elapsed" | translate }} · {{ "clients.abo_days_left" | translate: { days: row.daysLeft } }}
-                    } @else if (m.status === 'expired') {
-                      {{ "contract.status_expired" | translate }}
-                    } @else {
-                      {{ "contract.status_cancelled" | translate }}
-                    }
-                  </div>
-                </div>
-
-                <div class="abo-foot">
-                  <span class="abo-price">
-                    {{ m.final_price | money: m.plan.currency }}
-                    @if (m.payment_status === 'paid') { <span class="paid">· {{ "clients.abo_settled" | translate }}</span> }
-                    @else if (m.status === 'active') { <span class="due">· {{ "clients.abo_amount_left" | translate: { amount: (m.amount_due | money: m.plan.currency) } }}</span> }
-                  </span>
-                  <div class="abo-actions">
-                    @if (m.status === 'active' && m.payment_status === 'unpaid') {
-                      <button type="button" class="btn btn-sm btn-primary" (click)="collectPayment(m)">
-                        {{ "clients.abo_collect" | translate: { amount: (m.amount_due | money: m.plan.currency) } }}
-                      </button>
-                    }
-                    <button type="button" class="btn btn-sm btn-link-quiet" (click)="downloadReceipt(m)">{{ "clients.abo_receipt" | translate }}</button>
-                    @if (m.status === 'active') {
-                      <button type="button" class="btn btn-sm btn-link-quiet" (click)="openEditModal(m)">{{ "common.edit" | translate }}</button>
-                      <button type="button" class="btn btn-sm btn-ghost" (click)="renewContract(m)">{{ "clients.renew" | translate }}</button>
-                      <button type="button" class="btn btn-sm btn-link-danger" (click)="cancelContract(m)">{{ "clients.abo_cancel" | translate }}</button>
-                    } @else if (m.status === 'expired') {
-                      <button type="button" class="btn btn-sm btn-ghost" (click)="renewContract(m)">{{ "clients.abo_resume" | translate }}</button>
-                    } @else if (m.status === 'cancelled') {
-                      <button type="button" class="btn btn-sm btn-link-danger" (click)="deleteContract(m)">{{ "common.delete" | translate }}</button>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        }
-      </div>
-    }
-  }
-
-  @if (activeTab() === "bookings") {
-    <div class="app-card">
-      @if (bookings().length === 0) {
-        <div class="app-card-body"><app-empty-state [title]="'bookings.empty_title' | translate" body="" icon="bi-journal-check" /></div>
+      @if (timeline().length === 0) {
+        <app-empty-state [title]="'clients.no_activity' | translate" body="" icon="bi-clock-history" />
       } @else {
-        <div class="fx-table-scroll">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>{{ "activities.title" | translate }}</th>
-                <th>{{ "bookings.location" | translate }}</th>
-                <th>{{ "bookings.date" | translate }}</th>
-                <th>{{ "common.status" | translate }}</th>
-                <th class="text-end">{{ "common.actions" | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (b of bookings(); track b.id) {
-                <tr>
-                  <td>{{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}{{ b.session.activity_name }}</td>
-                  <td>{{ b.session.location_name }}</td>
-                  <td>{{ b.session.starts_at | date: "medium" }}</td>
-                  <td><app-status-badge [status]="b.status">{{ ("bookings.status_" + b.status) | translate }}</app-status-badge></td>
-                  <td class="text-end">
-                    @if (b.status === "confirmed") {
-                      <app-action-menu>
-                        <button type="button" class="fx-menu-item is-danger" (click)="cancelBooking(b)">
-                          <i class="bi bi-x-circle"></i> {{ "bookings.status_cancelled" | translate }}
-                        </button>
-                      </app-action-menu>
-                    } @else {
-                      <span class="fx-muted">—</span>
-                    }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </div>
-  }
+        <ul class="prof-timeline">
+          @for (entry of timeline(); track entry.id) {
+            <li>
+              <span class="prof-timeline-mark" [attr.data-kind]="entry.kind" aria-hidden="true">
+                <i class="bi" [class]="timelineIcon(entry.kind)"></i>
+              </span>
+              <span class="prof-timeline-text">
+                <span class="fx-strong">{{ ("clients.event_" + entry.kind) | translate }}</span>
+                · {{ entry.title }}
+                @if (entry.detail) {
+                  <span class="fx-muted"> · {{ entry.detail }}</span>
+                }
+              </span>
+              <span class="fx-muted prof-timeline-when">{{ entry.at | date: "d MMM" }}</span>
+            </li>
+          }
+        </ul>
+    }
+  </div>
 
-  @if (activeTab() === "attendance") {
-    <div class="app-card">
-      <div class="app-card-body">
-        @if (bookingsWithAttendance().length === 0) {
-          <app-empty-state [title]="'clients.no_attendance' | translate" body="" icon="bi-clock-history" />
-        } @else {
-          <ul class="fx-list">
-            @for (b of bookingsWithAttendance(); track b.id) {
-              <li>
-                <span class="fx-list-main">{{ b.session.activity_emoji ? b.session.activity_emoji + " " : "" }}{{ b.session.activity_name }} — {{ b.session.starts_at | date: "medium" }}</span>
-                <app-status-badge [status]="b.status">{{ ("bookings.status_" + b.status) | translate }}</app-status-badge>
-              </li>
-            }
-          </ul>
-        }
-      </div>
-    </div>
-  }
+  <!-- Past subscriptions, only when there is more than the current one. -->
+  <div class="prof-foot">
+    @if (aboRows().length > 1) {
+      <section>
+        <h2 class="prof-label">{{ "clients.tab_contracts" | translate }}</h2>
+        <ul class="prof-history">
+          @for (row of aboRows(); track row.contract.id) {
+            <li>
+              <span>{{ row.contract.plan.name }}</span>
+              <span class="fx-muted">{{ row.contract.starts_at | date: "MMM y" }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
 
-  @if (activeTab() === "payments") {
-    <div class="app-card">
-      @if (payments().length === 0) {
-        <div class="app-card-body"><app-empty-state [title]="'payments.empty_title' | translate" body="" icon="bi-credit-card" /></div>
-      } @else {
-        <div class="fx-table-scroll">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>{{ "payments.product" | translate }}</th>
-                <th>{{ "payments.amount" | translate }}</th>
-                <th>{{ "payments.method" | translate }}</th>
-                <th>{{ "common.status" | translate }}</th>
-                <th>{{ "payments.date" | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (p of payments(); track p.id) {
-                <tr>
-                  <td>{{ p.product_name || "—" }}</td>
-                  <td class="fx-strong">{{ p.amount | money: p.currency }}</td>
-                  <td>{{ ("payments.method_" + p.payment_method) | translate }}</td>
-                  <td><app-status-badge [status]="p.status">{{ ("payments.status_" + p.status) | translate }}</app-status-badge></td>
-                  <td class="fx-muted">{{ p.created_at | date: "medium" }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </div>
-  }
-
-  @if (activeTab() === "notes") {
-    <div class="app-card">
-      <div class="app-card-body">
-        <form [formGroup]="notesForm" (ngSubmit)="saveNotes()">
-          <textarea class="form-control mb-3" rows="6" formControlName="notes"></textarea>
-          <button type="submit" class="btn btn-primary" [disabled]="notesSaving()">
-            {{ (notesSaving() ? "common.saving" : "common.save") | translate }}
-          </button>
-        </form>
-      </div>
-    </div>
-  }
 } @else if (loading()) {
   <app-skeleton variant="kpi" [count]="3" />
 } @else if (error()) {
@@ -319,7 +173,16 @@
       <select id="ms-plan" class="form-select" formControlName="contract_type_id">
         <option [ngValue]="null" disabled>—</option>
         @for (plan of contractTypes(); track plan.id) {
-          <option [ngValue]="plan.id">{{ plan.name }} — {{ plan.price | money: plan.currency }} / {{ ("contract_types.period_" + plan.billing_period) | translate }}</option>
+          <option [ngValue]="plan.id">{{ plan.name }} — {{ ("contract_types.period_" + plan.billing_period) | translate }}</option>
+        }
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="ms-activity">{{ "clients.abo_activity" | translate }} *</label>
+      <select id="ms-activity" class="form-select" formControlName="activity_id">
+        <option [ngValue]="null" disabled>—</option>
+        @for (a of activities(); track a.id) {
+          <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
         }
       </select>
     </div>
@@ -335,26 +198,33 @@
     </div>
 
     @if (selectedPlan(); as plan) {
-      <div class="abo-total-line mb-3">
-        <span>{{ "clients.abo_total" | translate }}</span>
-        <strong>{{ contractFormTotal() | money: plan.currency }}</strong>
-      </div>
-      <div class="abo-collect mb-3">
-        <label class="form-check">
-          <input type="checkbox" class="form-check-input" formControlName="collect_payment" />
-          <span class="form-check-label">{{ "clients.abo_collect_now" | translate }}</span>
-        </label>
-        @if (contractForm.controls.collect_payment.value) {
-          <p class="fx-muted mb-0" style="font-size: 0.8125rem">
-            {{ "clients.abo_collect_hint" | translate: { amount: (contractFormTotal() | money: plan.currency) } }}
-          </p>
-        }
-      </div>
+      @if (selectedActivityPrice() === null) {
+        <div class="alert alert-warning">
+          {{ "clients.abo_no_price" | translate }}
+          <a routerLink="/owner/catalogue">{{ "clients.abo_no_price_link" | translate }}</a>
+        </div>
+      } @else {
+        <div class="abo-total-line mb-3">
+          <span>{{ "clients.abo_total" | translate }}</span>
+          <strong>{{ contractFormTotal() | money: plan.currency }}</strong>
+        </div>
+        <div class="abo-collect mb-3">
+          <label class="form-check">
+            <input type="checkbox" class="form-check-input" formControlName="collect_payment" />
+            <span class="form-check-label">{{ "clients.abo_collect_now" | translate }}</span>
+          </label>
+          @if (contractForm.controls.collect_payment.value) {
+            <p class="fx-muted mb-0" style="font-size: 0.8125rem">
+              {{ "clients.abo_collect_hint" | translate: { amount: (contractFormTotal() | money: plan.currency) } }}
+            </p>
+          }
+        </div>
+      }
     }
 
     <div class="d-flex justify-content-end gap-2 mt-4">
       <button type="button" class="btn btn-outline-secondary" (click)="closeContractModal()">{{ "common.cancel" | translate }}</button>
-      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ (saving() ? "common.saving" : "clients.abo_create") | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving() || selectedActivityPrice() === null">{{ (saving() ? "common.saving" : "clients.abo_create") | translate }}</button>
     </div>
   </form>
 </app-modal>
@@ -364,7 +234,7 @@
     <div class="alert alert-danger">{{ formError() }}</div>
   }
   @if (editingContract(); as m) {
-    <p class="fx-muted" style="font-size: 0.875rem">{{ m.plan.name }} · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}</p>
+    <p class="fx-muted" style="font-size: 0.875rem">{{ m.plan.name }} · {{ m.activity?.emoji ? m.activity!.emoji + " " : "" }}{{ m.activity_label }} · {{ ("contract_types.period_" + m.plan.billing_period) | translate }}</p>
     <form [formGroup]="editForm" (ngSubmit)="submitEdit()" novalidate>
       <div class="row">
         <div class="col-6 mb-3">

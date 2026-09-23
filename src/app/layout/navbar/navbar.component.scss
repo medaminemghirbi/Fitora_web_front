@@ -1,22 +1,38 @@
 :host { display: contents; }
 
+// White, like the rail it sits beside. The bar used to be a dark-aubergine
+// skin from the old sidebar; with the rail carrying the navigation and the
+// brand, a dark strip across the top was the only dark thing left on the
+// page and it cut the rail in half.
+//
+// It also gets out of the way: scrolling down slides it off, scrolling up
+// brings it straight back. Reading a long list should not cost 64px, and
+// getting to the search should not cost a scroll to the top.
 .app-navbar {
   position: sticky;
   top: 0;
   z-index: var(--z-topbar);
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
-  backdrop-filter: saturate(180%) blur(8px);
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+  transition: transform 0.25s ease;
+
+  &.is-hidden {
+    transform: translateY(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-navbar {
+    transition: none;
+  }
 }
 
 .app-navbar-inner {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  height: 56px;
-  padding: 0 var(--space-5);
-  max-width: var(--content-max-width);
-  margin-inline: auto;
+  height: var(--topbar-height);
+  padding: 0 var(--space-4);
 }
 
 .app-navbar-brand {
@@ -25,10 +41,11 @@
   gap: 0.5rem;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
   color: var(--color-text);
   text-decoration: none;
-  margin-inline-end: 0.6rem;
+  padding-inline: var(--space-2) var(--space-5);
   white-space: nowrap;
 
   &:hover { text-decoration: none; color: var(--color-text); }
@@ -40,8 +57,8 @@
   height: 26px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-accent);
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -64,12 +81,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.42rem 0.65rem;
+  gap: 0.45rem;
+  padding: 0 0.85rem;
+  height: 38px;
   border: 0;
   background: transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-text-secondary);
   text-decoration: none;
@@ -77,9 +96,11 @@
   white-space: nowrap;
   transition: background var(--transition-fast), color var(--transition-fast);
 
-  i { font-size: 0.7rem; }
+  .app-navbar-item-icon { font-size: 0.95rem; }
+  .bi-chevron-down { font-size: 0.65rem; opacity: 0.85; }
   &:hover { background: var(--color-surface-hover); color: var(--color-text); text-decoration: none; }
-  &.is-active { background: var(--color-primary-soft); color: var(--color-primary); font-weight: 600; }
+  // The accent is the "you are here" marker — the one place it appears in the bar.
+  &.is-active { background: var(--color-primary-soft); color: var(--color-text); font-weight: 600; }
 }
 
 .app-navbar-dropdown {
@@ -132,38 +153,38 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid var(--color-border-strong);
-  background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.7rem;
   font: inherit;
   font-size: 0.8125rem;
-  color: var(--color-muted);
+  color: var(--color-text-secondary);
   cursor: pointer;
   margin-inline-end: 0.3rem;
 
-  &:hover { border-color: var(--color-primary-border); color: var(--color-text-secondary); }
-  kbd { font: inherit; font-size: 0.68rem; background: var(--color-surface-sunken); border-radius: var(--radius-xs); padding: 0.05rem 0.3rem; color: var(--color-text-secondary); }
+  &:hover { background: var(--color-surface); color: var(--color-text); }
+  kbd { font: inherit; font-size: 0.68rem; background: rgba(255, 255, 255, 0.12); border-radius: var(--radius-xs); padding: 0.05rem 0.3rem; color: var(--color-text); }
 }
 
 .app-navbar-support {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1px solid var(--color-primary-border);
-  background: var(--color-primary-soft);
-  border-radius: var(--radius-sm);
-  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-text-secondary);
   text-decoration: none;
   margin-inline-end: 0.3rem;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
 
   i { font-size: 0.9rem; }
-  &:hover { background: var(--color-primary-border); text-decoration: none; }
-  &.is-active { background: var(--color-primary); color: var(--color-on-primary); }
+  &:hover { background: var(--color-surface-hover); color: var(--color-text); text-decoration: none; }
+  &.is-active { background: var(--color-primary-soft); color: var(--color-text); border-color: transparent; }
 }
 
 // ---- mobile ---------------------------------------------------------------
@@ -179,10 +200,12 @@
   justify-content: center;
   font-size: 1.1rem;
   cursor: pointer;
-  &:hover { background: var(--color-surface-hover); }
+  &:hover { background: var(--color-surface-hover); color: var(--color-text); }
 }
 
 .app-navbar-mobile-title {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text);
@@ -241,11 +264,11 @@
   transition: background var(--transition-fast), border-color var(--transition-fast);
 
   &:hover { background: var(--color-surface-hover); }
-  &[aria-expanded="true"] { border-color: var(--color-primary); }
+  &[aria-expanded="true"] { border-color: var(--color-accent); }
   &:disabled { opacity: 0.6; cursor: wait; }
 
-  i.bi-building { color: var(--color-muted); font-size: 0.95rem; }
-  i.bi-chevron-down { font-size: 0.7rem; color: var(--color-muted); }
+  i.bi-building { color: var(--color-text-secondary); font-size: 0.95rem; }
+  i.bi-chevron-down { font-size: 0.7rem; color: var(--color-text-secondary); }
 }
 
 .app-company-switcher-name {

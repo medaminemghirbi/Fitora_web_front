@@ -1,0 +1,127 @@
+@if (loading()) {
+  <app-skeleton variant="cards" [count]="2" />
+  <app-skeleton variant="table" [rows]="4" [cols]="3" />
+} @else if (error()) {
+  <app-error-state [body]="error()!" (retry)="load()" />
+} @else {
+  <!-- On now. The single most likely reason someone is standing at the
+       counter, so it gets the whole width and the only primary action. -->
+  <section class="desk-section">
+    <h2 class="desk-section-title">{{ "desk.on_now" | translate }}</h2>
+
+    @if (current(); as session) {
+      <article class="desk-now">
+        <div class="desk-now-head">
+          <span class="desk-now-time">{{ session.starts_at | date: "HH:mm" }} – {{ session.ends_at | date: "HH:mm" }}</span>
+          <span class="desk-now-fill" [class.is-full]="isFull(session)">
+            {{ session.confirmed_count }} / {{ session.capacity }}
+          </span>
+        </div>
+
+        <h3 class="desk-now-activity">
+          @if (session.activity_emoji) {
+            <span aria-hidden="true">{{ session.activity_emoji }}</span>
+          }
+          {{ session.activity_name }}
+        </h3>
+
+        @if (session.coach_name) {
+          <p class="desk-now-coach">{{ session.coach_name }}</p>
+        }
+
+        <a class="btn btn-primary btn-lg" [routerLink]="['/desk/checkin']" [queryParams]="{ session: session.id }">
+          <i class="bi bi-check2-square"></i> {{ "desk.check_people_in" | translate }}
+        </a>
+      </article>
+    } @else {
+      <app-empty-state icon="bi-cup-hot" [title]="'desk.nothing_on_title' | translate" [body]="'desk.nothing_on_body' | translate" />
+    }
+  </section>
+
+  <!-- Two plain counts, not a dashboard of statistics: how many are expected
+       today, and how many have actually turned up. -->
+  <section class="desk-counts">
+    <div class="desk-count">
+      <span class="desk-count-value">{{ bookedToday() }}</span>
+      <span class="desk-count-label">{{ "desk.booked_today" | translate }}</span>
+    </div>
+    <div class="desk-count">
+      <span class="desk-count-value">{{ checkedIn() }}</span>
+      <span class="desk-count-label">{{ "desk.checked_in_today" | translate }}</span>
+    </div>
+  </section>
+
+  <section class="desk-section">
+    <h2 class="desk-section-title">{{ "desk.still_to_come" | translate }}</h2>
+
+    @if (upcoming().length === 0) {
+      <app-empty-state icon="bi-calendar-check" [title]="'desk.day_done_title' | translate" [body]="'desk.day_done_body' | translate" />
+    } @else {
+      <ul class="desk-list">
+        @for (session of upcoming(); track session.id) {
+          <li class="desk-list-row">
+            <span class="desk-list-time">{{ session.starts_at | date: "HH:mm" }}</span>
+            <span class="desk-list-body">
+              <strong>{{ session.activity_name }}</strong>
+              @if (session.coach_name) {
+                <small>{{ session.coach_name }}</small>
+              }
+            </span>
+            <span class="desk-list-fill" [class.is-full]="isFull(session)">
+              @if (isFull(session)) {
+                {{ "desk.full" | translate }}
+              } @else {
+                {{ "desk.spots_left" | translate: { count: spotsLeft(session) } }}
+              }
+            </span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <!-- The thing a receptionist can actually fix while the person is in front
+       of them, which is why it is on this screen and not in a report. -->
+  @if (expiring().length > 0) {
+    <section class="desk-section">
+      <h2 class="desk-section-title">{{ "desk.expiring_soon" | translate }}</h2>
+
+      <ul class="desk-list">
+        @for (item of expiring(); track item.id) {
+          <li class="desk-list-row">
+            <span class="desk-list-body">
+              <strong>{{ item.client_name }}</strong>
+              <small>{{ item.plan_name }}</small>
+            </span>
+            <span class="desk-chip" [class.is-urgent]="daysUntil(item.expires_at) <= 3">
+              @if (daysUntil(item.expires_at) < 0) {
+                {{ "desk.expired" | translate }}
+              } @else if (daysUntil(item.expires_at) === 0) {
+                {{ "desk.expires_today" | translate }}
+              } @else {
+                {{ "desk.expires_in_days" | translate: { count: daysUntil(item.expires_at) } }}
+              }
+            </span>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  @if (recentClients().length > 0) {
+    <section class="desk-section">
+      <h2 class="desk-section-title">{{ "desk.new_members" | translate }}</h2>
+
+      <ul class="desk-list">
+        @for (client of recentClients(); track client.id) {
+          <li class="desk-list-row">
+            <a class="desk-list-body desk-list-link" [routerLink]="['/owner/clients', client.id]">
+              <strong>{{ client.full_name }}</strong>
+              <small>{{ client.joined_at | date: "d MMM" }}</small>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+}

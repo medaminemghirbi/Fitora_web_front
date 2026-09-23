@@ -14,7 +14,6 @@ import { ClientsService } from "../../../core/services/clients.service";
 import { CoachesService } from "../../../core/services/coaches.service";
 import { CompanyService } from "../../../core/services/company.service";
 import { ConfirmService } from "../../../core/services/confirm.service";
-import { LocationsService } from "../../../core/services/locations.service";
 import { LocaleService } from "../../../core/services/locale.service";
 import { SessionsService } from "../../../core/services/sessions.service";
 import { ToastService } from "../../../core/services/toast.service";
@@ -29,6 +28,8 @@ type Internal = {
   onEventClick(arg: unknown): void;
   onDateClick(date: Date, el: HTMLElement): void;
   onEventDrop(arg: unknown): Promise<void>;
+  renderEvent(arg: unknown): { domNodes: HTMLElement[] };
+  showPreview(arg: unknown): void;
 };
 
 describe("CalendarComponent", () => {
@@ -41,7 +42,6 @@ describe("CalendarComponent", () => {
   let attendanceService: jasmine.SpyObj<AttendanceService>;
   let bookingsService: jasmine.SpyObj<BookingsService>;
   let clientsService: jasmine.SpyObj<ClientsService>;
-  let locationsService: jasmine.SpyObj<LocationsService>;
   let companyService: jasmine.SpyObj<CompanyService>;
   let confirmService: ConfirmService;
   let toast: ToastService;
@@ -58,7 +58,9 @@ describe("CalendarComponent", () => {
   } as never;
   const client: Client = {
     id: "cl1", first_name: "Amy", last_name: "Client", full_name: "Amy Client", email: null, phone: null,
-    active: true, login_enabled: false, email_verified: false, joined_at: "2026-01-01", current_contract: null,
+    active: true, login_enabled: false,
+    joined_at: "2026-01-01",
+    last_visit_at: null, current_contract: null,
   };
   const attBooking: AttendanceBooking = { booking_id: "b1", client_name: "Amy", status: "confirmed" } as never;
 
@@ -72,7 +74,6 @@ describe("CalendarComponent", () => {
     attendanceService = jasmine.createSpyObj<AttendanceService>("AttendanceService", ["forSession", "mark"]);
     bookingsService = jasmine.createSpyObj<BookingsService>("BookingsService", ["create"]);
     clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["list"]);
-    locationsService = jasmine.createSpyObj<LocationsService>("LocationsService", ["get"]);
     companyService = jasmine.createSpyObj<CompanyService>("CompanyService", ["get"]);
 
     // FullCalendar renders for real in ChromeHeadless and immediately invokes
@@ -81,9 +82,8 @@ describe("CalendarComponent", () => {
     calendarService.range.and.returnValue(of([]));
     coachesService.list.and.returnValue(of({ coaches: [] }));
     activitiesService.list.and.returnValue(of({ activities: [activity, individualActivity] }));
-    clientsService.list.and.returnValue(of({ clients: [client], meta: { page: 1, per_page: 100, total: 1, total_pages: 1 } }));
-    locationsService.get.and.returnValue(of({ location: { business_hours_start: 6, business_hours_end: 22 } as never }));
-    companyService.get.and.returnValue(of({ company: { working_days: [1, 2, 3, 4, 5] } as never }));
+    clientsService.list.and.returnValue(of({ clients: [client], meta: { page: 1, per_page: 100, total: 1, total_pages: 1 } , counts: {} }));
+    companyService.get.and.returnValue(of({ company: { business_hours_start: "06:00", business_hours_end: "22:00", working_days: [1, 2, 3, 4, 5] } as never }));
 
     TestBed.configureTestingModule({
       imports: [CalendarComponent, TranslateModule.forRoot()],
@@ -96,7 +96,6 @@ describe("CalendarComponent", () => {
         { provide: AttendanceService, useValue: attendanceService },
         { provide: BookingsService, useValue: bookingsService },
         { provide: ClientsService, useValue: clientsService },
-        { provide: LocationsService, useValue: locationsService },
         { provide: CompanyService, useValue: companyService },
       ],
     });
@@ -137,27 +136,31 @@ describe("CalendarComponent", () => {
     }).not.toThrow();
   });
 
-  it("applies the location's business hours once loaded", () => {
-    expect(component.calendarOptions().slotMinTime).toBe("6:00");
+  it("applies the gym's business hours once loaded", () => {
+    expect(component.calendarOptions().slotMinTime).toBe("06:00");
   });
 
-  it("keeps the default business hours when the location call fails", () => {
+  it("keeps the default business hours when the company call fails", () => {
     build("owner");
-    locationsService.get.and.returnValue(throwError(() => new Error("nope")));
     fixture = TestBed.createComponent(CalendarComponent);
     fixture.detectChanges();
-    expect((fixture.componentInstance as CalendarComponent).calendarOptions().slotMinTime).toBe("06:00:00");
+    expect((fixture.componentInstance as CalendarComponent).calendarOptions().slotMinTime).toBe("06:00");
   });
 
   it("shades business hours using the company's configured working days and opening hours", () => {
     const businessHours = component.calendarOptions().businessHours as { daysOfWeek: number[]; startTime: string; endTime: string };
     expect(businessHours.daysOfWeek).toEqual([1, 2, 3, 4, 5]);
-    expect(businessHours.startTime).toBe("6:00");
+    expect(businessHours.startTime).toBe("06:00");
     expect(businessHours.endTime).toBe("22:00");
   });
 
-  it("hides closed days from the grid entirely instead of just dimming them", () => {
-    expect(component.calendarOptions().hiddenDays).toEqual([0, 6]);
+  it("hides closed days from the grid, but never today", () => {
+    // A gym closed on Saturday still has a Saturday, and hiding it made
+    // "Aujourd'hui" look broken: the button fired, today had no column, and
+    // the view rolled on to the next open week.
+    const today = new Date().getDay();
+
+    expect(component.calendarOptions().hiddenDays).toEqual([ 0, 6 ].filter((day) => day !== today));
   });
 
   it("keeps every day as a working day (nothing hidden) when the company call fails", () => {
@@ -436,11 +439,72 @@ describe("CalendarComponent", () => {
       expect(fcEvent.classNames).not.toContain("fc-session-ended");
     });
 
-    it("toFullCalendarEvent's title omits the emoji prefix when absent and shows the coach when set", () => {
-      const noEmoji = { ...session, activity_emoji: null, coach_name: "Alex" } as unknown as Session;
+    it("toFullCalendarEvent's title is the activity, with the emoji prefix only when there is one", () => {
+      const noEmoji = { ...session, activity_emoji: null } as unknown as Session;
       const fcEvent = internal().toFullCalendarEvent({ id: "s1", title: "x", start: "a", end: "b", session: noEmoji }) as unknown as { title: string };
-      expect(fcEvent.title).toContain("Alex");
+      expect(fcEvent.title).toBe("Yoga");
       expect(fcEvent.title).not.toContain("🧘");
+    });
+
+    it("renderEvent lays the block out as time, activity, coach and occupancy", () => {
+      const full = { ...session, coach_name: "Alex", confirmed_count: 12, capacity: 12 } as unknown as Session;
+      const { domNodes } = internal().renderEvent({
+        event: { extendedProps: { session: full } },
+        timeText: "18:00",
+        view: { type: "timeGridWeek" },
+      }) as { domNodes: HTMLElement[] };
+
+      const block = domNodes[0];
+      expect(block.querySelector(".fx-ev-time")?.textContent).toBe("18:00");
+      expect(block.querySelector(".fx-ev-title")?.textContent).toContain("Yoga");
+      expect(block.querySelector(".fx-ev-coach")?.textContent).toBe("Alex");
+      const count = block.querySelector(".fx-ev-count");
+      expect(count?.textContent).toBe("12/12");
+      expect(count?.classList.contains("is-full")).toBe(true);
+    });
+
+    it("renderEvent drops the coach line in the month view, where there is no room", () => {
+      const withCoach = { ...session, coach_name: "Alex" } as unknown as Session;
+      const { domNodes } = internal().renderEvent({
+        event: { extendedProps: { session: withCoach } },
+        timeText: "18:00",
+        view: { type: "dayGridMonth" },
+      }) as { domNodes: HTMLElement[] };
+
+      expect(domNodes[0].classList.contains("fx-ev--compact")).toBe(true);
+      expect(domNodes[0].querySelector(".fx-ev-coach")).toBeNull();
+    });
+
+    it("renderEvent writes names as text, so a name can never be read as markup", () => {
+      const nasty = { ...session, activity_name: "<img src=x onerror=alert(1)>", activity_emoji: null } as unknown as Session;
+      const { domNodes } = internal().renderEvent({
+        event: { extendedProps: { session: nasty } },
+        timeText: "18:00",
+        view: { type: "timeGridWeek" },
+      }) as { domNodes: HTMLElement[] };
+
+      expect(domNodes[0].querySelector("img")).toBeNull();
+      expect(domNodes[0].querySelector(".fx-ev-title")?.textContent).toBe("<img src=x onerror=alert(1)>");
+    });
+
+    it("showPreview pins the hover card beside the event, and a click clears it", () => {
+      internal().showPreview({
+        event: { extendedProps: { session } },
+        el: { getBoundingClientRect: () => ({ top: 100, left: 200, right: 320 }) },
+      });
+
+      expect(component.hoverPreview()?.session).toBe(session);
+      expect(component.hoverPreview()?.top).toBe(100);
+
+      attendanceService.forSession.and.returnValue(of({ session, bookings: [] }));
+      internal().onEventClick({ event: { extendedProps: { session } } });
+      expect(component.hoverPreview()).toBeNull();
+    });
+
+    it("previewFill clamps the occupancy bar, and handles a zero capacity", () => {
+      expect(component.previewFill({ confirmed_count: 6, capacity: 12 } as Session)).toBe(50);
+      expect(component.previewFill({ confirmed_count: 20, capacity: 12 } as Session)).toBe(100);
+      expect(component.previewFill({ confirmed_count: 3, capacity: 0 } as Session)).toBe(0);
     });
 
     it("onEventClick opens the detail for the clicked session", () => {
@@ -514,6 +578,82 @@ describe("CalendarComponent", () => {
       await internal().onEventDrop({ event: { extendedProps: { session }, start: new Date() }, revert });
       expect(toast.toasts()[0].kind).toBe("error");
       expect(revert).toHaveBeenCalled();
+    });
+  });
+
+  describe("a session nobody is running", () => {
+    function render(session: Record<string, unknown>) {
+      const arg = {
+        event: { extendedProps: { session } },
+        view: { type: "timeGridWeek" },
+        timeText: "18:00",
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (component as any).renderEvent(arg).domNodes[0] as HTMLElement;
+    }
+
+    const base = {
+      id: "s1", coach_id: "c1", coach_name: "Leila", activity_name: "Pilates",
+      activity_emoji: null, confirmed_count: 4, capacity: 10, status: "scheduled",
+      starts_at: new Date(Date.now() + 86_400_000).toISOString(),
+      ends_at: new Date(Date.now() + 90_000_000).toISOString(),
+    };
+
+    it("names the coach when there is one", () => {
+      const el = render(base);
+
+      expect(el.classList).not.toContain("is-uncoached");
+      expect(el.textContent).toContain("Leila");
+    });
+
+    it("says so on the block, rather than leaving a gap where a name goes", () => {
+      const el = render({ ...base, coach_id: null, coach_name: null });
+
+      expect(el.classList).toContain("is-uncoached");
+      expect(el.querySelector(".fx-ev-coach.is-missing")).toBeTruthy();
+    });
+
+    it("puts a short session on one line — twenty pixels cannot hold four", () => {
+      const el = render({
+        ...base,
+        starts_at: new Date(Date.now() + 86_400_000).toISOString(),
+        // Twenty minutes, like an EMS slot.
+        ends_at: new Date(Date.now() + 86_400_000 + 20 * 60_000).toISOString(),
+      });
+
+      expect(el.classList).toContain("fx-ev--compact");
+      expect(el.querySelector(".fx-ev-line")).toBeTruthy();
+      expect(el.querySelector(".fx-ev-title")).toBeNull();
+      expect(el.querySelector(".fx-ev-count.is-hidden")).toBeTruthy();
+    });
+
+    it("keeps the full stack on a session with room for it", () => {
+      const el = render(base);
+
+      expect(el.classList).not.toContain("fx-ev--compact");
+      expect(el.querySelector(".fx-ev-title")).toBeTruthy();
+      expect(el.querySelector(".fx-ev-line")).toBeNull();
+    });
+
+    it("marks the session that is running right now", () => {
+      const el = render({
+        ...base,
+        starts_at: new Date(Date.now() - 60_000).toISOString(),
+        ends_at: new Date(Date.now() + 60_000).toISOString(),
+      });
+
+      expect(el.classList).toContain("is-now");
+    });
+
+    it("does not mark a cancelled session as running, even mid-slot", () => {
+      const el = render({
+        ...base,
+        status: "cancelled",
+        starts_at: new Date(Date.now() - 60_000).toISOString(),
+        ends_at: new Date(Date.now() + 60_000).toISOString(),
+      });
+
+      expect(el.classList).not.toContain("is-now");
     });
   });
 });

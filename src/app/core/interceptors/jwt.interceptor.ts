@@ -17,15 +17,22 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && auth.isAuthenticated()) {
         auth.logout();
-        router.navigate(["/auth/login"]);
+        router.navigate(["/connexion"]);
       }
 
-      // 402 + this specific error code is the trial-lock signal from
-      // Api::V1::BaseController#enforce_trial_lock! — redirect to a
-      // dedicated page instead of leaving a half-loaded, broken screen
-      // behind whatever request just got rejected.
-      if (error.status === 402 && error.error?.error === "trial_expired" && !router.url.startsWith("/trial-expired")) {
-        router.navigate(["/trial-expired"]);
+      // 402 is the lock signal from Api::V1::BaseController
+      // #enforce_trial_lock!, whatever closed the door — an expired trial, a
+      // month left unpaid, a suspension. Any of them lands on the same page,
+      // rather than leaving a half-loaded screen behind the rejected request.
+      if (error.status === 402 && !router.url.startsWith("/account-locked")) {
+        router.navigate(["/account-locked"]);
+      }
+
+      // An owner whose address is not confirmed yet reaches nothing past
+      // sign-up (BaseController#require_confirmed_email!). The guards
+      // normally keep them on the waiting screen; this catches a stale tab.
+      if (error.status === 403 && error.error?.error === "email_unverified" && !router.url.startsWith("/confirmation-email")) {
+        router.navigate(["/confirmation-email"]);
       }
 
       return throwError(() => error);

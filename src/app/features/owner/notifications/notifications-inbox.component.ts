@@ -4,7 +4,6 @@ import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { NotificationService } from "../../../core/services/notification.service";
 import { AppNotification } from "../../../core/models/notification.model";
 import { notificationText } from "../../../shared/utils/notification-text";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
 import { TimeAgoPipe } from "../../../shared/pipes/time-ago.pipe";
 import { NotificationArtComponent } from "../../../layout/notifications/notification-art.component";
@@ -12,7 +11,7 @@ import { NotificationArtComponent } from "../../../layout/notifications/notifica
 @Component({
   selector: "app-notifications-inbox",
   standalone: true,
-  imports: [RouterLink, TranslateModule, PageHeaderComponent, EmptyStateComponent, TimeAgoPipe, NotificationArtComponent],
+  imports: [RouterLink, TranslateModule, EmptyStateComponent, TimeAgoPipe, NotificationArtComponent],
   templateUrl: "./notifications-inbox.component.html",
   styleUrl: "./notifications-inbox.component.scss",
 })

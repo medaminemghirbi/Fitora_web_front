@@ -11,11 +11,21 @@ describe("StatusBadgeComponent", () => {
     component = fixture.componentInstance;
   });
 
+  // Four meanings, and one `info` for a state that asks nothing of anyone.
   const cases: [string, string][] = [
     ["confirmed", "success"],
+    ["active", "success"],
+    ["paid", "success"],
     ["completed", "info"],
+    ["refunded", "info"],
     ["pending", "warning"],
-    ["cancelled", "danger"],
+    ["expiring", "warning"],
+    // Running out is worth watching; having run out needs doing.
+    ["expired", "danger"],
+    ["unpaid", "danger"],
+    ["absent", "danger"],
+    // Cancelled asks nothing of anyone — it is no longer in play.
+    ["cancelled", "neutral"],
     ["inactive", "neutral"],
   ];
 

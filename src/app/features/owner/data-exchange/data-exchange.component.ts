@@ -6,7 +6,6 @@ import { downloadBlob } from "../../../core/services/download.util";
 import { extractErrorMessage } from "../../../core/services/error.util";
 import { parseCsv } from "../../../core/services/csv.util";
 import { ToastService } from "../../../core/services/toast.service";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 
 interface EntityCard {
@@ -19,7 +18,7 @@ interface EntityCard {
 const ENTITIES: EntityCard[] = [
   { entity: "clients", icon: "bi-people", titleKey: "nav.clients", descKey: "data_exchange.clients_desc" },
   { entity: "activities", icon: "bi-lightning-charge", titleKey: "activities.title", descKey: "data_exchange.activities_desc" },
-  { entity: "contracts", icon: "bi-file-earmark-text", titleKey: "nav.contracts", descKey: "data_exchange.contracts_desc" },
+  { entity: "contracts", icon: "bi-file-earmark-text", titleKey: "nav.subscriptions", descKey: "data_exchange.contracts_desc" },
   { entity: "payments", icon: "bi-credit-card", titleKey: "nav.payments", descKey: "data_exchange.payments_desc" },
 ];
 
@@ -30,7 +29,7 @@ const PREVIEW_ROW_LIMIT = 20;
 @Component({
   selector: "app-data-exchange",
   standalone: true,
-  imports: [FormsModule, TranslateModule, PageHeaderComponent, SpinnerComponent],
+  imports: [FormsModule, TranslateModule, SpinnerComponent],
   templateUrl: "./data-exchange.component.html",
   styleUrl: "./data-exchange.component.scss",
 })

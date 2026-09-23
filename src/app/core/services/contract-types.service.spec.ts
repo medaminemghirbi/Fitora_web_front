@@ -30,19 +30,19 @@ describe("ContractTypesService", () => {
     req.flush({ plan: {} });
   });
 
-  it("create separates activity_ids from the wrapped plan fields", () => {
-    service.create({ name: "Basic", activity_ids: ["a1", "a2"] }).subscribe();
+  it("create separates activity_prices from the wrapped plan fields", () => {
+    service.create({ name: "Basic", activity_prices: [{ activity_id: "a1", price: 50 }] }).subscribe();
     const req = httpMock.expectOne(`${API_BASE_URL}/contract_types`);
     expect(req.request.method).toBe("POST");
-    expect(req.request.body).toEqual({ contract_type: { name: "Basic" }, activity_ids: ["a1", "a2"] });
+    expect(req.request.body).toEqual({ contract_type: { name: "Basic" }, activity_prices: [{ activity_id: "a1", price: 50 }] });
     req.flush({ plan: {} });
   });
 
-  it("update separates activity_ids from the wrapped plan fields", () => {
-    service.update("ct1", { price: 100, activity_ids: ["a1"] }).subscribe();
+  it("update separates activity_prices from the wrapped plan fields", () => {
+    service.update("ct1", { name: "Basic", activity_prices: [{ activity_id: "a1", price: 70 }] }).subscribe();
     const req = httpMock.expectOne(`${API_BASE_URL}/contract_types/ct1`);
     expect(req.request.method).toBe("PATCH");
-    expect(req.request.body).toEqual({ contract_type: { price: 100 }, activity_ids: ["a1"] });
+    expect(req.request.body).toEqual({ contract_type: { name: "Basic" }, activity_prices: [{ activity_id: "a1", price: 70 }] });
     req.flush({ plan: {} });
   });
 });

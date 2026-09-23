@@ -16,7 +16,6 @@ import { AvatarComponent } from "../../../shared/components/avatar.component";
 import { EmptyStateComponent } from "../../../shared/components/empty-state.component";
 import { ModalComponent } from "../../../shared/components/modal.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { HighlightPipe } from "../../../shared/pipes/highlight.pipe";
 import { PaginationComponent } from "../../../shared/components/pagination.component";
 import { clientPageMeta, filterBySearch, pageSlice } from "../../../shared/utils/client-list";
@@ -24,6 +23,7 @@ import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 import { DrawerComponent } from "../../../shared/ui/drawer.component";
+import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
 
 type Tab = "all" | "coaches" | "backoffice";
 type CreateKind = "coach" | "backoffice";
@@ -49,6 +49,13 @@ export interface TeamMember {
   staffMemberId: string | null;
 }
 
+/**
+ * The capabilities worth naming on a row, most consequential first. The
+ * catalogue has eleven; listing all of them would be unreadable, and most
+ * never differ between two real roles.
+ */
+const PERMISSION_ORDER = ["revenue", "payments", "clients", "sessions", "bookings", "checkin"] as const;
+
 @Component({
   selector: "app-team",
   standalone: true,
@@ -60,13 +67,13 @@ export interface TeamMember {
     EmptyStateComponent,
     ModalComponent,
     StatusBadgeComponent,
-    PageHeaderComponent,
     HighlightPipe,
     PaginationComponent,
     SkeletonComponent,
     ErrorStateComponent,
     ActionMenuComponent,
     DrawerComponent,
+    StatusFilterComponent,
   ],
   templateUrl: "./team.component.html",
   styleUrl: "./team.component.scss",
@@ -125,6 +132,29 @@ export class TeamComponent implements OnInit {
     return [...fromCoaches, ...fromStaff].sort((a, b) => a.name.localeCompare(b.name));
   });
 
+  /**
+   * What a role lets someone do, in plain words.
+   *
+   * A row that says "Réception" tells you the role's name and nothing about
+   * its powers; finding those out meant opening the permissions editor. This
+   * names the three or four things that actually differ between roles, in
+   * the order they matter, and says "tout" rather than listing eleven.
+   */
+  permissionSummary(member: TeamMember): string {
+    if (!member.staff) return "";
+
+    const held = member.staff.permissions;
+    if (PERMISSION_ORDER.every((key) => held.includes(key))) {
+      return this.translate.instant("team.access_everything");
+    }
+
+    const named = PERMISSION_ORDER.filter((key) => held.includes(key)).map((key) =>
+      this.translate.instant("team.access_" + key)
+    );
+
+    return named.length > 0 ? named.join(" · ") : this.translate.instant("team.access_nothing");
+  }
+
   readonly search = signal("");
   readonly page = signal(1);
 
@@ -133,19 +163,77 @@ export class TeamComponent implements OnInit {
     let list = this.members();
     if (t === "coaches") list = list.filter((m) => m.coach);
     else if (t === "backoffice") list = list.filter((m) => m.staff);
+
+    const access = this.accessFilter();
+    if (access === "mobile") list = list.filter((m) => m.hasMobile);
+    else if (access === "web") list = list.filter((m) => m.hasWeb);
+    else if (access === "none") list = list.filter((m) => !m.hasMobile && !m.hasWeb);
+
     return filterBySearch(list, this.search(), (m) => [m.name, m.email, m.phone]);
   });
 
   readonly pagedMembers = computed(() => pageSlice(this.filtered(), this.page()));
   readonly meta = computed(() => clientPageMeta(this.filtered().length, this.page()));
 
-  readonly tabs = computed<{ id: Tab; label: string }[]>(() => {
-    const base: { id: Tab; label: string }[] = [
-      { id: "all", label: this.translate.instant("team.tab_all") },
-      { id: "coaches", label: this.practitionerRole() },
+  // Page reset on change is handled by the effect in the constructor.
+  applyTab(id: Tab): void {
+    this.tab.set(id);
+  }
+
+  hasFilters(): boolean {
+    return this.search() !== "" || this.tab() !== "all" || this.accessFilter() !== "";
+  }
+
+  resetFilters(): void {
+    this.search.set("");
+    this.tab.set("all");
+    this.accessFilter.set("");
+  }
+
+  applyAccessFilter(value: string): void {
+    this.accessFilter.set(value as "" | "mobile" | "web" | "none");
+    this.page.set(1);
+  }
+
+  readonly filterChips = computed(() => {
+    const chips: { label: string; clear: () => void }[] = [];
+    if (this.search()) chips.push({ label: `« ${this.search()} »`, clear: () => this.search.set("") });
+    const t = this.tab();
+    if (t !== "all") {
+      const opt = this.tabs().find((o) => o.id === t);
+      if (opt) chips.push({ label: opt.label, clear: () => this.applyTab("all") });
+    }
+    return chips;
+  });
+
+  readonly tabs = computed<{ id: Tab; label: string; color: string; count: number }[]>(() => {
+    const all = this.members();
+    const base: { id: Tab; label: string; color: string; count: number }[] = [
+      { id: "all", label: this.translate.instant("team.tab_all"), color: "var(--color-primary)", count: all.length },
+      { id: "coaches", label: this.practitionerRole(), color: "var(--color-info)", count: all.filter((m) => m.coach).length },
     ];
-    if (this.isOwner()) base.push({ id: "backoffice", label: this.translate.instant("team.tab_backoffice") });
+    if (this.isOwner()) {
+      base.push({
+        id: "backoffice",
+        label: this.translate.instant("team.tab_backoffice"),
+        color: "var(--color-success)",
+        count: all.filter((m) => m.staff).length,
+      });
+    }
     return base;
+  });
+
+  /** The access pills: who can sign in where. */
+  readonly accessFilter = signal<"" | "mobile" | "web" | "none">("");
+
+  readonly accessOptions = computed<StatusFilterOption[]>(() => {
+    const all = this.members();
+    return [
+      { value: "", label: this.translate.instant("common.all"), count: all.length, color: "var(--color-primary)" },
+      { value: "mobile", label: this.translate.instant("team.access_mobile"), count: all.filter((m) => m.hasMobile).length, color: "var(--color-info)" },
+      { value: "web", label: this.translate.instant("team.access_web"), count: all.filter((m) => m.hasWeb).length, color: "var(--color-success)" },
+      { value: "none", label: this.translate.instant("team.access_none"), count: all.filter((m) => !m.hasMobile && !m.hasWeb).length, color: "var(--color-muted)" },
+    ];
   });
 
   // ---- create (drawer) ----

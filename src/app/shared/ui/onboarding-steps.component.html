@@ -1,0 +1,50 @@
+@if (state; as s) {
+  <div class="obs" [class.obs-compact]="compact">
+    <p class="obs-progress">{{ "onboarding.progress" | translate: { done: s.done_count, total: s.total } }}</p>
+    <div class="obs-bar"><span [style.width.%]="progress()"></span></div>
+
+    <ol class="obs-list">
+      @for (step of s.steps; track step.key) {
+        <li class="obs-item" [class.obs-done]="step.state === 'done'" [class.obs-current]="step.state === 'current'" [class.obs-skipped]="step.state === 'skipped'">
+          <span class="obs-mark">
+            @if (step.state === "done") {
+              <i class="bi bi-check-lg"></i>
+            } @else if (step.state === "skipped") {
+              <i class="bi bi-dash-lg"></i>
+            } @else {
+              <i [class]="'bi ' + meta(step).icon"></i>
+            }
+          </span>
+
+          <span class="obs-text">
+            <span class="obs-label">{{ meta(step).labelKey | translate }}</span>
+            @if (!compact) {
+              <span class="obs-desc">{{ meta(step).descKey | translate }}</span>
+            }
+          </span>
+
+          <span class="obs-end">
+            @if (step.state === "done") {
+              <span class="obs-state obs-state-done">
+                @if (step.count) {
+                  {{ "onboarding.count" | translate: { count: step.count } }}
+                } @else {
+                  {{ "onboarding.done" | translate }}
+                }
+              </span>
+            } @else if (step.state === "skipped") {
+              <span class="obs-state">{{ "onboarding.skipped" | translate }}</span>
+            } @else {
+              <a [routerLink]="meta(step).route" class="obs-cta">
+                {{ "onboarding.action" | translate }} <i class="bi bi-arrow-right"></i>
+              </a>
+            }
+            @if (!compact && step.skippable && step.state !== "skipped") {
+              <button type="button" class="obs-skip" (click)="skip.emit(step.key)">{{ "onboarding.skip_step" | translate }}</button>
+            }
+          </span>
+        </li>
+      }
+    </ol>
+  </div>
+}

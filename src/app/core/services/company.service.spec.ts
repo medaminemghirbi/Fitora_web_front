@@ -64,18 +64,12 @@ describe("CompanyService", () => {
     req.flush({ company: {} });
   });
 
-  it("regenerateMobileKey POSTs with no body", () => {
-    service.regenerateMobileKey().subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/company/regenerate_mobile_key`);
-    expect(req.request.method).toBe("POST");
-    req.flush({ company: {} });
-  });
 
-  it("getMobileKeyQr GETs a blob", () => {
-    service.getMobileKeyQr().subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/company/mobile_key_qr`);
-    expect(req.request.method).toBe("GET");
-    expect(req.request.responseType).toBe("blob");
-    req.flush(new Blob());
+  it("publish POSTs whether the gym is listed", () => {
+    service.publish(true).subscribe();
+    const req = httpMock.expectOne(`${API_BASE_URL}/company/publish`);
+    expect(req.request.method).toBe("POST");
+    expect(req.request.body).toEqual({ listed: true });
+    req.flush({ company: {} });
   });
 });

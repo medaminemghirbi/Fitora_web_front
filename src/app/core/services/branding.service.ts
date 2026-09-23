@@ -25,8 +25,11 @@ export class BrandingService {
   // login, register stay Fitora-branded since no company is known yet).
   // Uses GET /api/v1/branding rather than CompanyService — that endpoint is
   // owner-only, but every staff role needs to see the company's branding.
-  load(): void {
-    this.http.get<{ branding: CompanyBranding }>(`${API_BASE_URL}/branding`).subscribe({
+  // A member belongs to several gyms, so theirs is named explicitly; a staff
+  // login has exactly one company and passes nothing.
+  load(companyId?: string): void {
+    const params = companyId ? { company_id: companyId } : undefined;
+    this.http.get<{ branding: CompanyBranding }>(`${API_BASE_URL}/branding`, { params }).subscribe({
       next: (res) => this.apply(res.branding),
       error: () => {
         // Keep default Fitora branding if this fails for any reason —

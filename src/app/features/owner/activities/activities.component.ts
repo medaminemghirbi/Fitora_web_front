@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, effect, signal } from "@angular/core";
+import { Component, OnInit, computed, effect, signal, Input } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
@@ -18,13 +18,17 @@ import { PaginationComponent } from "../../../shared/components/pagination.compo
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
+import { MoneyPipe } from "../../../shared/pipes/money.pipe";
+import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 
 @Component({
   selector: "app-activities",
   standalone: true,
   imports: [
+    PageHeaderComponent,
     FormsModule,
     ReactiveFormsModule,
+    MoneyPipe,
     TranslateModule,
     EmptyStateComponent,
     ModalComponent,
@@ -40,6 +44,13 @@ import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
   styleUrl: "./activities.component.scss",
 })
 export class ActivitiesComponent implements OnInit {
+  /**
+   * Rendered inside the catalogue page rather than on a route of its own.
+   * A price only exists where a plan crosses an activity, so the two belong
+   * on one screen; the shell supplies the heading when they are there.
+   */
+  @Input() embedded = false;
+
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly saving = signal(false);

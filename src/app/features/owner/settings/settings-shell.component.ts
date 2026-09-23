@@ -6,13 +6,11 @@ import { AuthService } from "../../../core/auth/auth.service";
 import { SettingsSectionsService } from "./settings-sections";
 import { SettingsCompanyComponent } from "./settings-company.component";
 import { SettingsBrandingComponent } from "./settings-branding.component";
-import { SettingsMobileComponent } from "./settings-mobile.component";
 import { SettingsPlanningComponent } from "./settings-planning.component";
-import { SettingsContractTypesComponent } from "./settings-contract-types.component";
+import { SettingsBookingComponent } from "./settings-booking.component";
 import { SettingsRolesComponent } from "./settings-roles.component";
+import { DataExchangeComponent } from "../data-exchange/data-exchange.component";
 import { SettingsAppearanceComponent } from "./settings-appearance.component";
-import { ActivitiesComponent } from "../activities/activities.component";
-import { SallesComponent } from "../salles/salles.component";
 
 // Direction A — persistent left rail + detail panel. The rail is flush to the
 // left edge and full height; `/owner/settings/:section` selects the section
@@ -25,13 +23,11 @@ import { SallesComponent } from "../salles/salles.component";
     TranslateModule,
     SettingsCompanyComponent,
     SettingsBrandingComponent,
-    SettingsMobileComponent,
     SettingsPlanningComponent,
-    SettingsContractTypesComponent,
+    SettingsBookingComponent,
     SettingsRolesComponent,
+    DataExchangeComponent,
     SettingsAppearanceComponent,
-    ActivitiesComponent,
-    SallesComponent,
   ],
   templateUrl: "./settings-shell.component.html",
   styleUrl: "./settings-shell.component.scss",
@@ -44,10 +40,12 @@ export class SettingsShellComponent {
 
   readonly navGroups = this.sectionsSvc.navGroups;
 
-  /** Flat section list with its group label attached, in rail order. */
+  /** Every section, in group order — the tab row reads this directly. */
   private readonly flat = computed(() =>
     this.navGroups().flatMap((g) => g.sections.map((s) => ({ ...s, groupLabelKey: g.labelKey })))
   );
+
+  readonly flatSections = this.flat;
 
   private readonly activePath = signal<string>("");
   readonly activeSection = computed(() => this.flat().find((s) => s.path === this.activePath()));

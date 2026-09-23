@@ -1,0 +1,23 @@
+<div class="locked-page">
+  <div class="locked-card">
+    <div class="locked-icon">🔒</div>
+
+    @if (isOwner()) {
+      <h1>{{ ("locked.title_" + copyKey()) | translate }}</h1>
+      <p class="locked-body">{{ ("locked.body_" + copyKey()) | translate }}</p>
+
+      <a routerLink="/owner/subscription" class="btn btn-primary">
+        {{ (trialOver() ? "locked.choose_plan" : "locked.see_invoices") | translate }}
+      </a>
+
+      <p class="locked-hint">{{ "locked.hint" | translate }}</p>
+    } @else {
+      <h1>{{ "locked.staff_title" | translate }}</h1>
+      <p class="locked-body">{{ "locked.staff_body" | translate }}</p>
+    }
+
+    <button type="button" class="btn btn-ghost locked-out" (click)="logout()">
+      <i class="bi bi-box-arrow-right"></i> {{ "auth.logout" | translate }}
+    </button>
+  </div>
+</div>

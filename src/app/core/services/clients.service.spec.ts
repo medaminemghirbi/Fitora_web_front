@@ -55,11 +55,4 @@ describe("ClientsService", () => {
     req.flush({ client: {} });
   });
 
-  it("setLogin PATCHes just the password", () => {
-    service.setLogin("c1", "newpw").subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/clients/c1`);
-    expect(req.request.method).toBe("PATCH");
-    expect(req.request.body).toEqual({ client: { password: "newpw" } });
-    req.flush({ client: {} });
-  });
 });

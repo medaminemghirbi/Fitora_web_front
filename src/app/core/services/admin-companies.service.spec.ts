@@ -47,10 +47,10 @@ describe("AdminCompaniesService", () => {
   });
 
   it("updateSubscription PATCHes the subscription payload", () => {
-    service.updateSubscription("co1", { status: "active" }).subscribe();
+    service.updateSubscription("co1", { active: false }).subscribe();
     const req = httpMock.expectOne(`${API_BASE_URL}/admin/companies/co1/subscription`);
     expect(req.request.method).toBe("PATCH");
-    expect(req.request.body).toEqual({ status: "active" });
+    expect(req.request.body).toEqual({ active: false });
     req.flush({ company: {} });
   });
 
@@ -62,11 +62,19 @@ describe("AdminCompaniesService", () => {
     req.flush({ company: {} });
   });
 
-  it("updateDebt PATCHes debt_cents", () => {
-    service.updateDebt("co1", 500).subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/admin/companies/co1/debt`);
-    expect(req.request.method).toBe("PATCH");
-    expect(req.request.body).toEqual({ debt_cents: 500 });
+  it("issues an invoice when the money arrives", () => {
+    service.issueInvoice("co1").subscribe();
+
+    const req = httpMock.expectOne(`${API_BASE_URL}/admin/companies/co1/invoices`);
+    expect(req.request.method).toBe("POST");
+    req.flush({ invoice: {}, company: {} });
+  });
+
+  it("voids one issued in error", () => {
+    service.voidInvoice("co1", "inv1").subscribe();
+
+    const req = httpMock.expectOne(`${API_BASE_URL}/admin/companies/co1/invoices/inv1`);
+    expect(req.request.method).toBe("DELETE");
     req.flush({ company: {} });
   });
 

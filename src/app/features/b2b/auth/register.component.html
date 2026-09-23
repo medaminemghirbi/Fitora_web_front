@@ -1,0 +1,88 @@
+<app-auth-pro-shell
+  [asideText]="'auth.have_account' | translate"
+  [asideLinkText]="'auth.sign_in' | translate"
+  asideLink="/connexion"
+>
+  <div authPanel class="auth-panel">
+    <p class="auth-panel-title">
+      {{ "auth.register_panel_title_1" | translate }}
+      <em>{{ "auth.register_panel_title_2" | translate }}</em>
+    </p>
+    <div class="auth-panel-card">
+      <span class="auth-panel-kicker">{{ "auth.register_panel_kicker" | translate }}</span>
+      <ul class="auth-panel-list">
+        @for (key of pitchPoints; track key) {
+          <li><i class="bi bi-check-lg" aria-hidden="true"></i>{{ key | translate }}</li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  <h1 class="auth-title">{{ "auth.register_title" | translate }}</h1>
+  <p class="auth-subtitle">{{ "auth.register_subtitle" | translate }}</p>
+
+  <!-- What is left after this screen. The account is one of three steps and
+       saying so up front is why someone finishes the other two. -->
+  <ol class="auth-steps" [attr.aria-label]="'auth.register_title' | translate">
+    <li aria-current="step"><span>1</span> {{ "auth.step_account" | translate }}</li>
+    <li><span>2</span> {{ "auth.step_email" | translate }}</li>
+    <li><span>3</span> {{ "auth.step_gym" | translate }}</li>
+  </ol>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (error()) {
+      <div class="alert alert-danger" role="alert">{{ error() }}</div>
+    }
+
+    <div class="row g-3 mb-3">
+      <div class="col-6">
+        <label for="reg-first">{{ "coaches.first_name" | translate }}</label>
+        <input id="reg-first" class="form-control" formControlName="first_name" autocomplete="given-name" />
+      </div>
+      <div class="col-6">
+        <label for="reg-last">{{ "coaches.last_name" | translate }}</label>
+        <input id="reg-last" class="form-control" formControlName="last_name" autocomplete="family-name" />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="reg-email">{{ "auth.email" | translate }}</label>
+      <input id="reg-email" type="email" class="form-control" formControlName="email" autocomplete="email" dir="ltr" />
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <div class="invalid-feedback d-block">{{ "auth.email_invalid" | translate }}</div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <label for="reg-password">{{ "auth.password" | translate }}</label>
+      <div class="auth-password">
+        <input
+          id="reg-password"
+          [type]="showPassword() ? 'text' : 'password'"
+          class="form-control"
+          formControlName="password"
+          autocomplete="new-password"
+          dir="ltr"
+          aria-describedby="reg-password-hint"
+        />
+        <button
+          type="button"
+          class="auth-eye"
+          (click)="showPassword.set(!showPassword())"
+          [attr.aria-label]="(showPassword() ? 'auth.hide_password' : 'auth.show_password') | translate"
+          [attr.aria-pressed]="showPassword()"
+        >
+          <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div id="reg-password-hint" class="form-text">{{ "auth.password_min" | translate }}</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 mt-2" [disabled]="loading()">
+      @if (loading()) { <app-spinner [size]="18" /> }
+      {{ "auth.register_cta" | translate }}
+    </button>
+
+    <p class="form-text text-center mt-3">{{ "auth.register_trial_note" | translate }}</p>
+  </form>
+</app-auth-pro-shell>

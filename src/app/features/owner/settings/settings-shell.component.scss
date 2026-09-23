@@ -1,210 +1,130 @@
-// Direction A — full-bleed settings shell: a persistent left rail flush to the
-// content edge + a single detail panel on the right.
+.settings {
+  max-width: 1040px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
 
-// Break out of `.app-content`'s padding so the rail sits flush to the edge.
-:host {
-  display: block;
-  margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) calc(var(--space-8) * -1);
+.settings-head {
+  h1 {
+    margin: 0;
+    font-size: 1.5625rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
 
-  @media (max-width: 767.98px) {
-    margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) calc(var(--space-7) * -1);
+  p {
+    margin: 0.1875rem 0 0;
+    font-size: 0.84375rem;
+    color: var(--color-text-secondary);
   }
 }
 
-.settings-a {
-  display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
-  align-items: stretch;
-  min-height: calc(100vh - var(--topbar-height));
+// ---------- The tab row ---------------------------------------------------
+.settings-tabs {
+  display: none;
+  align-items: center;
+  // Seven sections plus the way out no longer fit on one line at every
+  // width, so the row wraps instead of hiding the last of them behind a
+  // scrollbar.
+  flex-wrap: wrap;
+  gap: 2px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg);
 
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
+  @media (min-width: 992px) {
+    display: flex;
   }
 }
 
-// ---- Rail --------------------------------------------------------------------
-// The column carries the panel look (surface + border); the inner nav sticks.
-.settings-a-railcol {
+.settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+
+  i {
+    font-size: 0.9375rem;
+  }
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  // The lifted white pill is what says "this one" — it reads without
+  // relying on the colour alone.
+  &.is-active {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgb(29 21 51 / 7%);
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+}
+
+// Leaves the settings area, so it is marked rather than sitting in the row
+// as if it were another section.
+.settings-tab--out {
+  margin-inline-start: 0.375rem;
+  border-inline-start: 1px solid var(--color-border);
+  border-radius: 0 8px 8px 0;
+  padding-inline-start: 0.875rem;
+
+  // On a wrapped line the divider would hang off the left edge with
+  // nothing before it, so it only marks the break when there is one.
+  @media (max-width: 1199px) {
+    margin-inline-start: 0;
+    border-inline-start: 0;
+    border-radius: 8px;
+    padding-inline-start: 0.75rem;
+  }
+
+  i:last-child {
+    font-size: 0.6875rem;
+    opacity: 0.6;
+  }
+}
+
+.settings-picker {
+  width: 100%;
+  height: 42px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
   background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text);
 
-  @media (max-width: 900px) {
+  @media (min-width: 992px) {
     display: none;
   }
 }
 
-.settings-a-rail {
-  position: sticky;
-  top: var(--topbar-height);
-  max-height: calc(100vh - var(--topbar-height));
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-5) var(--space-3) var(--space-4) var(--space-5);
-}
-
-.settings-a-rail-head {
-  padding: 0 var(--space-2) var(--space-4);
+// ---------- The section itself -------------------------------------------
+.settings-body-head {
+  margin-bottom: var(--space-3);
 
   h2 {
-    font-family: var(--font-display);
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
     margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
   }
 
   p {
-    font-size: var(--font-size-xs);
-    color: var(--color-muted);
-    margin: 0.2rem 0 0;
-  }
-}
-
-.settings-a-rail-scroll {
-  flex: 1;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  margin: 0 calc(var(--space-3) * -1) 0 calc(var(--space-2) * -1);
-  padding: var(--space-3) var(--space-3) var(--space-2) var(--space-2);
-  border-top: 1px solid var(--color-border);
-}
-
-.settings-a-grp {
-  display: block;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-  padding: var(--space-3) var(--space-2) var(--space-1);
-
-  &:first-child {
-    padding-top: var(--space-1);
-  }
-}
-
-.settings-a-item {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.45rem 0.6rem 0.45rem 0.45rem;
-  border-left: 3px solid transparent;
-  border-radius: 8px;
-  font-size: 0.8594rem;
-  font-weight: 500;
-  color: var(--color-text);
-  text-decoration: none;
-  transition: background var(--transition-fast), color var(--transition-fast);
-
-  i.bi {
-    font-size: 0.95rem;
-    color: var(--color-muted);
-    flex: none;
-  }
-
-  span {
-    flex: 1;
-    min-width: 0;
-  }
-
-  &:hover {
-    background: var(--color-surface-hover);
-    color: var(--color-text);
-    text-decoration: none;
-  }
-
-  &.is-active {
-    background: var(--color-primary-soft);
-    border-left-color: var(--color-primary);
-    color: var(--color-primary);
-    font-weight: 600;
-
-    i.bi {
-      color: var(--color-primary);
-    }
-  }
-
-  &--out .settings-a-item-ext {
-    flex: none;
-    font-size: 0.75rem;
-    color: var(--color-muted);
-  }
-}
-
-// ---- Detail panel -----------------------------------------------------------
-.settings-a-panel {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.settings-a-panel-head {
-  position: sticky;
-  top: var(--topbar-height);
-  z-index: 4;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
-  padding: var(--space-4) var(--space-6);
-
-  .settings-a-panel-eyebrow {
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--color-muted);
-  }
-
-  h1 {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0.25rem 0 0.15rem;
-  }
-
-  p {
-    font-size: var(--font-size-sm);
+    margin: 0.1875rem 0 0;
+    font-size: 0.8125rem;
     color: var(--color-text-secondary);
-    margin: 0;
-  }
-
-  @media (max-width: 767.98px) {
-    position: static;
-    padding: var(--space-4);
-  }
-}
-
-.settings-a-panel-body {
-  flex: 1;
-  padding: var(--space-6);
-
-  // Section components ship their own trailing `.app-card` margin; the panel
-  // padding owns the bottom gap.
-  ::ng-deep > *:last-child > .app-card:last-child,
-  ::ng-deep > .app-card:last-child {
-    margin-bottom: 0;
-  }
-
-  @media (max-width: 767.98px) {
-    padding: var(--space-4);
-  }
-}
-
-// ---- Mobile section picker (replaces the rail under 900px) ------------------
-.settings-a-picker {
-  display: none;
-  width: 100%;
-  font: inherit;
-  font-weight: 600;
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 0.6rem 0.75rem;
-
-  @media (max-width: 900px) {
-    display: block;
-    margin: var(--space-4) var(--space-4) 0;
-    width: calc(100% - var(--space-4) * 2);
   }
 }

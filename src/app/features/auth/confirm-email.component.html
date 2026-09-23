@@ -1,0 +1,109 @@
+<app-auth-pro-shell tone="soft">
+  <div authPanel class="auth-panel">
+    <span class="auth-panel-icon" aria-hidden="true"><i class="bi bi-envelope-paper-heart"></i></span>
+    <p class="auth-panel-title">
+      {{ "auth.confirm_panel_title_1" | translate }}
+      <em>{{ "auth.confirm_panel_title_2" | translate }}</em>
+    </p>
+    <p class="auth-panel-lead">{{ "auth.confirm_panel_lead" | translate }}</p>
+  </div>
+
+  <!-- Where this screen sits: the account exists, the address is next, the
+       gym after that. -->
+  <ol class="auth-steps" [attr.aria-label]="'auth.register_title' | translate">
+    <li class="is-done"><span><i class="bi bi-check-lg" aria-hidden="true"></i></span> {{ "auth.step_account" | translate }}</li>
+    <li [class.is-done]="phase() === 'confirmed'" [attr.aria-current]="phase() === 'waiting' ? 'step' : null">
+      <span>
+        @if (phase() === "confirmed") { <i class="bi bi-check-lg" aria-hidden="true"></i> } @else { 2 }
+      </span>
+      {{ "auth.step_email" | translate }}
+    </li>
+    <li [attr.aria-current]="phase() === 'confirmed' ? 'step' : null"><span>3</span> {{ "auth.step_gym" | translate }}</li>
+  </ol>
+
+  <app-mail-stage [state]="stage()" />
+
+  @if (phase() === "waiting") {
+    <h1 class="auth-title">{{ "auth.confirm_title" | translate }}</h1>
+    <p class="auth-subtitle">
+      {{ "auth.confirm_body_1" | translate }}
+      <b dir="ltr">{{ email() }}</b>.
+      {{ "auth.confirm_body_2" | translate }}
+    </p>
+
+    <p class="ce-live" role="status">
+      <span class="ce-live-dot" aria-hidden="true"></span>
+      {{ "auth.confirm_waiting" | translate }}
+    </p>
+
+    <div class="ce-actions">
+      @if (mailbox(); as box) {
+        <a class="btn btn-primary w-100" [href]="box.url" target="_blank" rel="noopener">
+          <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+          {{ "auth.confirm_open_mailbox" | translate: { name: box.name } }}
+        </a>
+      }
+      @if (devInbox) {
+        <a class="auth-btn-outline ce-dev" [href]="devInbox" target="_blank" rel="noopener">
+          <i class="bi bi-bug" aria-hidden="true"></i>
+          {{ "auth.confirm_open_dev_inbox" | translate }}
+        </a>
+      }
+
+      <button
+        type="button"
+        [class]="mailbox() || devInbox ? 'auth-btn-outline' : 'btn btn-primary w-100'"
+        [disabled]="resendIn() > 0 || resending()"
+        (click)="resend()"
+      >
+        @if (resending()) {
+          <app-spinner [size]="18" />
+        } @else {
+          <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+        }
+        @if (resendIn() > 0) {
+          {{ "auth.confirm_resend_in" | translate: { seconds: resendIn() } }}
+        } @else {
+          {{ "auth.confirm_resend" | translate }}
+        }
+      </button>
+    </div>
+
+    @if (notice() === "sent") {
+      <p class="ce-notice is-ok" role="status">
+        <i class="bi bi-send-check" aria-hidden="true"></i> {{ "auth.confirm_resent" | translate }}
+      </p>
+    } @else if (notice() === "error") {
+      <p class="ce-notice is-error" role="alert">{{ "common.error_generic" | translate }}</p>
+    }
+
+    <details class="ce-help">
+      <summary>{{ "auth.confirm_help_title" | translate }}</summary>
+      <ul>
+        <li>{{ "auth.confirm_help_spam" | translate }}</li>
+        <li>{{ "auth.confirm_help_other_device" | translate }}</li>
+        <li>{{ "auth.confirm_help_expiry" | translate }}</li>
+      </ul>
+    </details>
+
+    <p class="ce-foot">
+      {{ "auth.confirm_wrong_address" | translate }}
+      <button type="button" class="ce-link" (click)="restart()">{{ "auth.confirm_restart" | translate }}</button>
+      ·
+      <button type="button" class="ce-link" (click)="logout()">{{ "auth.logout" | translate }}</button>
+    </p>
+  } @else {
+    <h1 class="auth-title">{{ "auth.confirm_done_title" | translate }}</h1>
+    <p class="auth-subtitle" role="status">{{ "auth.confirm_done_body" | translate }}</p>
+
+    <!-- What happens next, ticking over while the screen waits to hand
+         over to naming the gym; the button is there for whoever does not
+         want to wait. -->
+    <app-setup-progress [duration]="continueDelay" />
+
+    <button type="button" class="btn btn-primary w-100" (click)="continue()">
+      {{ "auth.confirm_done_cta" | translate }}
+      <i class="bi bi-arrow-right" aria-hidden="true"></i>
+    </button>
+  }
+</app-auth-pro-shell>

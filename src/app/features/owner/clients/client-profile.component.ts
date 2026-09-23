@@ -13,7 +13,7 @@ import { Session } from "../../../core/models/session.model";
 import { ActivitiesService } from "../../../core/services/activities.service";
 import { AttendanceService } from "../../../core/services/attendance.service";
 import { BookingsService } from "../../../core/services/bookings.service";
-import { ClientsService, ClientPayload } from "../../../core/services/clients.service";
+import { ClientsService } from "../../../core/services/clients.service";
 import { downloadBlob } from "../../../core/services/download.util";
 import { ContractTypesService } from "../../../core/services/contract-types.service";
 import { ContractsService } from "../../../core/services/contracts.service";
@@ -33,7 +33,40 @@ import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 
-type Tab = "overview" | "contracts" | "bookings" | "attendance" | "payments" | "notes";
+// Four tabs, not six. "Bookings" and "Attendance" were the same list read
+// twice — what was booked, and whether they turned up — and a note about
+// someone belongs with the rest of what you read about them, on the
+// overview.
+/** What happened, and what kind of thing it was. */
+interface TimelineEntry {
+  id: string;
+  /** ISO. Sessions are dated by when they ran, payments by when money arrived. */
+  at: string;
+  stream: "sessions" | "payments";
+  kind: "attended" | "missed" | "cancelled" | "booked" | "paid" | "refunded";
+  title: string;
+  detail: string | null;
+}
+
+/**
+ * A booking's status IS its attendance: `completed` means they came,
+ * `no_show` means they did not. There is no separate record to merge in.
+ */
+const TIMELINE_ICONS: Record<TimelineEntry["kind"], string> = {
+  attended: "bi-check2",
+  missed: "bi-x",
+  cancelled: "bi-slash-circle",
+  booked: "bi-calendar-check",
+  paid: "bi-cash-coin",
+  refunded: "bi-arrow-counterclockwise",
+};
+
+const BOOKING_KINDS: Record<string, TimelineEntry["kind"]> = {
+  completed: "attended",
+  no_show: "missed",
+  cancelled: "cancelled",
+  confirmed: "booked",
+};
 
 function toDateInputValue(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -71,9 +104,58 @@ export class ClientProfileComponent implements OnInit {
   readonly contracts = signal<Contract[]>([]);
   readonly bookings = signal<Booking[]>([]);
   readonly payments = signal<Payment[]>([]);
-  readonly activeTab = signal<Tab>("overview");
   readonly contractProgress = signal<{ percent: number; tone: "success" | "warning" | "danger" } | null>(null);
-  readonly tabs: Tab[] = ["overview", "contracts", "bookings", "attendance", "payments", "notes"];
+  /**
+   * Bookings, payments and attendance were three tabs. They are one story —
+   * whether this person still comes, and whether they have paid for it — so
+   * they are one stream, newest first.
+   *
+   * `filter` narrows it without splitting it back up.
+   */
+  readonly filter = signal<"all" | "sessions" | "payments">("all");
+
+  /** Two letters for the banner's disc — the avatar component is a circle
+   *  of its own and would sit oddly inside a coloured block. */
+  initials(name: string): string {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("");
+  }
+
+  /** The mark beside a timeline entry — one icon per kind of event. */
+  timelineIcon(kind: TimelineEntry["kind"]): string {
+    return TIMELINE_ICONS[kind];
+  }
+
+  readonly timeline = computed<TimelineEntry[]>(() => {
+    const sessions: TimelineEntry[] = this.bookings().map((booking) => ({
+      id: `b-${booking.id}`,
+      at: booking.session.starts_at,
+      stream: "sessions" as const,
+      kind: BOOKING_KINDS[booking.status] ?? "booked",
+      title: `${booking.session.activity_emoji ? booking.session.activity_emoji + " " : ""}${booking.session.activity_name}`,
+      detail: booking.covered_by?.name ?? null,
+    }));
+
+    const money: TimelineEntry[] = this.payments().map((payment) => ({
+      id: `p-${payment.id}`,
+      // A recorded payment is dated by when the money arrived, not by when
+      // someone typed it in.
+      at: payment.paid_at ?? payment.created_at,
+      stream: "payments" as const,
+      kind: payment.status === "refunded" ? "refunded" : "paid",
+      title: `${payment.amount} ${payment.currency}`,
+      detail: payment.product_name,
+    }));
+
+    const all = [...sessions, ...money];
+    const chosen = this.filter() === "all" ? all : all.filter((entry) => entry.stream === this.filter());
+
+    return chosen.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  });
 
   readonly contractTypes = signal<ContractType[]>([]);
   readonly activities = signal<Activity[]>([]);
@@ -100,13 +182,13 @@ export class ClientProfileComponent implements OnInit {
   readonly editingContract = signal<Contract | null>(null);
   readonly bookingModalOpen = signal(false);
   readonly paymentModalOpen = signal(false);
-  readonly notesSaving = signal(false);
   readonly formError = signal<string | null>(null);
 
   // Fitora only takes cash payments in the gym — there is no method selector.
   // No part payments: "Encaisser maintenant" records the full price.
   readonly contractForm = this.fb.nonNullable.group({
     contract_type_id: [null as string | null, Validators.required],
+    activity_id: [null as string | null, Validators.required],
     starts_on: [toDateInputValue(new Date()), Validators.required],
     discount: [0],
     collect_payment: [false],
@@ -130,12 +212,17 @@ export class ClientProfileComponent implements OnInit {
     notes: [""],
   });
 
-  readonly notesForm = this.fb.nonNullable.group({ notes: [""] });
-
+  // ---- the member's own app -----------------------------------------------
+  // Off unless the gym switches it on, from here. Setting a password emails
+  // the member a confirmation link; it changes nothing else about them.
   readonly loginModalOpen = signal(false);
   readonly loginSaving = signal(false);
   readonly loginFormError = signal<string | null>(null);
-  readonly loginForm = this.fb.nonNullable.group({ password: ["", [Validators.required, Validators.minLength(8)]] });
+  readonly loginForm = this.fb.nonNullable.group({
+    password: ["", [Validators.required, Validators.minLength(8)]],
+  });
+
+
 
   private clientId!: string;
 
@@ -174,7 +261,6 @@ export class ClientProfileComponent implements OnInit {
         this.contracts.set(res.contracts);
         this.bookings.set(res.bookings);
         this.payments.set(res.payments);
-        this.notesForm.setValue({ notes: res.client.notes || "" });
         this.contractProgress.set(res.client.current_contract ? this.computeContractProgress(res.client.current_contract) : null);
         this.loading.set(false);
       },
@@ -185,12 +271,38 @@ export class ClientProfileComponent implements OnInit {
     });
   }
 
-  setTab(tab: Tab): void {
-    this.activeTab.set(tab);
+
+  openLoginModal(): void {
+    this.loginForm.reset();
+    this.loginFormError.set(null);
+    this.loginModalOpen.set(true);
   }
 
-  bookingsWithAttendance(): Booking[] {
-    return this.bookings().filter((b) => b.status === "confirmed" || b.status === "completed" || b.status === "no_show");
+  closeLoginModal(): void {
+    this.loginModalOpen.set(false);
+  }
+
+  submitLogin(): void {
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+
+    this.loginSaving.set(true);
+    this.loginFormError.set(null);
+
+    this.clientsService.setLogin(this.clientId, this.loginForm.getRawValue().password).subscribe({
+      next: () => {
+        this.loginSaving.set(false);
+        this.loginModalOpen.set(false);
+        this.toast.success(this.translate.instant("clients.login_set"));
+        this.load();
+      },
+      error: (err) => {
+        this.loginSaving.set(false);
+        this.loginFormError.set(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
   }
 
   balanceTone(balance: number): "success" | "danger" {
@@ -218,11 +330,23 @@ export class ClientProfileComponent implements OnInit {
     return this.contractTypes().find((p) => p.id === id) ?? null;
   }
 
-  // Price after the discount typed in the create form, clamped at 0.
-  contractFormTotal(): number {
+  // What the chosen activity costs under the chosen plan. null means the gym
+  // doesn't sell that plan for that activity — the backend refuses it too, so
+  // the form blocks instead of inventing a price.
+  selectedActivityPrice(): number | null {
     const plan = this.selectedPlan();
-    if (!plan) return 0;
-    return Math.max(0, Number(plan.price) - (this.contractForm.controls.discount.value || 0));
+    const activityId = this.contractForm.controls.activity_id.value;
+    if (!plan || !activityId) return null;
+    const row = plan.activity_prices.find((p) => p.activity_id === activityId);
+    return row ? Number(row.price) : null;
+  }
+
+  // Price after the discount typed in the create form, clamped at 0. Indicative
+  // only: the API re-reads the tariff and decides what is actually billed.
+  contractFormTotal(): number {
+    const price = this.selectedActivityPrice();
+    if (price === null) return 0;
+    return Math.max(0, price - (this.contractForm.controls.discount.value || 0));
   }
 
   openContractModal(): void {
@@ -241,7 +365,7 @@ export class ClientProfileComponent implements OnInit {
       return;
     }
 
-    const { contract_type_id, starts_on, discount, collect_payment } = this.contractForm.getRawValue();
+    const { contract_type_id, activity_id, starts_on, discount, collect_payment } = this.contractForm.getRawValue();
     this.saving.set(true);
     this.formError.set(null);
 
@@ -249,6 +373,7 @@ export class ClientProfileComponent implements OnInit {
       .create({
         client_id: this.clientId,
         contract_type_id: contract_type_id!,
+        activity_id: activity_id!,
         starts_on,
         discount: discount || 0,
         collect_payment: collect_payment || undefined,
@@ -341,6 +466,11 @@ export class ClientProfileComponent implements OnInit {
       next: (blob) => downloadBlob(blob, `recu-${contract.id}.pdf`),
       error: () => this.toast.error(this.translate.instant("common.error_generic")),
     });
+  }
+
+  /** How far this contract is sold once its queued renewals are counted. */
+  renewedThrough(contract: Contract): string | null {
+    return contract.upcoming_periods.at(-1)?.expires_at ?? null;
   }
 
   async renewContract(contract: Contract): Promise<void> {
@@ -523,54 +653,4 @@ export class ClientProfileComponent implements OnInit {
     });
   }
 
-  // === Notes ===
-  saveNotes(): void {
-    this.notesSaving.set(true);
-    const payload: ClientPayload = { notes: this.notesForm.getRawValue().notes };
-
-    this.clientsService.update(this.clientId, payload).subscribe({
-      next: () => {
-        this.notesSaving.set(false);
-        this.toast.success(this.translate.instant("common.save"));
-      },
-      error: (err) => {
-        this.notesSaving.set(false);
-        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
-      },
-    });
-  }
-
-  // === Mobile login ===
-  openLoginModal(): void {
-    this.loginForm.reset();
-    this.loginFormError.set(null);
-    this.loginModalOpen.set(true);
-  }
-
-  closeLoginModal(): void {
-    this.loginModalOpen.set(false);
-  }
-
-  submitLogin(): void {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
-    }
-
-    this.loginSaving.set(true);
-    this.loginFormError.set(null);
-
-    this.clientsService.setLogin(this.clientId, this.loginForm.getRawValue().password).subscribe({
-      next: () => {
-        this.loginSaving.set(false);
-        this.loginModalOpen.set(false);
-        this.toast.success(this.translate.instant("clients.login_set"));
-        this.load();
-      },
-      error: (err) => {
-        this.loginSaving.set(false);
-        this.loginFormError.set(extractErrorMessage(err, this.translate.instant("common.error_generic")));
-      },
-    });
-  }
 }

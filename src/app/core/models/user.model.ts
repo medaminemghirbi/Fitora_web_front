@@ -32,8 +32,19 @@ export interface User {
   role: UserRole;
   locale: string;
   email_verified: boolean;
+  /**
+   * Seconds before the confirmation link may be sent again (0 = now).
+   * Optional so fixtures elsewhere need not carry it.
+   */
+  email_verification_resend_in?: number;
   company_id: string | null;
-  staff_role: StaffRole | null;
+  // The key of the role this login is assigned to: "receptionist", "coach",
+  // or a custom role's own slug. For "does this person coach?", read
+  // is_coach — an owner can put a coach on a custom role.
+  staff_role: StaffRole | string | null;
+  // Whether this login has a coach record of its own. The coach shell and
+  // the post-login redirect key off this, not off the role's name.
+  is_coach: boolean;
   // Present (non-null) for an owner — every company they run, one flagged
   // active; null for staff/admin, never []. Optional (not just nullable)
   // so existing test fixtures across the app don't all need updating —

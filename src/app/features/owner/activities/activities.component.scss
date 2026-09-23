@@ -28,3 +28,114 @@
     border-color: var(--color-primary);
   }
 }
+
+// ---------------------------------------------------------------------------
+// The activity list
+// ---------------------------------------------------------------------------
+// Activities sit in the catalogue's narrow column, beside the plans. A table
+// could not survive there: seven columns in 24rem wrapped every cell onto
+// three lines and hid the tariffs behind a horizontal scrollbar. Each activity
+// is a row that stacks its own detail instead.
+
+.act-toolbar {
+  margin-bottom: 0; // the surrounding .fx-stack already spaces it
+
+  .fx-input-icon { flex: 1 1 8rem; min-width: 0; }
+  .btn { flex: 0 0 auto; }
+}
+
+.act-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.act-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child { border-bottom: 0; }
+  &:hover { background: var(--color-surface-hover); }
+  &.is-off { opacity: 0.65; }
+}
+
+.act-emoji {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  line-height: 1;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.act-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.act-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--font-size-base);
+}
+
+// Format, length and capacity are one sentence about the activity, not three
+// columns — so they read as one line, separated rather than headed.
+.act-meta {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0.15rem 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+
+  span + span::before {
+    content: "·";
+    margin: 0 0.4rem;
+    color: var(--color-muted);
+  }
+}
+
+.act-prices {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: 0.15rem 0;
+    font-size: var(--font-size-sm);
+  }
+}
+
+.act-price-name { color: var(--color-text-secondary); }
+
+.act-price-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.act-noprice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: var(--space-2) 0 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}

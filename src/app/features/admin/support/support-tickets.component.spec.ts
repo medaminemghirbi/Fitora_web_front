@@ -17,6 +17,8 @@ describe("AdminSupportTicketsComponent", () => {
     subject: "Help",
     message: "Something's broken",
     status: "open",
+    kind: "general",
+    contact_phone: null,
     created_at: "2026-01-01T00:00:00Z",
     attachments: [],
     company: { id: "co1", name: "Acme Gym" },
@@ -53,6 +55,24 @@ describe("AdminSupportTicketsComponent", () => {
     component.setFilter("all");
     expect(component.filter()).toBe("all");
     expect(service.list).toHaveBeenCalledWith(undefined);
+  });
+
+  // Fitora calls back to set a requested plan up: the number is the first
+  // thing to act on, one click from dialling.
+  it("marks a plan request and puts its number one click from dialling", () => {
+    service.list.and.returnValue(
+      of({
+        support_tickets: [{ ...ticket, kind: "upgrade", contact_phone: "+216 22 123 456" }],
+        meta: { page: 1, per_page: 20, total: 1, total_pages: 1 },
+      })
+    );
+    component.load();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector(".ticket-kind")).not.toBeNull();
+    const phone: HTMLAnchorElement = fixture.nativeElement.querySelector("a.ticket-phone");
+    expect(phone.getAttribute("href")).toBe("tel:+21622123456");
+    expect(phone.textContent).toContain("+216 22 123 456");
   });
 
   it("open()/close() track the selected ticket", () => {

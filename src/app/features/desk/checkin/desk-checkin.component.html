@@ -1,0 +1,47 @@
+@if (loading()) {
+  <app-skeleton variant="table" [rows]="5" [cols]="2" />
+} @else if (error()) {
+  <app-error-state [body]="error()!" (retry)="load()" />
+} @else if (sessions().length === 0) {
+  <app-empty-state
+    icon="bi-calendar-x"
+    [title]="'desk.checkin.no_sessions_title' | translate"
+    [body]="'desk.checkin.no_sessions_body' | translate"
+  />
+} @else {
+  <!-- Nested rather than another @else if arm: `as` binds only on a primary
+       @if, and the roster needs the session it is for. -->
+  @if (selected(); as session) {
+    <div class="desk-checkin-head">
+      <button type="button" class="btn btn-ghost" (click)="back()">
+        <i class="bi bi-arrow-left"></i> {{ "desk.checkin.other_session" | translate }}
+      </button>
+
+      <div class="desk-checkin-session">
+        <strong>{{ session.activity_name }}</strong>
+        <span>{{ session.starts_at | date: "HH:mm" }} – {{ session.ends_at | date: "HH:mm" }}</span>
+      </div>
+    </div>
+
+    <app-checkin-panel [sessionId]="session.id" />
+  } @else {
+    <h2 class="desk-section-title">{{ "desk.checkin.pick_session" | translate }}</h2>
+
+    <ul class="desk-session-picker">
+      @for (session of sessions(); track session.id) {
+        <li>
+          <button type="button" class="desk-session-option" (click)="select(session)">
+            <span class="desk-session-time">{{ session.starts_at | date: "HH:mm" }}</span>
+            <span class="desk-session-body">
+              <strong>{{ session.activity_name }}</strong>
+              @if (session.coach_name) {
+                <small>{{ session.coach_name }}</small>
+              }
+            </span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+}

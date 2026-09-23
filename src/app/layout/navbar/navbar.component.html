@@ -1,10 +1,14 @@
-<header class="app-navbar app-navbar-menu">
+<!-- app-navbar-menu carries no styling: it is the hook onDocClick() reads
+     with closest(), to tell a click inside the menu from one outside it.
+     Removing it as an unstyled class made every click count as outside, so a
+     dropdown closed in the same tick it opened. -->
+<header class="app-navbar app-navbar-menu" [class.is-hidden]="hidden()">
   <div class="app-navbar-inner">
     <a [routerLink]="brandHome" class="app-navbar-brand" [class.d-lg-none]="!showBrand">
       <span class="app-navbar-mark">
         @if (brandLogoUrl) { <img [src]="brandLogoUrl" alt="" /> } @else { <i class="bi bi-lightning-charge-fill"></i> }
       </span>
-      <span class="app-navbar-brand-text">{{ brandName }}@if (brandSuffix) { <small>{{ brandSuffix }}</small> }</span>
+      <span class="d-none d-sm-inline">{{ brandName }}@if (brandSuffix) { <small>{{ brandSuffix }}</small> }</span>
     </a>
 
     <button type="button" class="app-navbar-burger d-lg-none" (click)="mobileOpen.set(!mobileOpen())"
@@ -20,13 +24,21 @@
     <nav class="app-navbar-nav d-none d-lg-flex" [attr.aria-label]="'nav.primary' | translate">
       @if (dashboardItem) {
         <a [routerLink]="dashboardItem.path" routerLinkActive="is-active" class="app-navbar-item">
+          <i class="bi app-navbar-item-icon" [class]="dashboardItem.icon"></i>
           {{ dashboardItem.labelKey | translate }}
         </a>
       }
       @for (group of groups; track group.id) {
+        @if (soloItem(group); as solo) {
+          <a [routerLink]="solo.path" routerLinkActive="is-active" class="app-navbar-item">
+            <i class="bi app-navbar-item-icon" [class]="solo.icon"></i>
+            {{ solo.labelKey | translate }}
+          </a>
+        } @else {
         <div class="app-navbar-group">
           <button type="button" class="app-navbar-item" [class.is-active]="activeGroupId() === group.id || openGroup() === group.id"
                   (click)="toggleGroup(group.id)" [attr.aria-expanded]="openGroup() === group.id">
+            <i class="bi app-navbar-item-icon" [class]="group.icon"></i>
             {{ group.labelKey | translate }}
             <i class="bi bi-chevron-down"></i>
           </button>
@@ -42,16 +54,18 @@
             </div>
           }
         </div>
+        }
       }
       @for (item of flatItems; track item.path) {
         <a [routerLink]="item.path" routerLinkActive="is-active" class="app-navbar-item">
+          <i class="bi app-navbar-item-icon" [class]="item.icon"></i>
           {{ item.labelKey | translate }}
         </a>
       }
     </nav>
     }
 
-    <span class="app-navbar-spacer"></span>
+    <span class="app-navbar-spacer d-none d-lg-block"></span>
 
     @if (showActions) {
       <button type="button" class="app-navbar-search" (click)="palette.open()">
@@ -61,7 +75,7 @@
       </button>
 
       @if (showSupport) {
-        <a routerLink="/owner/subscription" [queryParams]="{ tab: 'contact' }" class="app-navbar-support d-none d-md-inline-flex" routerLinkActive="is-active">
+        <a routerLink="/owner/support" class="app-navbar-support d-none d-md-inline-flex" routerLinkActive="is-active">
           <i class="bi bi-headset"></i>
           <span>{{ "nav.support" | translate }}</span>
         </a>
@@ -139,7 +153,9 @@
         </a>
       }
       @for (group of groups; track group.id) {
-        <div class="app-navbar-m-group">{{ group.labelKey | translate }}</div>
+        @if (!soloItem(group)) {
+          <div class="app-navbar-m-group">{{ group.labelKey | translate }}</div>
+        }
         @for (item of group.items; track item.path) {
           <a [routerLink]="item.path" routerLinkActive="is-active" class="app-navbar-m-item">
             <i class="bi" [class]="item.icon"></i>
@@ -154,7 +170,7 @@
         </a>
       }
       @if (showSupport) {
-        <a routerLink="/owner/subscription" [queryParams]="{ tab: 'contact' }" routerLinkActive="is-active" class="app-navbar-m-item">
+        <a routerLink="/owner/support" routerLinkActive="is-active" class="app-navbar-m-item">
           <i class="bi bi-headset"></i> {{ "nav.support" | translate }}
         </a>
       }

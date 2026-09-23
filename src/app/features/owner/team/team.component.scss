@@ -59,3 +59,12 @@
 @media (max-width: 520px) {
   .team-kind { grid-template-columns: 1fr; }
 }
+
+// What a role actually permits, spelled out under the person's name. The
+// role's own name is a label; this is the answer to "what can they do?".
+.team-access-summary {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}

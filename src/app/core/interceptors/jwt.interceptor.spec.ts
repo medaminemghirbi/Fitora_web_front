@@ -68,7 +68,7 @@ describe("jwtInterceptor", () => {
       error: (e) => {
         expect(e).toBe(err);
         expect(authStub.logout).toHaveBeenCalled();
-        expect(router.navigate).toHaveBeenCalledWith(["/auth/login"]);
+        expect(router.navigate).toHaveBeenCalledWith(["/connexion"]);
         done();
       },
     });
@@ -92,14 +92,14 @@ describe("jwtInterceptor", () => {
 
     run(() => throwError(() => err)).subscribe({
       error: () => {
-        expect(router.navigate).toHaveBeenCalledWith(["/trial-expired"]);
+        expect(router.navigate).toHaveBeenCalledWith(["/account-locked"]);
         done();
       },
     });
   });
 
-  it("does not redirect again if already on /trial-expired", (done) => {
-    router.url = "/trial-expired";
+  it("does not redirect again if already on /account-locked", (done) => {
+    router.url = "/account-locked";
     const err = new HttpErrorResponse({ status: 402, error: { error: "trial_expired" } });
 
     run(() => throwError(() => err)).subscribe({
@@ -110,12 +110,14 @@ describe("jwtInterceptor", () => {
     });
   });
 
-  it("ignores an unrelated 402 without that error code", (done) => {
-    const err = new HttpErrorResponse({ status: 402, error: { error: "something_else" } });
+  // Whatever shut the door — an expired trial, a month unpaid, a suspension
+  // — 402 means the same thing to whoever is looking at the screen.
+  it("sends every lock reason to the same page", (done) => {
+    const err = new HttpErrorResponse({ status: 402, error: { error: "payment_overdue" } });
 
     run(() => throwError(() => err)).subscribe({
       error: () => {
-        expect(router.navigate).not.toHaveBeenCalled();
+        expect(router.navigate).toHaveBeenCalledWith(["/account-locked"]);
         done();
       },
     });

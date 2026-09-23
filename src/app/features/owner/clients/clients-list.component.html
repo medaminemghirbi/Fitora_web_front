@@ -1,132 +1,229 @@
-<div class="fx-page fx-list">
-  <app-page-header [title]="'nav.clients' | translate" [description]="'clients.subtitle' | translate">
-    <button type="button" class="btn btn-primary" (click)="openCreate()">
-      <i class="bi bi-plus-lg"></i> {{ "clients.new" | translate }}
-    </button>
-  </app-page-header>
+<div class="fx-listpage">
 
-  <app-filter-rail [total]="meta()?.total ?? null" [hasFilters]="hasFilters()" (resetFilters)="clearFilters()">
-    <div class="fx-rail-sec">
-      <label for="cl-search">{{ "common.search" | translate }}</label>
-      <div class="fx-input-icon">
+  <div class="fx-listpage-main">
+    <!-- The count belongs in the title: "Membres 248" answers a question
+         before anyone touches a filter. The six-figure stats bar said the
+         same thing as the rail's own counts, one row lower. -->
+    <header class="lst-head">
+      <h1>{{ "nav.clients" | translate }}</h1>
+      <span class="lst-head-count">{{ counts()["all"] ?? 0 }}</span>
+      <div class="lst-head-search fx-input-icon">
         <i class="bi bi-search"></i>
         <input
-          id="cl-search"
           type="search"
           class="form-control form-control-sm"
           [ngModel]="search()"
           (ngModelChange)="onSearchChange($event)"
           [placeholder]="'clients.search_placeholder' | translate"
+          [attr.aria-label]="'clients.search_placeholder' | translate"
         />
       </div>
+      <button type="button" class="btn btn-outline-secondary" (click)="exportCsv()">
+        <i class="bi bi-download"></i> {{ "common.export" | translate }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> {{ "clients.new" | translate }}
+      </button>
+    </header>
+
+    <div class="lst-filters">
+      <app-status-filter
+        name="client-status"
+        [legend]="'clients.filter_status' | translate"
+        [value]="statusFilter()"
+        [options]="railOptions()"
+        (valueChange)="applyStatusFilter($any($event))"
+      />
+
+      <!-- Everything the pills cannot say lives one click away, so the row
+           above the grid stays one row. -->
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary fx-adv-toggle"
+        [class.is-on]="advancedOpen()"
+        [attr.aria-expanded]="advancedOpen()"
+        aria-controls="cl-advanced"
+        (click)="toggleAdvanced()"
+      >
+        <i class="bi bi-sliders"></i>
+        {{ "common.filters" | translate }}
+        @if (advancedCount() > 0) {
+          <span class="fx-adv-count">{{ advancedCount() }}</span>
+        }
+      </button>
+
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+        </button>
+      }
     </div>
 
-    <div class="fx-rail-sec">
-      <label for="cl-status">{{ "common.status" | translate }}</label>
-      <select id="cl-status" class="form-select form-select-sm" [ngModel]="statusFilter()" (ngModelChange)="applyStatusFilter($event)">
-        @for (opt of statusOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.labelKey | translate }}</option>
-        }
-      </select>
-    </div>
-  </app-filter-rail>
+    @if (advancedOpen()) {
+      <div class="fx-advanced" id="cl-advanced">
+        <div class="fx-advanced-field">
+          <label for="cl-f-activity">{{ "clients.abo_activity" | translate }}</label>
+          <select id="cl-f-activity" class="form-select form-select-sm" [value]="activityFilter()" (change)="setActivityFilter($any($event.target).value)">
+            <option value="">{{ "common.all" | translate }}</option>
+            @for (a of activities(); track a.id) {
+              <option [value]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
+            }
+          </select>
+        </div>
 
-  <div class="fx-list-main">
-    @if (filterChips().length > 0) {
-      <div class="fx-active-filters">
-        @for (chip of filterChips(); track chip.label) {
-          <span class="fx-active-chip">
-            {{ chip.label }}
-            <button type="button" (click)="chip.clear()" [attr.aria-label]="'common.reset' | translate">
-              <i class="bi bi-x"></i>
-            </button>
-          </span>
-        }
+        <div class="fx-advanced-field">
+          <label for="cl-f-plan">{{ "contract_types.plan" | translate }}</label>
+          <select id="cl-f-plan" class="form-select form-select-sm" [value]="planFilter()" (change)="setPlanFilter($any($event.target).value)">
+            <option value="">{{ "common.all" | translate }}</option>
+            @for (p of plans(); track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="fx-advanced-field">
+          <label for="cl-f-gender">{{ "clients.gender" | translate }}</label>
+          <select id="cl-f-gender" class="form-select form-select-sm" [value]="genderFilter()" (change)="setGenderFilter($any($event.target).value)">
+            <option value="">{{ "common.all" | translate }}</option>
+            <option value="male">{{ "clients.gender_male" | translate }}</option>
+            <option value="female">{{ "clients.gender_female" | translate }}</option>
+          </select>
+        </div>
+
+        <div class="fx-advanced-field">
+          <label for="cl-f-from">{{ "clients.joined_from" | translate }}</label>
+          <input id="cl-f-from" type="date" class="form-control form-control-sm" [value]="joinedFrom()" (change)="setJoinedFrom($any($event.target).value)" />
+        </div>
+
+        <div class="fx-advanced-field">
+          <label for="cl-f-to">{{ "clients.joined_to" | translate }}</label>
+          <input id="cl-f-to" type="date" class="form-control form-control-sm" [value]="joinedTo()" (change)="setJoinedTo($any($event.target).value)" />
+        </div>
       </div>
     }
 
     <div class="app-card">
-    @if (loading()) {
-      <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="6" /></div>
-    } @else if (error()) {
-      <div class="app-card-body"><app-error-state (retry)="load()" /></div>
-    } @else if (clients().length === 0) {
-      <div class="app-card-body">
-        <app-empty-state [title]="'clients.empty_title' | translate" [body]="'clients.empty_body' | translate" icon="bi-people">
-          <button type="button" class="btn btn-primary" (click)="openCreate()">
-            <i class="bi bi-plus-lg"></i> {{ "clients.new" | translate }}
-          </button>
-        </app-empty-state>
-      </div>
-    } @else {
-      <div class="fx-table-scroll">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>{{ "clients.title" | translate }}</th>
-              <th>{{ "auth.phone" | translate }}</th>
-              <th>{{ "auth.email" | translate }}</th>
-              <th>{{ "clients.contract" | translate }}</th>
-              <th>{{ "clients.payment_status" | translate }}</th>
-              <th>{{ "common.status" | translate }}</th>
-              <th class="text-end">{{ "common.actions" | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (client of clients(); track client.id) {
-              <tr class="cursor-pointer" (click)="openClient(client)">
-                <td>
-                  <div class="fx-cell-lead">
-                    <app-avatar [name]="client.full_name" [size]="34" />
-                    <div class="fx-cell-lead-text">
-                      <div class="fx-cell-lead-title" [innerHTML]="client.full_name | highlight: search()"></div>
-                    </div>
-                  </div>
-                </td>
-                <td dir="ltr">
-                  @if (client.phone) {
-                    <span [innerHTML]="client.phone | highlight: search()"></span>
-                  } @else { — }
-                </td>
-                <td>
-                  @if (client.email) {
-                    <span [innerHTML]="client.email | highlight: search()"></span>
-                  } @else { — }
-                </td>
-                <td>
-                  @if (client.current_contract) {
-                    {{ client.current_contract.plan.name }}
-                  } @else {
-                    <span class="fx-muted">{{ "clients.no_contract" | translate }}</span>
-                  }
-                </td>
-                <td>
-                  @if (client.current_contract) {
-                    <app-status-badge [status]="client.current_contract.payment_status">
-                      {{ ("payments.status_" + client.current_contract.payment_status) | translate }}
-                    </app-status-badge>
-                  } @else {
-                    <span class="fx-muted">—</span>
-                  }
-                </td>
-                <td>
-                  <app-status-badge [status]="client.active ? 'active' : 'inactive'">
-                    {{ (client.active ? "common.active" : "common.inactive") | translate }}
-                  </app-status-badge>
-                </td>
-                <td class="text-end" (click)="$event.stopPropagation()">
-                  <a [routerLink]="['/owner/clients', client.id]" class="fx-action-trigger" [attr.aria-label]="('common.view' | translate) + ' ' + client.full_name">
-                    <i class="bi bi-chevron-right"></i>
-                  </a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+      @if (filterChips().length > 0) {
+        <div class="fx-active-filters p-3 pb-0">
+          @for (chip of filterChips(); track chip.label) {
+            <span class="fx-active-chip">
+              {{ chip.label }}
+              <button type="button" (click)="chip.clear()" [attr.aria-label]="'common.reset' | translate">
+                <i class="bi bi-x"></i>
+              </button>
+            </span>
+          }
+        </div>
+      }
 
-      <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
-    }
+      @if (loading()) {
+        <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="6" /></div>
+      } @else if (error()) {
+        <div class="app-card-body"><app-error-state (retry)="load()" /></div>
+      } @else if (clients().length === 0) {
+        <div class="app-card-body">
+          <app-empty-state [title]="'clients.empty_title' | translate" [body]="'clients.empty_body' | translate" icon="bi-people">
+            <button type="button" class="btn btn-primary" (click)="openCreate()">
+              <i class="bi bi-plus-lg"></i> {{ "clients.new" | translate }}
+            </button>
+          </app-empty-state>
+        </div>
+      } @else {
+        <div class="fx-table-scroll">
+          <table class="table table-hover fx-grid">
+            <thead>
+              <tr>
+                <!-- Only the two columns the API can actually order on are
+                     sortable; a caret on the others would be a lie. -->
+                <th [attr.aria-sort]="ariaSort('name')" [class.is-sorted]="sort() === 'name'">
+                  <button type="button" class="fx-th-sort" (click)="sortBy('name')">
+                    {{ "clients.title" | translate }}
+                    <i class="bi" [class.bi-arrow-down-up]="sort() !== 'name'" [class.bi-arrow-up]="sort() === 'name' && direction() === 'asc'" [class.bi-arrow-down]="sort() === 'name' && direction() === 'desc'"></i>
+                  </button>
+                </th>
+                <th class="fx-col-contact">{{ "auth.email" | translate }}</th>
+                <th>{{ "contract_types.plan" | translate }}</th>
+                <th>{{ "common.status" | translate }}</th>
+                <th class="fx-col-seen">{{ "clients.last_visit" | translate }}</th>
+                <th [attr.aria-sort]="ariaSort('joined')" [class.is-sorted]="sort() === 'joined'" class="fx-col-seen">
+                  <button type="button" class="fx-th-sort" (click)="sortBy('joined')">
+                    {{ "clients.member_since" | translate }}
+                    <i class="bi" [class.bi-arrow-down-up]="sort() !== 'joined'" [class.bi-arrow-up]="sort() === 'joined' && direction() === 'asc'" [class.bi-arrow-down]="sort() === 'joined' && direction() === 'desc'"></i>
+                  </button>
+                </th>
+                <!-- The chevron's column. It has no heading because the
+                     chevron is not data — it is the row saying it opens. -->
+                <th class="fx-col-go"><span class="visually-hidden">{{ "common.actions" | translate }}</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (client of clients(); track client.id) {
+                <tr [style.--fx-row-color]="rowColor(client)" class="fx-row-link" (click)="openClient(client)">
+                  <td>
+                    <div class="fx-cell-lead">
+                      <app-avatar [name]="client.full_name" [size]="34" />
+                      <div class="fx-cell-lead-text">
+                        <div class="fx-cell-lead-title">
+                          <a [routerLink]="['/owner/clients', client.id]" (click)="$event.stopPropagation()" [innerHTML]="client.full_name | highlight: search()"></a>
+                        </div>
+                        @if (client.phone) {
+                          <div class="fx-cell-lead-sub" dir="ltr" [innerHTML]="client.phone | highlight: search()"></div>
+                        }
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="fx-col-contact">
+                    @if (client.email) {
+                      <span dir="ltr" [innerHTML]="client.email | highlight: search()"></span>
+                    } @else {
+                      <span class="fx-muted">—</span>
+                    }
+                  </td>
+
+                  <td>
+                    @if (client.current_contract; as contract) {
+                      <span class="fx-plan-tag">
+                        <span class="fx-dot" [style.background]="contract.plan.color"></span>
+                        {{ contract.plan.name }}
+                      </span>
+                    } @else {
+                      <span class="fx-muted">{{ "clients.no_contract" | translate }}</span>
+                    }
+                  </td>
+
+                  <!-- The subscription's state in words — what is wrong with
+                       it first, "actif" only when nothing is. -->
+                  <td>
+                    @if (client.current_contract) {
+                      <span class="lst-sub-state" [attr.data-tone]="contractTone(client)">{{ contractState(client) }}</span>
+                    } @else {
+                      <span class="lst-sub-state is-link">{{ "clients.subscribe_cta" | translate }}</span>
+                    }
+                    @if (!client.active) {
+                      <span class="badge text-bg-secondary ms-1">{{ "common.inactive" | translate }}</span>
+                    }
+                  </td>
+
+                  <td class="fx-col-seen fx-num">
+                    @if (client.last_visit_at) {
+                      {{ client.last_visit_at | date: "d MMM y" }}
+                    } @else {
+                      <span class="fx-muted">{{ "clients.never_came" | translate }}</span>
+                    }
+                  </td>
+
+                  <td class="fx-col-seen fx-num">{{ client.joined_at | date: "d MMM y" }}</td>
+
+                  <td class="fx-col-go"><i class="bi bi-chevron-right lst-go" aria-hidden="true"></i></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
+      }
     </div>
   </div>
 </div>
@@ -136,9 +233,12 @@
     <div class="alert alert-danger">{{ formError() }}</div>
   }
 
-  <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate>
-    <div class="fx-form-section">
-      <div class="fx-form-section-title">{{ "clients.section_personal" | translate }}</div>
+  <app-wizard-steps [steps]="wizardSteps()" [current]="step()" [label]="'clients.new' | translate" />
+
+  <form [formGroup]="createForm" (ngSubmit)="next()" novalidate>
+    <!-- 1 — who they are. Two fields; the rest is filed under "plus d'infos"
+         because a desk taking a name and a number should not meet nine. -->
+    @if (step() === 0) {
       <div class="row">
         <div class="col-6 mb-3">
           <label for="cl-first">{{ "coaches.first_name" | translate }} *</label>
@@ -153,45 +253,156 @@
         <label for="cl-phone">{{ "auth.phone" | translate }} *</label>
         <input id="cl-phone" class="form-control" formControlName="phone" dir="ltr" />
       </div>
-      <div class="mb-3">
-        <label for="cl-email">{{ "auth.email" | translate }} ({{ "common.optional" | translate }})</label>
-        <input id="cl-email" type="email" class="form-control" formControlName="email" dir="ltr" />
-      </div>
-      <div class="row">
-        <div class="col-6 mb-3">
-          <label for="cl-dob">{{ "clients.date_of_birth" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="cl-dob" type="date" class="form-control" formControlName="date_of_birth" />
-        </div>
-        <div class="col-6 mb-3">
-          <label for="cl-gender">{{ "clients.gender" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="cl-gender" class="form-control" formControlName="gender" />
-        </div>
-      </div>
-    </div>
 
-    <div class="fx-form-section">
-      <div class="fx-form-section-title">{{ "clients.section_emergency" | translate }}</div>
-      <div class="row">
-        <div class="col-6 mb-3">
-          <label for="cl-ec-name">{{ "clients.emergency_contact_name" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="cl-ec-name" class="form-control" formControlName="emergency_contact_name" />
-        </div>
-        <div class="col-6 mb-3">
-          <label for="cl-ec-phone">{{ "clients.emergency_contact_phone" | translate }} ({{ "common.optional" | translate }})</label>
-          <input id="cl-ec-phone" class="form-control" formControlName="emergency_contact_phone" dir="ltr" />
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="cl-notes">{{ "clients.notes" | translate }} ({{ "common.optional" | translate }})</label>
-        <textarea id="cl-notes" class="form-control" rows="2" formControlName="notes"></textarea>
-      </div>
-    </div>
-
-    <div class="d-flex justify-content-end gap-2 mt-4">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeCreateModal()">{{ "common.cancel" | translate }}</button>
-      <button type="submit" class="btn btn-primary" [disabled]="saving()">
-        {{ (saving() ? "common.saving" : "common.save") | translate }}
+      <button type="button" class="btn btn-link px-0" (click)="moreDetails.set(!moreDetails())" [attr.aria-expanded]="moreDetails()">
+        <i class="bi" [class.bi-chevron-down]="!moreDetails()" [class.bi-chevron-up]="moreDetails()"></i>
+        {{ "clients.more_details" | translate }}
       </button>
+
+      @if (moreDetails()) {
+        <div class="mb-3">
+          <label for="cl-email">{{ "auth.email" | translate }}</label>
+          <input id="cl-email" type="email" class="form-control" formControlName="email" dir="ltr" />
+          <div class="form-text">{{ "clients.email_identifies_hint" | translate }}</div>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label for="cl-dob">{{ "clients.date_of_birth" | translate }}</label>
+            <input id="cl-dob" type="date" class="form-control" formControlName="date_of_birth" />
+          </div>
+          <div class="col-6 mb-3">
+            <label for="cl-gender">{{ "clients.gender" | translate }}</label>
+            <input id="cl-gender" class="form-control" formControlName="gender" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label for="cl-ec-name">{{ "clients.emergency_contact_name" | translate }}</label>
+            <input id="cl-ec-name" class="form-control" formControlName="emergency_contact_name" />
+          </div>
+          <div class="col-6 mb-3">
+            <label for="cl-ec-phone">{{ "clients.emergency_contact_phone" | translate }}</label>
+            <input id="cl-ec-phone" class="form-control" formControlName="emergency_contact_phone" dir="ltr" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="cl-notes">{{ "clients.notes" | translate }}</label>
+          <textarea id="cl-notes" class="form-control" rows="2" formControlName="notes"></textarea>
+        </div>
+      }
+    }
+
+    <!-- 2 — what they are buying. Activity first, because it decides which
+         plans exist and what they cost. -->
+    @if (step() === 1) {
+      <div class="mb-3">
+        <label for="cl-activity">{{ "clients.abo_activity" | translate }}</label>
+        <select id="cl-activity" class="form-select" [value]="selectedActivityId()" (change)="onActivityChange($any($event.target).value)">
+          <option value="">{{ "clients.no_subscription_yet" | translate }}</option>
+          @for (a of activities(); track a.id) {
+            <option [value]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
+          }
+        </select>
+      </div>
+
+      @if (selectedActivityId()) {
+        <div class="mb-3">
+          <label for="cl-plan">{{ "clients.abo_formula" | translate }}</label>
+          <select id="cl-plan" class="form-select" [value]="selectedPlanId()" (change)="onPlanChange($any($event.target).value)">
+            <option value="">—</option>
+            @for (p of plansForActivity(); track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select>
+          @if (plansForActivity().length === 0) {
+            <div class="form-text text-warning">{{ "clients.no_plan_for_activity" | translate }}</div>
+          }
+        </div>
+
+        @if (selectedPlanId()) {
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label for="cl-start">{{ "contracts.start_date" | translate }}</label>
+              <input
+                id="cl-start"
+                type="date"
+                class="form-control"
+                [value]="subscriptionForm.controls.starts_on.value"
+                (change)="subscriptionForm.patchValue({ starts_on: $any($event.target).value })"
+              />
+            </div>
+            <div class="col-6 mb-3">
+              <label for="cl-discount">{{ "contracts.discount" | translate }}</label>
+              <input id="cl-discount" type="number" min="0" class="form-control" [value]="discount()" (input)="onDiscountChange(+$any($event.target).value)" />
+            </div>
+          </div>
+
+          <div class="fx-summary-row">
+            <span>{{ "clients.total_due" | translate }}</span>
+            <strong>{{ total() | money: currency() }}</strong>
+          </div>
+        }
+      }
+    }
+
+    <!-- 3 — money. The amount is settled; the only question is whether it is
+         changing hands now. -->
+    @if (step() === 2) {
+      <div class="fx-summary-row">
+        <span>{{ "clients.total_due" | translate }}</span>
+        <strong>{{ total() | money: currency() }}</strong>
+      </div>
+
+      <div class="form-check my-3">
+        <input
+          id="cl-collect"
+          type="checkbox"
+          class="form-check-input"
+          [checked]="subscriptionForm.controls.collect_payment.value"
+          (change)="subscriptionForm.patchValue({ collect_payment: $any($event.target).checked })"
+        />
+        <label for="cl-collect" class="form-check-label">{{ "clients.collect_now" | translate }}</label>
+      </div>
+
+      @if (subscriptionForm.controls.collect_payment.value) {
+        <div class="mb-3">
+          <label for="cl-method">{{ "payments.method" | translate }}</label>
+          <select
+            id="cl-method"
+            class="form-select"
+            [value]="subscriptionForm.controls.payment_method.value"
+            (change)="subscriptionForm.patchValue({ payment_method: $any($event.target).value })"
+          >
+            <option value="cash">{{ "payments.method_cash" | translate }}</option>
+            <option value="bank_transfer">{{ "payments.method_bank_transfer" | translate }}</option>
+            <option value="other">{{ "payments.method_other" | translate }}</option>
+          </select>
+        </div>
+      } @else {
+        <p class="form-text">{{ "clients.pay_later_hint" | translate }}</p>
+      }
+    }
+
+    <div class="d-flex justify-content-between gap-2 mt-4">
+      @if (step() > 0) {
+        <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ "common.back" | translate }}</button>
+      } @else {
+        <button type="button" class="btn btn-outline-secondary" (click)="closeCreateModal()">{{ "common.cancel" | translate }}</button>
+      }
+
+      @if (step() < 2) {
+        <button type="submit" class="btn btn-primary" [disabled]="!canAdvance()">
+          @if (step() === 1 && !selectedPlanId()) {
+            {{ (saving() ? "common.saving" : "clients.finish_without_plan") | translate }}
+          } @else {
+            {{ "common.next" | translate }}
+          }
+        </button>
+      } @else {
+        <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submitCreate()">
+          {{ (saving() ? "common.saving" : "clients.finish") | translate }}
+        </button>
+      }
     </div>
   </form>
 </app-modal>

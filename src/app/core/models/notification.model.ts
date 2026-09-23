@@ -1,4 +1,13 @@
-export type NotificationKind = "contract_expiring" | "employee_birthday" | "system_update";
+/**
+ * Every kind the backend can send (Notification::KINDS). Adding one here and
+ * nowhere else is a compile error, not a blank screen: notification-text.ts
+ * maps this union exhaustively.
+ */
+export type NotificationKind =
+  | "contract_expiring"
+  | "employee_birthday"
+  | "system_update"
+  | "invoice_issued";
 
 export interface AppNotification {
   id: string;

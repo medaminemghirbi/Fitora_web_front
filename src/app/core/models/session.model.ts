@@ -6,8 +6,9 @@ export interface Session {
   activity_id: string;
   activity_name: string;
   activity_emoji: string | null;
-  location_id: string;
-  location_name: string;
+  // Which gym this session is at — a member's list spans several.
+  company_id: string;
+  company_name: string;
   coach_id: string | null;
   coach_name: string | null;
   starts_at: string;

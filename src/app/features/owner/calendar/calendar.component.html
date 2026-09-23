@@ -1,70 +1,129 @@
-<div class="fx-page">
-<header class="fx-page-header">
-  <div class="fx-page-header-titles">
-    <h1 class="fx-page-header-title">{{ "nav.calendar" | translate }}</h1>
-    <p class="fx-page-header-desc">{{ "schedule.subtitle" | translate }}</p>
-  </div>
-  <div class="fx-page-header-actions">
-    <button type="button" class="btn btn-outline-primary" (click)="printSchedule()" [disabled]="printingSchedule()">
-      @if (printingSchedule()) {
-        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-      } @else {
-        <i class="bi bi-printer"></i>
-      }
-      {{ "schedule.print_week" | translate }}
-    </button>
-    @if (canManageSessions()) {
-      <button type="button" class="btn btn-primary" (click)="openCreate()">
-        <i class="bi bi-plus-lg"></i> {{ "schedule.new_session" | translate }}
-      </button>
-    }
-  </div>
-</header>
-
-<div class="app-card mb-4">
-  <div class="app-card-body">
-    <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
-      <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="prev()" [attr.aria-label]="'schedule.prev_period' | translate"><i class="bi bi-chevron-left"></i></button>
-        <button type="button" class="btn btn-sm btn-outline-primary" (click)="today()">{{ "schedule.today" | translate }}</button>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="next()" [attr.aria-label]="'schedule.next_period' | translate"><i class="bi bi-chevron-right"></i></button>
+<div class="fx-listpage">
+  <div class="fx-listpage-main">
+    <div class="fx-cal-toolbar">
+      <div class="fx-cal-nav">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="today()">{{ "schedule.today" | translate }}</button>
+        <button type="button" class="icon-btn" (click)="prev()" [attr.aria-label]="'schedule.prev_period' | translate"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="icon-btn" (click)="next()" [attr.aria-label]="'schedule.next_period' | translate"><i class="bi bi-chevron-right"></i></button>
+        <h1 class="fx-cal-title">{{ viewTitle() || ("nav.calendar" | translate) }}</h1>
       </div>
 
-      <div class="btn-group btn-group-sm">
-        <button type="button" class="btn btn-outline-primary" (click)="setView('timeGridDay')">{{ "schedule.day" | translate }}</button>
-        <button type="button" class="btn btn-outline-primary" (click)="setView('timeGridWeek')">{{ "schedule.week" | translate }}</button>
-        <button type="button" class="btn btn-outline-primary" (click)="setView('dayGridMonth')">{{ "schedule.month" | translate }}</button>
+      <div class="fx-segmented" role="group" [attr.aria-label]="'nav.calendar' | translate">
+        <button type="button" [class.is-active]="viewMode() === 'timeGridDay'" (click)="setView('timeGridDay')">{{ "schedule.day" | translate }}</button>
+        <button type="button" [class.is-active]="viewMode() === 'timeGridWeek'" (click)="setView('timeGridWeek')">{{ "schedule.week" | translate }}</button>
+        <button type="button" [class.is-active]="viewMode() === 'dayGridMonth'" (click)="setView('dayGridMonth')">{{ "schedule.month" | translate }}</button>
       </div>
 
-      <div class="d-flex flex-wrap gap-2">
-        <select class="form-select form-select-sm" [(ngModel)]="coachFilter" (ngModelChange)="applyFilters()">
-          <option [ngValue]="null">{{ "bookings.coach" | translate }}</option>
+      <div class="fx-cal-actions">
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="printSchedule()" [disabled]="printingSchedule()">
+          @if (printingSchedule()) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          } @else {
+            <i class="bi bi-printer"></i>
+          }
+          {{ "schedule.print_week" | translate }}
+        </button>
+        @if (canManageSessions()) {
+          <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">
+            <i class="bi bi-plus-lg"></i> {{ "schedule.new_session" | translate }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- The two filters and the colour key left the rail: a grid of five
+         days wants every pixel of width, and two selects and four dots do
+         not need a column of their own. -->
+    <div class="fx-cal-filters">
+      <div class="fx-cal-filter">
+        <label for="cal-coach-filter">{{ "bookings.coach" | translate }}</label>
+        <select id="cal-coach-filter" class="form-select form-select-sm" [(ngModel)]="coachFilter" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">{{ "common.all" | translate }}</option>
           @for (c of coaches(); track c.id) {
             <option [ngValue]="c.id">{{ c.full_name }}</option>
           }
         </select>
-        <select class="form-select form-select-sm" [(ngModel)]="activityFilter" (ngModelChange)="applyFilters()">
-          <option [ngValue]="null">{{ "activities.title" | translate }}</option>
+      </div>
+
+      <div class="fx-cal-filter">
+        <label for="cal-activity-filter">{{ "activities.title" | translate }}</label>
+        <select id="cal-activity-filter" class="form-select form-select-sm" [(ngModel)]="activityFilter" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">{{ "common.all" | translate }}</option>
           @for (a of activities(); track a.id) {
             <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
           }
         </select>
       </div>
+
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+        </button>
+      }
+
+      <!-- What each block's colour means on the grid — the same colours the
+           events use, which come from the session's status. -->
+      <ul class="fx-legend" [attr.aria-label]="'calendar.legend' | translate">
+        <li><span class="fx-legend-dot" style="background: var(--color-primary)"></span>{{ "bookings.status_confirmed" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-success)"></span>{{ "bookings.status_completed" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-border-strong)"></span>{{ "bookings.status_cancelled" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-border)"></span>{{ "calendar.legend_past" | translate }}</li>
+      </ul>
+    </div>
+
+    <div class="app-card calendar-card">
+      <div class="app-card-body">
+        <full-calendar [options]="calendarOptions()"></full-calendar>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="app-card calendar-card">
-  <div class="app-card-body">
-    <full-calendar [options]="calendarOptions()"></full-calendar>
+<!-- Hover card. Purely an accelerator over the click-through detail modal,
+     so it stays out of the a11y tree and never swallows a click. -->
+@if (hoverPreview(); as preview) {
+  <div class="fx-session-tip" aria-hidden="true" [style.top.px]="preview.top" [style.left.px]="preview.left">
+    <div class="fx-session-tip-head">
+      <span class="fx-session-tip-title">
+        {{ preview.session.activity_emoji ? preview.session.activity_emoji + " " : "" }}{{ preview.session.activity_name }}
+      </span>
+      <app-status-badge [status]="preview.session.status">
+        {{ ("bookings.status_" + preview.session.status) | translate }}
+      </app-status-badge>
+    </div>
+
+    <ul class="fx-session-tip-meta">
+      <li>
+        <i class="bi bi-clock"></i>
+        <span dir="ltr">{{ preview.session.starts_at | date: "HH:mm" }} – {{ preview.session.ends_at | date: "HH:mm" }}</span>
+        <span class="fx-muted">{{ preview.session.starts_at | date: "EEEE d MMM" }}</span>
+      </li>
+      <li><i class="bi bi-person-badge"></i> {{ preview.session.coach_name || ("schedule.no_coach" | translate) }}</li>
+      <li><i class="bi bi-geo-alt"></i> {{ preview.session.company_name }}</li>
+      @if (preview.session.price > 0) {
+        <li><i class="bi bi-cash"></i> {{ preview.session.price }}</li>
+      }
+    </ul>
+
+    <div>
+      <div class="fx-session-tip-fill-head">
+        <span>{{ "schedule.booked_places" | translate }}</span>
+        <strong dir="ltr">{{ preview.session.confirmed_count }}/{{ preview.session.capacity }}</strong>
+      </div>
+      <div class="fx-session-tip-bar">
+        <div [style.width.%]="previewFill(preview.session)"
+             [class.is-full]="preview.session.confirmed_count >= preview.session.capacity"></div>
+      </div>
+    </div>
+
+    <p class="fx-session-tip-hint">{{ "schedule.click_for_detail" | translate }}</p>
   </div>
-</div>
-</div>
+}
 
 <app-modal [open]="detailOpen()" [title]="(selectedSession()?.activity_emoji ? selectedSession()!.activity_emoji + ' ' : '') + (selectedSession()?.activity_name || '')" (closed)="closeDetail()">
   @if (selectedSession(); as session) {
     <div class="session-detail-meta mb-3">
-      <div><i class="bi bi-geo-alt"></i> {{ session.location_name }}</div>
+      <div><i class="bi bi-geo-alt"></i> {{ session.company_name }}</div>
       <div><i class="bi bi-person-badge"></i> {{ session.coach_name || "—" }}</div>
       <div><i class="bi bi-clock"></i> {{ session.starts_at | date: "medium" }} – {{ session.ends_at | date: "HH:mm" }}</div>
       <div><i class="bi bi-people"></i> <span dir="ltr">{{ session.confirmed_count }}/{{ session.capacity }}</span></div>

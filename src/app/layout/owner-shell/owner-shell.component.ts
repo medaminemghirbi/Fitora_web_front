@@ -7,13 +7,14 @@ import { ConfigurationService } from "../../core/configuration/configuration.ser
 import { NavigationService } from "../../core/configuration/navigation.service";
 import { BrandingService } from "../../core/services/branding.service";
 import { AppVersionService } from "../../core/services/app-version.service";
+import { MobileBarComponent } from "../mobile-bar/mobile-bar.component";
 import { NavbarComponent } from "../navbar/navbar.component";
-import { SidebarComponent } from "../sidebar/sidebar.component";
+import { RailComponent } from "../rail/rail.component";
 
 @Component({
   selector: "app-owner-shell",
   standalone: true,
-  imports: [RouterLink, RouterOutlet, TranslateModule, NavbarComponent, SidebarComponent],
+  imports: [RouterLink, RouterOutlet, TranslateModule, NavbarComponent, RailComponent, MobileBarComponent],
   templateUrl: "./owner-shell.component.html",
   styleUrl: "./owner-shell.component.scss",
 })
@@ -27,12 +28,30 @@ export class OwnerShellComponent implements OnInit {
   readonly secondaryNavItems = this.nav.secondaryItems;
   readonly showOwnerOnlySections = computed(() => this.auth.currentUser()?.role === "owner");
 
-  // Only while the company is still on the free trial — once a real
-  // subscription is active, expires_at is a renewal date, not a countdown.
-  readonly trialDaysRemaining = computed(() => {
+
+  /**
+   * Days left to settle before access closes. Shown from the day the paid
+   * period runs out, so the owner sees it coming instead of finding the
+   * door shut mid-task. The free trial is one of these periods like any
+   * other, so it warns on its way out too.
+   */
+  readonly daysToSettle = computed(() => {
     const sub = this.configuration.subscription();
-    return sub?.on_trial ? (sub.trial_days_remaining ?? null) : null;
+    if (!sub || sub.current_period_paid || sub.trial) return null;
+    return sub.days_before_lock;
   });
+
+  /**
+   * Free days left, for the owner only — choosing a formula is theirs to do.
+   * A trial gets no grace, so this counts down to the door itself; 0 means
+   * it ended today and closes tonight.
+   */
+  readonly trialDaysLeft = computed(() => {
+    const sub = this.configuration.subscription();
+    if (!sub?.trial || !sub.active || !this.showOwnerOnlySections()) return null;
+    return sub.trial_days_left;
+  });
+
   readonly versionSuffix = computed(() => (this.version.current() ? `v${this.version.current()}` : null));
 
   // Dismissible per session only — not persisted, so it comes back next

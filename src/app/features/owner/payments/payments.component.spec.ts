@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
 import { ActivatedRoute, convertToParamMap, provideRouter } from "@angular/router";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { Client, ClientDetail } from "../../../core/models/client.model";
@@ -42,8 +44,8 @@ describe("OwnerPaymentsComponent", () => {
     phone: null,
     active: true,
     login_enabled: false,
-    email_verified: false,
     joined_at: "2026-01-01",
+    last_visit_at: null,
     current_contract: null,
   };
   const clientDetail: ClientDetail = {
@@ -63,11 +65,15 @@ describe("OwnerPaymentsComponent", () => {
     TestBed.resetTestingModule();
     paymentsService = jasmine.createSpyObj<PaymentsService>("PaymentsService", ["list", "refund", "record"]);
     clientsService = jasmine.createSpyObj<ClientsService>("ClientsService", ["list", "get"]);
-    paymentsService.list.and.returnValue(of({ payments: [payment], meta }));
+    paymentsService.list.and.returnValue(of({ payments: [payment], meta , counts: {}, method_counts: {}, totals: { collected_this_month: 0, collected_total: 0, refunded_value: 0, cancelled_value: 0, average_payment: 0 } }));
 
     TestBed.configureTestingModule({
       imports: [OwnerPaymentsComponent, TranslateModule.forRoot()],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         provideRouter([]),
         { provide: PaymentsService, useValue: paymentsService },
         { provide: ClientsService, useValue: clientsService },
@@ -105,10 +111,45 @@ describe("OwnerPaymentsComponent", () => {
     expect(component.page()).toBe(1);
   });
 
+  it("applyStatusFilter sets the status and reloads from page 1", () => {
+    component.page.set(3);
+    component.applyStatusFilter("paid");
+    expect(component.statusFilter()).toBe("paid");
+    expect(component.page()).toBe(1);
+    expect(paymentsService.list).toHaveBeenCalledWith(jasmine.objectContaining({ status: "paid" }));
+  });
+
+  it("hasFilters / resetFilters", () => {
+    component.onSearchChange("amy");
+    component.applyStatusFilter("paid");
+    expect(component.hasFilters()).toBe(true);
+    component.resetFilters();
+    expect(component.hasFilters()).toBe(false);
+    expect(component.search()).toBe("");
+    expect(component.statusFilter()).toBe("");
+  });
+
+  it("filterChips is empty with no active filters", () => {
+    expect(component.filterChips()).toEqual([]);
+  });
+
+  it("filterChips reflects search and status filters, each clearing independently", fakeAsync(() => {
+    component.onSearchChange("amy");
+    tick(1000);
+    component.applyStatusFilter("paid");
+    const chips = component.filterChips();
+    expect(chips.length).toBe(2);
+    expect(chips[0].label).toContain("amy");
+
+    chips[1].clear();
+    expect(component.statusFilter()).toBe("");
+    expect(component.search()).toBe("amy");
+  }));
+
   it("onSearchChange debounces the search", fakeAsync(() => {
     component.onSearchChange("amy");
     tick(1000);
-    expect(paymentsService.list).toHaveBeenCalledWith({ status: undefined, q: "amy", page: 1 });
+    expect(paymentsService.list).toHaveBeenCalledWith({ status: undefined, payment_method: undefined, q: "amy", page: 1 });
   }));
 
   it("onSearchChange cancels a pending debounce timer on rapid typing", fakeAsync(() => {
@@ -164,7 +205,7 @@ describe("OwnerPaymentsComponent", () => {
   });
 
   it("searchClients queries for a 2+ char term", () => {
-    clientsService.list.and.returnValue(of({ clients: [client], meta }));
+    clientsService.list.and.returnValue(of({ clients: [client], meta, counts: {} }));
     component.searchClients("amy");
     expect(component.clientResults()).toEqual([client]);
   });
@@ -259,5 +300,9 @@ describe("OwnerPaymentsComponent", () => {
 
     expect(component.saving()).toBe(false);
     expect(component.formError()).toBeTruthy();
+  });
+
+  it("never offers card: Fitora takes no payment online and the API refuses it", () => {
+    expect(component.methodOptions.map((o) => o.value)).toEqual(["cash", "bank_transfer", "other"]);
   });
 });

@@ -3,16 +3,26 @@ import { Injectable, Injector, computed, inject, signal } from "@angular/core";
 import { Observable, catchError, of, shareReplay, tap } from "rxjs";
 import { API_BASE_URL } from "../models/api-config";
 import { Company } from "../models/company.model";
+import { LockReason } from "../models/subscription.model";
+import { OnboardingState } from "../models/onboarding.model";
 import { MePermissions, User } from "../models/user.model";
 import { BrandingService, CompanyBranding } from "../services/branding.service";
 import { LocaleService } from "../services/locale.service";
 import { NotificationService } from "../services/notification.service";
 
 export interface BootstrapSubscription {
-  status: string;
+  /** The access itself. Nothing is computed to read it. */
+  active: boolean;
   locked: boolean;
-  on_trial: boolean;
-  trial_days_remaining: number | null;
+  lock_reason: LockReason;
+  /** Whether the period we are in has been settled. */
+  current_period_paid: boolean;
+  /** Days left before access closes. null when nothing is ticking. */
+  days_before_lock: number | null;
+  /** On the free days signup gave away (or just past them). */
+  trial: boolean;
+  /** Free days left, today included. null outside a trial. */
+  trial_days_left: number | null;
 }
 
 export interface CompanyRole {
@@ -23,17 +33,6 @@ export interface CompanyRole {
   builtin: boolean;
 }
 
-// The owner-only "Premiers pas" checklist. Each step flag is derived
-// server-side from data (has an activity? a formule? a coach?), so
-// completing a step anywhere in the app ticks it off.
-export interface SetupState {
-  activity: boolean;
-  contract_type: boolean;
-  coach: boolean;
-  dismissed: boolean;
-  complete: boolean;
-}
-
 export interface Bootstrap {
   user: User;
   company: Company | null;
@@ -41,11 +40,14 @@ export interface Bootstrap {
   role: MePermissions["role"];
   permissions: string[];
   modules: string[];
+  /** Which parts of the product this tenant has turned on. Sent to every role. */
+  features: Record<string, boolean>;
   roles: CompanyRole[];
   /** key → human label, for the roles editor's checkbox list. */
   permission_catalog: Record<string, string>;
   subscription: BootstrapSubscription | null;
-  setup: SetupState | null;
+  /** Owner-only; see OnboardingService, which supersedes this once loaded. */
+  onboarding: OnboardingState | null;
   notifications: { unread_count: number } | null;
 }
 
@@ -78,13 +80,15 @@ export class ConfigurationService {
   private inFlight: Observable<Bootstrap> | null = null;
 
   readonly company = computed(() => this.state()?.company ?? null);
+  /** Tenant-wide feature switches. Says what is offered, never who may use it. */
+  readonly features = computed(() => this.state()?.features ?? {});
   readonly role = computed(() => this.state()?.role ?? null);
   readonly permissions = computed(() => this.state()?.permissions ?? []);
   readonly modules = computed(() => this.state()?.modules ?? []);
   readonly roles = computed(() => this.state()?.roles ?? []);
   readonly permissionCatalog = computed(() => this.state()?.permission_catalog ?? {});
   readonly subscription = computed(() => this.state()?.subscription ?? null);
-  readonly setup = computed(() => this.state()?.setup ?? null);
+  readonly onboarding = computed(() => this.state()?.onboarding ?? null);
 
   // The company's name for a built-in role (e.g. "coach" → "Praticien" for a
   // medical practice). Falls back to the raw key humanised.

@@ -10,7 +10,7 @@
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <div class="mb-3">
-          <label for="org-name">{{ "locations.name" | translate }} *</label>
+          <label for="org-name">{{ "settings.company_name" | translate }} *</label>
           <input id="org-name" class="form-control" formControlName="name" />
         </div>
         <div class="mb-3">
@@ -29,21 +29,21 @@
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="org-city">{{ "locations.city" | translate }}</label>
+            <label for="org-city">{{ "settings.company_city" | translate }}</label>
             <input id="org-city" class="form-control" formControlName="city" />
           </div>
           <div class="col-md-6 mb-3">
-            <label for="org-country">{{ "onboarding.country" | translate }}</label>
+            <label for="org-country">{{ "company_setup.country" | translate }}</label>
             <app-searchable-select id="org-country" formControlName="country"
-                                   [options]="countryOptions" [placeholder]="'onboarding.select_country' | translate" />
+                                   [options]="countryOptions" [placeholder]="'company_setup.select_country' | translate" />
           </div>
         </div>
         <div class="mb-3">
-          <label for="org-address">{{ "onboarding.gym_address" | translate }}</label>
-          <input id="org-address" class="form-control" formControlName="address" [placeholder]="'onboarding.gym_address_hint' | translate" />
+          <label for="org-address">{{ "company_setup.gym_address" | translate }}</label>
+          <input id="org-address" class="form-control" formControlName="address" [placeholder]="'company_setup.gym_address_hint' | translate" />
         </div>
         <div class="mb-3">
-          <label for="org-timezone">{{ "onboarding.timezone" | translate }} *</label>
+          <label for="org-timezone">{{ "company_setup.timezone" | translate }} *</label>
           <select id="org-timezone" class="form-select" formControlName="timezone">
             @for (group of timezoneGroups(); track group.region) {
               <optgroup [label]="group.region">

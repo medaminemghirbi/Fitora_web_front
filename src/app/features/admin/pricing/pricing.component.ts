@@ -8,7 +8,6 @@ import {
 } from "../../../core/services/admin-subscription-pricing.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { extractErrorMessage } from "../../../core/services/error.util";
-import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
@@ -24,7 +23,7 @@ interface TierRow {
 @Component({
   selector: "app-admin-pricing",
   standalone: true,
-  imports: [FormsModule, TranslateModule, PageHeaderComponent, SpinnerComponent, ErrorStateComponent, MoneyPipe],
+  imports: [FormsModule, TranslateModule, SpinnerComponent, ErrorStateComponent, MoneyPipe],
   templateUrl: "./pricing.component.html",
 })
 export class AdminPricingComponent implements OnInit {

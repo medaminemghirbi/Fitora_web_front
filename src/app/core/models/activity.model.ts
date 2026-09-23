@@ -7,9 +7,16 @@ export const CAPACITY_BOUNDS: Record<SessionFormat, { min: number; max: number |
   collective: { min: 10, max: null },
 };
 
+/** A plan's tariff for this activity — read-only here, edited on the plan. */
+export interface ActivityTariff {
+  contract_type_id: string;
+  contract_type_name: string;
+  billing_period: string;
+  price: number;
+}
+
 export interface Activity {
   id: string;
-  location_id: string;
   name: string;
   emoji: string | null;
   description: string | null;
@@ -17,4 +24,6 @@ export interface Activity {
   duration: number;
   capacity: number;
   active: boolean;
+  currency: string;
+  prices: ActivityTariff[];
 }

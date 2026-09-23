@@ -16,8 +16,9 @@ describe("ActivitiesComponent", () => {
   let toast: ToastService;
 
   const activity: Activity = {
-    id: "a1", location_id: "l1", name: "Yoga", emoji: "🧘", description: null,
+    id: "a1", name: "Yoga", emoji: "🧘", description: null,
     session_format: "collective", duration: 60, capacity: 15, active: true,
+    currency: "TND", prices: [{ contract_type_id: "ct1", contract_type_name: "1 Mois", billing_period: "monthly", price: 50 }],
   };
 
   function build(queryParams: Record<string, string> = {}): void {

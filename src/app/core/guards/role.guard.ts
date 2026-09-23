@@ -9,9 +9,11 @@ export function roleGuard(role: UserRole): CanActivateFn {
     const router = inject(Router);
 
     if (!auth.isAuthenticated()) {
-      return router.createUrlTree(["/auth/login"]);
+      return router.createUrlTree(["/connexion"]);
     }
 
+    // A member is authenticated but has no role at all; homeRouteForCurrentUser
+    // sends them to their own half rather than back to the sign-in page.
     if (auth.currentUser()?.role !== role) {
       return router.createUrlTree([auth.homeRouteForCurrentUser()]);
     }

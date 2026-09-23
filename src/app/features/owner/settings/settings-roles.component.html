@@ -80,7 +80,7 @@
     <p class="fx-muted" style="font-size: 0.8125rem">{{ "settings.role_owner_locked" | translate }}</p>
   } @else {
     <div class="mb-3">
-      <span class="fx-label">{{ "settings.role_perm_group_daily" | translate }}</span>
+      <span class="fx-muted fw-semibold">{{ "settings.role_perm_group_daily" | translate }}</span>
       @for (key of dailyPermKeys(); track key) {
         <div class="form-check">
           <input
@@ -96,7 +96,7 @@
     </div>
 
     <div class="mb-3">
-      <span class="fx-label">{{ "settings.role_perm_group_config" | translate }}</span>
+      <span class="fx-muted fw-semibold">{{ "settings.role_perm_group_config" | translate }}</span>
       <div class="form-text mb-1">{{ "settings.role_perm_group_config_hint" | translate }}</div>
       @for (key of configPermKeys(); track key) {
         <div class="form-check">

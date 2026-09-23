@@ -31,14 +31,14 @@ describe("OwnerBookingsComponent", () => {
       status: "scheduled",
       activity_name: "Yoga",
       activity_emoji: "🧘",
-      location_name: "Main gym",
+      company_name: "Main gym", company_id: "g1", 
       coach_name: "Coach C",
     },
   };
 
   beforeEach(async () => {
     service = jasmine.createSpyObj<BookingsService>("BookingsService", ["list", "cancel", "remind"]);
-    service.list.and.returnValue(of({ bookings: [booking], meta }));
+    service.list.and.returnValue(of({ bookings: [booking], meta , counts: {} }));
 
     await TestBed.configureTestingModule({
       imports: [OwnerBookingsComponent, TranslateModule.forRoot()],
@@ -86,6 +86,40 @@ describe("OwnerBookingsComponent", () => {
     expect(component.hasFilters()).toBe(false);
     expect(service.list).toHaveBeenCalledWith({ status: undefined, date: undefined, q: undefined, page: 1 });
   });
+
+  it("applyStatusFilter sets the status and reloads from page 1", () => {
+    component.page.set(2);
+    component.applyStatusFilter("cancelled");
+    expect(component.statusFilter()).toBe("cancelled");
+    expect(component.page()).toBe(1);
+  });
+
+  it("applyDateFilter sets the date and reloads from page 1", () => {
+    component.page.set(2);
+    component.applyDateFilter("2026-01-01");
+    expect(component.dateFilter()).toBe("2026-01-01");
+    expect(component.page()).toBe(1);
+  });
+
+  it("filterChips is empty with no active filters", () => {
+    expect(component.filterChips()).toEqual([]);
+  });
+
+  it("filterChips reflects search, status, and date, each clearing independently", fakeAsync(() => {
+    component.onSearchChange("amy");
+    tick(1000);
+    component.applyStatusFilter("confirmed");
+    component.applyDateFilter("2026-01-01");
+
+    const chips = component.filterChips();
+    expect(chips.length).toBe(3);
+    expect(chips[0].label).toContain("amy");
+    expect(chips[2].label).toBe("2026-01-01");
+
+    chips[2].clear();
+    expect(component.dateFilter()).toBe("");
+    expect(component.statusFilter()).toBe("confirmed");
+  }));
 
   it("onSearchChange debounces the search", fakeAsync(() => {
     component.page.set(3);

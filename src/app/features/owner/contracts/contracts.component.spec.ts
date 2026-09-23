@@ -1,11 +1,15 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
-import { provideRouter } from "@angular/router";
+import { ActivatedRoute, convertToParamMap, provideRouter } from "@angular/router";
+import { provideHttpClient } from "@angular/common/http";
+import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { Contract } from "../../../core/models/contract.model";
 import { ContractType } from "../../../core/models/contract-type.model";
 import { ContractTypesService } from "../../../core/services/contract-types.service";
 import { ContractsService } from "../../../core/services/contracts.service";
+import { PaymentsService } from "../../../core/services/payments.service";
+import { ConfirmService } from "../../../core/services/confirm.service";
 import { ContractsComponent } from "./contracts.component";
 
 describe("ContractsComponent", () => {
@@ -20,7 +24,6 @@ describe("ContractsComponent", () => {
     company_id: "1",
     name: "Basic",
     description: null,
-    price: 100,
     currency: "TND",
     billing_period: "monthly",
     duration_days: 30,
@@ -30,8 +33,8 @@ describe("ContractsComponent", () => {
     priority_booking: false,
     color: "#000",
     active: true,
-    location_ids: [],
     activity_ids: [],
+    activity_prices: [{ activity_id: "a1", activity_name: "Yoga", activity_emoji: "🧘", price: 100 }],
   };
   const contract: Contract = {
     id: "m1",
@@ -42,22 +45,28 @@ describe("ContractsComponent", () => {
     remaining_bookings: null,
     auto_renew: true,
     discount: "0",
+    base_price: "100.00",
     final_price: "100",
     payment_status: "paid",
     amount_due: "0",
     plan: contractType,
+    activity: { id: "a1", name: "Yoga", emoji: "\u{1F9D8}" },
+    all_access: false, upcoming_periods: [], payable_period_id: null,
+    activity_label: "Yoga",
     client: { id: "cl1", full_name: "Amy Client", phone: null },
   };
 
   beforeEach(async () => {
     contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["list"]);
     contractTypesService = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list"]);
-    contractsService.list.and.returnValue(of({ contracts: [contract], meta }));
+    contractsService.list.and.returnValue(of({ contracts: [contract], meta , counts: {}, plan_counts: {}, totals: { portfolio_value: 0, average_basket: 0, unpaid_value: 0, expiring_soon: 0 } }));
     contractTypesService.list.and.returnValue(of({ plans: [contractType] }));
 
     await TestBed.configureTestingModule({
       imports: [ContractsComponent, TranslateModule.forRoot()],
       providers: [
+        provideHttpClientTesting(),
+        provideHttpClient(),
         provideRouter([]),
         { provide: ContractsService, useValue: contractsService },
         { provide: ContractTypesService, useValue: contractTypesService },
@@ -85,7 +94,7 @@ describe("ContractsComponent", () => {
     component.onSearchChange("amy");
     tick(1000);
     expect(component.page()).toBe(1);
-    expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, contract_type_id: undefined, q: "amy", page: 1 });
+    expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, payment: undefined, contract_type_id: undefined, q: "amy", page: 1 });
   }));
 
   it("onSearchChange cancels a pending debounce timer on rapid typing", fakeAsync(() => {
@@ -105,7 +114,7 @@ describe("ContractsComponent", () => {
   it("applyContractTypeFilter sets the plan filter and reloads from page 1", () => {
     component.applyContractTypeFilter("ct1");
     expect(component.contractTypeFilter()).toBe("ct1");
-    expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, contract_type_id: "ct1", q: undefined, page: 1 });
+    expect(contractsService.list).toHaveBeenCalledWith({ status: undefined, payment: undefined, contract_type_id: "ct1", q: undefined, page: 1 });
   });
 
   it("onPageChange loads the requested page", () => {
@@ -120,7 +129,207 @@ describe("ContractsComponent", () => {
     expect(component.hasFilters()).toBe(false);
   });
 
-  it("lists the 4 status filter options", () => {
-    expect(component.statusOptions.map((o) => o.value)).toEqual(["", "active", "expired", "cancelled"]);
+  it("lists the rail in the order a desk reads it: what is fine, what is running out, what has run out", () => {
+    expect(component.statusOptions.map((o) => o.value)).toEqual([
+      "",
+      "active",
+      "expiring",
+      "expired",
+      "pending",
+      "cancelled",
+    ]);
+  });
+
+  it("filterChips is empty with no active filters", () => {
+    expect(component.filterChips()).toEqual([]);
+  });
+
+  it("filterChips reflects search, status, and plan filters", () => {
+    component.onSearchChange("amy");
+    component.applyContractFilter("active");
+    component.applyContractTypeFilter("ct1");
+    const chips = component.filterChips();
+    expect(chips.length).toBe(3);
+    expect(chips[0].label).toContain("amy");
+    expect(chips[2].label).toBe("Basic");
+  });
+
+  it("a filter chip's clear() removes only that filter", fakeAsync(() => {
+    component.onSearchChange("amy");
+    component.applyContractFilter("active");
+    tick(1000);
+    const chips = component.filterChips();
+    chips[1].clear();
+    expect(component.contractStatusFilter()).toBe("");
+    expect(component.search()).toBe("amy");
+  }));
+
+  it("omits a status/plan chip once its filter list hasn't loaded a matching option", () => {
+    component.plans.set([]);
+    component.applyContractTypeFilter("unknown");
+    expect(component.filterChips()).toEqual([]);
   });
 });
+
+// "Aujourd'hui" links here already filtered; the page has to arrive holding
+// that filter, not merely accept it once someone clicks the rail.
+describe("ContractsComponent — arriving from the dashboard", () => {
+  function buildWith(query: Record<string, string>): ContractsComponent {
+    TestBed.resetTestingModule();
+    const contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["list"]);
+    contractsService.list.and.returnValue(
+      of({ contracts: [], meta: { page: 1, per_page: 20, total: 0, total_pages: 0 }, counts: {}, plan_counts: {}, totals: { portfolio_value: 0, average_basket: 0, unpaid_value: 0, expiring_soon: 0 } })
+    );
+    const contractTypesService = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list"]);
+    contractTypesService.list.and.returnValue(of({ plans: [] }));
+
+    TestBed.configureTestingModule({
+      imports: [ContractsComponent, TranslateModule.forRoot()],
+      providers: [
+        provideHttpClientTesting(),
+        provideHttpClient(),
+        provideRouter([]),
+        { provide: ContractsService, useValue: contractsService },
+        { provide: ContractTypesService, useValue: contractTypesService },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(query) } } },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(ContractsComponent);
+    fixture.detectChanges();
+    return fixture.componentInstance;
+  }
+
+  it("opens already filtered to what runs out this month", () => {
+    const component = buildWith({ status: "expiring" });
+    expect(component.contractStatusFilter()).toBe("expiring");
+  });
+
+  it("opens already filtered to what nobody has paid for", () => {
+    const component = buildWith({ payment: "unpaid" });
+    expect(component.paymentFilter()).toBe("unpaid");
+    expect(component.filterChips().length).toBe(1);
+  });
+
+  it("ignores a payment value it does not recognise", () => {
+    const component = buildWith({ payment: "later" });
+    expect(component.paymentFilter()).toBe("");
+  });
+});
+
+// The dashboard sends people to this list to renew and to collect. Doing
+// either from the row is the whole point of the link.
+describe("ContractsComponent — acting on the row", () => {
+  let component: ContractsComponent;
+  let contractsService: jasmine.SpyObj<ContractsService>;
+  let paymentsService: jasmine.SpyObj<PaymentsService>;
+  let confirmService: ConfirmService;
+
+  const contract = {
+    id: "m1",
+    current_period_id: "p1",
+    status: "active",
+    payment_status: "unpaid",
+    amount_due: "100",
+    payable_period_id: null,
+    upcoming_periods: [],
+    client: { id: "cl1", full_name: "Amy Client", phone: null },
+  } as never as Contract;
+
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    contractsService = jasmine.createSpyObj<ContractsService>("ContractsService", ["list", "renew"]);
+    contractsService.list.and.returnValue(
+      of({ contracts: [], meta: { page: 1, per_page: 20, total: 0, total_pages: 0 }, counts: {}, plan_counts: {}, totals: { portfolio_value: 0, average_basket: 0, unpaid_value: 0, expiring_soon: 0 } })
+    );
+    contractsService.renew.and.returnValue(of({ contract }));
+    paymentsService = jasmine.createSpyObj<PaymentsService>("PaymentsService", ["record"]);
+    paymentsService.record.and.returnValue(of({ payment: {} as never }));
+    const contractTypesService = jasmine.createSpyObj<ContractTypesService>("ContractTypesService", ["list"]);
+    contractTypesService.list.and.returnValue(of({ plans: [] }));
+
+    TestBed.configureTestingModule({
+      imports: [ContractsComponent, TranslateModule.forRoot()],
+      providers: [
+        provideHttpClientTesting(),
+        provideHttpClient(),
+        provideRouter([]),
+        { provide: ContractsService, useValue: contractsService },
+        { provide: ContractTypesService, useValue: contractTypesService },
+        { provide: PaymentsService, useValue: paymentsService },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({}) } } },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(ContractsComponent);
+    component = fixture.componentInstance;
+    confirmService = TestBed.inject(ConfirmService);
+    fixture.detectChanges();
+  });
+
+  it("settles the period in full and in cash, sending no amount of its own", async () => {
+    await component.collect(contract);
+
+    expect(paymentsService.record).toHaveBeenCalledWith({
+      client_id: "cl1",
+      payment_method: "cash",
+      contract_period_id: "p1",
+    });
+    expect(component.rowBusy()).toBeNull();
+  });
+
+  it("will not collect against a contract with no current period", async () => {
+    await component.collect({ ...contract, current_period_id: null } as never);
+    expect(paymentsService.record).not.toHaveBeenCalled();
+  });
+
+  // Renewing early never rewrites the running term, so the row can hold a
+  // settled term and an unpaid renewal at once. The money owed is the
+  // renewal's, and that is what the button has to collect.
+  it("collects the period still owed rather than the term in force", async () => {
+    await component.collect({ ...contract, payable_period_id: "p2" } as never);
+
+    expect(paymentsService.record).toHaveBeenCalledWith({
+      client_id: "cl1",
+      payment_method: "cash",
+      contract_period_id: "p2",
+    });
+  });
+
+  it("reads how far a renewed contract is covered off the last period sold", () => {
+    const renewed = {
+      ...contract,
+      upcoming_periods: [
+        { id: "p2", starts_at: "2026-10-01T00:00:00Z", expires_at: "2026-11-01T00:00:00Z", final_price: "100", payment_status: "unpaid" },
+        { id: "p3", starts_at: "2026-11-01T00:00:00Z", expires_at: "2026-12-01T00:00:00Z", final_price: "100", payment_status: "unpaid" },
+      ],
+    } as never as Contract;
+
+    expect(component.renewedThrough(renewed)).toBe("2026-12-01T00:00:00Z");
+    expect(component.renewedThrough(contract)).toBeNull();
+  });
+
+  it("asks before renewing, and does nothing when told no", async () => {
+    const pending = component.renew(contract);
+    confirmService.resolve(false);
+    await pending;
+
+    expect(contractsService.renew).not.toHaveBeenCalled();
+  });
+
+  it("renews and reloads once confirmed", async () => {
+    const pending = component.renew(contract);
+    confirmService.resolve(true);
+    await pending;
+
+    expect(contractsService.renew).toHaveBeenCalledWith("m1");
+    expect(component.rowBusy()).toBeNull();
+  });
+
+  it("refuses a second action while one is in flight", async () => {
+    component.rowBusy.set("m1");
+    await component.collect(contract);
+    expect(paymentsService.record).not.toHaveBeenCalled();
+  });
+});
+
