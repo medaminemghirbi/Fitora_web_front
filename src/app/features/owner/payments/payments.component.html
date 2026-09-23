@@ -1,24 +1,4 @@
 <div class="fx-listpage">
-  <app-filter-rail [activeCount]="filterChips().length">
-
-    <div class="fx-rail-block">
-      <label class="fx-rail-label" for="payment-method-filter">{{ "payments.method" | translate }}</label>
-      <select id="payment-method-filter" class="form-select form-select-sm"
-              [ngModel]="methodFilter()" (ngModelChange)="applyMethodFilter($event)">
-        <option value="">{{ "common.all" | translate }}</option>
-        @for (opt of methodOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.labelKey | translate }}</option>
-        }
-      </select>
-    </div>
-
-    @if (hasFilters()) {
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
-        <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
-      </button>
-    }
-  </app-filter-rail>
-
   <div class="fx-listpage-main">
     <header class="lst-head">
       <h1>{{ "nav.payments" | translate }}</h1>
@@ -74,14 +54,22 @@
       </dl>
     </div>
 
-    <app-status-filter
-      name="payment-status"
-      [legend]="'clients.filter_status' | translate"
-      [value]="statusFilter()"
-      [options]="railOptions()"
-      (valueChange)="applyStatusFilter($event)"
-    />
-
+    <!-- The method select in the rail asked the same question as the tabs
+         above, so the rail went and its one column went back to the table. -->
+    <div class="lst-filters">
+      <app-status-filter
+        name="payment-status"
+        [legend]="'clients.filter_status' | translate"
+        [value]="statusFilter()"
+        [options]="railOptions()"
+        (valueChange)="applyStatusFilter($event)"
+      />
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+        </button>
+      }
+    </div>
 
     <div class="app-card">
       @if (filterChips().length > 0) {

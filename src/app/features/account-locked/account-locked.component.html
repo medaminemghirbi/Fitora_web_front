@@ -3,10 +3,12 @@
     <div class="locked-icon">🔒</div>
 
     @if (isOwner()) {
-      <h1>{{ ("locked.title_" + reason()) | translate }}</h1>
-      <p class="locked-body">{{ ("locked.body_" + reason()) | translate }}</p>
+      <h1>{{ ("locked.title_" + copyKey()) | translate }}</h1>
+      <p class="locked-body">{{ ("locked.body_" + copyKey()) | translate }}</p>
 
-      <a routerLink="/owner/subscription" class="btn btn-primary">{{ "locked.see_invoices" | translate }}</a>
+      <a routerLink="/owner/subscription" class="btn btn-primary">
+        {{ (trialOver() ? "locked.choose_plan" : "locked.see_invoices") | translate }}
+      </a>
 
       <p class="locked-hint">{{ "locked.hint" | translate }}</p>
     } @else {

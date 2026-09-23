@@ -3,77 +3,83 @@
   <app-page-header [title]="'nav.plans' | translate" [description]="'plans.subtitle' | translate"></app-page-header>
   }
 
-  <div class="app-card">
-    <div class="app-card-header d-flex justify-content-end align-items-center">
-      <div class="d-flex align-items-center gap-2">
-        @if (plans().length > 0) {
-          <div class="fx-input-icon">
-            <i class="bi bi-search"></i>
-            <input type="search" class="form-control form-control-sm" [ngModel]="search()" (ngModelChange)="search.set($event)"
-                   [placeholder]="'common.search' | translate" />
-          </div>
-        }
-        <button type="button" class="btn btn-primary btn-sm" (click)="openCreatePlan()"
-                [disabled]="activities().length === 0"
-                [attr.title]="activities().length === 0 ? ('contract_types.no_activities' | translate) : null">
-          <i class="bi bi-plus-lg"></i> {{ "contract_types.new" | translate }}
-        </button>
+  <div class="fx-toolbar plan-toolbar">
+    @if (plans().length > 0) {
+      <div class="fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input type="search" class="form-control form-control-sm" [ngModel]="search()" (ngModelChange)="search.set($event)"
+               [placeholder]="'common.search' | translate" />
       </div>
-    </div>
-    <div class="app-card-body">
-      @if (loading()) {
-        <div class="d-flex justify-content-center py-4">
-          <app-spinner [size]="28" />
-        </div>
-      } @else if (plans().length === 0) {
-        <app-empty-state [title]="'contract_types.empty_title' | translate" [body]="'contract_types.empty_body' | translate" icon="bi-award">
-          <button type="button" class="btn btn-primary" (click)="openCreatePlan()">+ {{ "contract_types.new" | translate }}</button>
-        </app-empty-state>
-      } @else if (filtered().length === 0) {
-        <app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" />
-      } @else {
-        <div class="row g-3">
-          @for (plan of pagedPlans(); track plan.id) {
-            <div class="col-12 col-md-6 col-xl-4">
-              <div class="app-card h-100" [style.border-top]="'3px solid ' + plan.color">
-                <div class="app-card-body">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h3 class="h6 mb-0" [innerHTML]="plan.name | highlight: search()"></h3>
-                    <app-status-badge [status]="plan.active ? 'active' : 'inactive'">{{ (plan.active ? "common.active" : "common.inactive") | translate }}</app-status-badge>
-                  </div>
-                  <p class="small text-muted-token">{{ plan.description }}</p>
-                  <p class="small text-muted-token mb-1">
-                    {{ "contract_types.activity_prices" | translate }}
-                    <span class="text-muted-token">/ {{ ("contract_types.period_" + plan.billing_period) | translate }}</span>
-                  </p>
-                  @if (plan.activity_prices.length === 0) {
-                    <p class="small text-warning-token mb-2"><i class="bi bi-exclamation-triangle"></i> {{ "contract_types.no_prices_yet" | translate }}</p>
-                  } @else {
-                    <ul class="list-unstyled mb-2">
-                      @for (row of plan.activity_prices; track row.activity_id) {
-                        <li class="d-flex justify-content-between gap-2 small">
-                          <span>{{ row.activity_emoji }} {{ row.activity_name }}</span>
-                          <span class="fw-semibold">{{ row.price | money: plan.currency }}</span>
-                        </li>
-                      }
-                    </ul>
-                  }
-                  @if (plan.session_count) {
-                    <p class="small text-muted-token"><i class="bi bi-ticket-perforated"></i> {{ plan.session_count }} {{ "contract_types.sessions" | translate }}</p>
-                  }
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openEditPlan(plan)">
-                    <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
+    }
+    <button type="button" class="btn btn-primary btn-sm ms-auto" (click)="openCreatePlan()"
+            [disabled]="activities().length === 0"
+            [attr.title]="activities().length === 0 ? ('contract_types.no_activities' | translate) : null">
+      <i class="bi bi-plus-lg"></i> {{ "contract_types.new" | translate }}
+    </button>
+  </div>
 
-        <app-pagination [meta]="meta()" (pageChange)="page.set($event)" />
+  @if (loading()) {
+    <div class="d-flex justify-content-center py-5">
+      <app-spinner [size]="28" />
+    </div>
+  } @else if (plans().length === 0) {
+    <div class="app-card"><div class="app-card-body">
+      <app-empty-state [title]="'contract_types.empty_title' | translate" [body]="'contract_types.empty_body' | translate" icon="bi-award">
+        <button type="button" class="btn btn-primary" (click)="openCreatePlan()">+ {{ "contract_types.new" | translate }}</button>
+      </app-empty-state>
+    </div></div>
+  } @else if (filtered().length === 0) {
+    <div class="app-card"><div class="app-card-body">
+      <app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" />
+    </div></div>
+  } @else {
+    <!-- The cards are the list. Wrapping them in a second card only drew a
+         frame around a frame and stole a gutter's width from each one. -->
+    <div class="plan-grid">
+      @for (plan of pagedPlans(); track plan.id) {
+        <article class="plan-card" [style.--plan-color]="plan.color">
+          <header class="plan-card-head">
+            <h3 [innerHTML]="plan.name | highlight: search()"></h3>
+            <app-status-badge [status]="plan.active ? 'active' : 'inactive'">{{ (plan.active ? "common.active" : "common.inactive") | translate }}</app-status-badge>
+          </header>
+
+          @if (plan.description) {
+            <p class="plan-desc">{{ plan.description }}</p>
+          }
+
+          <div class="plan-chips">
+            <span class="plan-chip"><i class="bi bi-calendar3"></i> {{ ("contract_types.period_" + plan.billing_period) | translate }}</span>
+            @if (plan.session_count) {
+              <span class="plan-chip"><i class="bi bi-ticket-perforated"></i> {{ plan.session_count }} {{ "contract_types.sessions" | translate }}</span>
+            } @else {
+              <span class="plan-chip"><i class="bi bi-infinity"></i> {{ "contract_types.unlimited_bookings" | translate }}</span>
+            }
+          </div>
+
+          @if (plan.activity_prices.length === 0) {
+            <p class="plan-warn"><i class="bi bi-exclamation-triangle"></i> {{ "contract_types.no_prices_yet" | translate }}</p>
+          } @else {
+            <ul class="plan-prices">
+              @for (row of plan.activity_prices; track row.activity_id) {
+                <li>
+                  <span class="plan-price-name">{{ row.activity_emoji }} {{ row.activity_name }}</span>
+                  <span class="plan-price-value">{{ row.price | money: plan.currency }}</span>
+                </li>
+              }
+            </ul>
+          }
+
+          <footer class="plan-card-foot">
+            <button type="button" class="btn btn-sm btn-outline-secondary w-100" (click)="openEditPlan(plan)">
+              <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
+            </button>
+          </footer>
+        </article>
       }
     </div>
-  </div>
+
+    <app-pagination [meta]="meta()" (pageChange)="page.set($event)" />
+  }
 
   <app-modal [open]="planModalOpen()" [title]="(editingPlan() ? 'common.edit' : 'contract_types.new') | translate" (closed)="closePlanModal()">
     @if (formError()) { <div class="alert alert-danger">{{ formError() }}</div> }

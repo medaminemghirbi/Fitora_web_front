@@ -258,6 +258,22 @@ describe("AuthService", () => {
       expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
     });
 
+    // Nothing past sign-up opens until the address is confirmed.
+    it("sends an owner who has not confirmed their address to the waiting screen", () => {
+      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, email_verified: false, company_id: null }));
+      const auth = buildService();
+      expect(auth.emailConfirmationPending()).toBe(true);
+      expect(auth.homeRouteForCurrentUser()).toBe("/confirmation-email");
+    });
+
+    // Staff addresses were typed in by the gym; confirming stays optional.
+    it("never holds staff back on an unconfirmed address", () => {
+      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "receptionist", email_verified: false }));
+      const auth = buildService();
+      expect(auth.emailConfirmationPending()).toBe(false);
+      expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
+    });
+
     it("defaults everyone else to the dashboard", () => {
       localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "receptionist" }));
       const auth = buildService();

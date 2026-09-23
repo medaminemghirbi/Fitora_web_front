@@ -23,6 +23,7 @@ import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
   standalone: true,
   imports: [PageHeaderComponent, FormsModule, ReactiveFormsModule, TranslateModule, EmptyStateComponent, ModalComponent, MoneyPipe, SpinnerComponent, StatusBadgeComponent, PaginationComponent, HighlightPipe],
   templateUrl: "./plans.component.html",
+  styleUrl: "./plans.component.scss",
 })
 export class PlansComponent implements OnInit {
   /**

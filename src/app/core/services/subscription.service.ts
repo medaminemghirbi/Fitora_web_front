@@ -40,6 +40,8 @@ export interface SubscriptionInfo {
   annual_discount_percent: number;
   /** Periods with no invoice behind them, times the tariff. */
   arrears_cents: number;
+  /** How long the free trial signup gives away lasts. */
+  trial_days: number;
   included_modules: string[];
   company_limit: number | null;
   companies_count: number;

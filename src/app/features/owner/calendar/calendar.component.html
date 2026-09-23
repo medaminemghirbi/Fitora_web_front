@@ -1,44 +1,4 @@
 <div class="fx-listpage">
-  <app-filter-rail [activeCount]="hasFilters() ? 1 : 0">
-    <div class="fx-rail-block">
-      <label class="fx-rail-label" for="cal-coach-filter">{{ "bookings.coach" | translate }}</label>
-      <select id="cal-coach-filter" class="form-select form-select-sm" [(ngModel)]="coachFilter" (ngModelChange)="applyFilters()">
-        <option [ngValue]="null">{{ "common.all" | translate }}</option>
-        @for (c of coaches(); track c.id) {
-          <option [ngValue]="c.id">{{ c.full_name }}</option>
-        }
-      </select>
-    </div>
-
-    <div class="fx-rail-block">
-      <label class="fx-rail-label" for="cal-activity-filter">{{ "activities.title" | translate }}</label>
-      <select id="cal-activity-filter" class="form-select form-select-sm" [(ngModel)]="activityFilter" (ngModelChange)="applyFilters()">
-        <option [ngValue]="null">{{ "common.all" | translate }}</option>
-        @for (a of activities(); track a.id) {
-          <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
-        }
-      </select>
-    </div>
-
-    <!-- What each block's colour means on the grid — the same colours the
-         events use, which come from the session's status. -->
-    <div class="fx-rail-block">
-      <span class="fx-rail-label">{{ "calendar.legend" | translate }}</span>
-      <ul class="fx-legend">
-        <li><span class="fx-legend-dot" style="background: var(--color-primary)"></span>{{ "bookings.status_confirmed" | translate }}</li>
-        <li><span class="fx-legend-dot" style="background: var(--color-success)"></span>{{ "bookings.status_completed" | translate }}</li>
-        <li><span class="fx-legend-dot" style="background: var(--color-border-strong)"></span>{{ "bookings.status_cancelled" | translate }}</li>
-        <li><span class="fx-legend-dot" style="background: var(--color-border)"></span>{{ "calendar.session_ended" | translate }}</li>
-      </ul>
-    </div>
-
-    @if (hasFilters()) {
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
-        <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
-      </button>
-    }
-  </app-filter-rail>
-
   <div class="fx-listpage-main">
     <div class="fx-cal-toolbar">
       <div class="fx-cal-nav">
@@ -69,6 +29,46 @@
           </button>
         }
       </div>
+    </div>
+
+    <!-- The two filters and the colour key left the rail: a grid of five
+         days wants every pixel of width, and two selects and four dots do
+         not need a column of their own. -->
+    <div class="fx-cal-filters">
+      <div class="fx-cal-filter">
+        <label for="cal-coach-filter">{{ "bookings.coach" | translate }}</label>
+        <select id="cal-coach-filter" class="form-select form-select-sm" [(ngModel)]="coachFilter" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">{{ "common.all" | translate }}</option>
+          @for (c of coaches(); track c.id) {
+            <option [ngValue]="c.id">{{ c.full_name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="fx-cal-filter">
+        <label for="cal-activity-filter">{{ "activities.title" | translate }}</label>
+        <select id="cal-activity-filter" class="form-select form-select-sm" [(ngModel)]="activityFilter" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">{{ "common.all" | translate }}</option>
+          @for (a of activities(); track a.id) {
+            <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
+          }
+        </select>
+      </div>
+
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+        </button>
+      }
+
+      <!-- What each block's colour means on the grid — the same colours the
+           events use, which come from the session's status. -->
+      <ul class="fx-legend" [attr.aria-label]="'calendar.legend' | translate">
+        <li><span class="fx-legend-dot" style="background: var(--color-primary)"></span>{{ "bookings.status_confirmed" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-success)"></span>{{ "bookings.status_completed" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-border-strong)"></span>{{ "bookings.status_cancelled" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-border)"></span>{{ "calendar.legend_past" | translate }}</li>
+      </ul>
     </div>
 
     <div class="app-card calendar-card">

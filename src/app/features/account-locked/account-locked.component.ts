@@ -28,6 +28,14 @@ export class AccountLockedComponent {
   /** Why the door is shut. Two reasons, never four. */
   readonly reason = computed(() => this.config.subscription()?.lock_reason ?? "suspended");
 
+  /**
+   * An unpaid door after the free days is the trial ending, not a missed
+   * payment — worded as such, and pointed at the formulas rather than at
+   * invoices there are none of.
+   */
+  readonly trialOver = computed(() => this.reason() === "unpaid" && (this.config.subscription()?.trial ?? false));
+  readonly copyKey = computed(() => (this.trialOver() ? "trial_over" : this.reason()));
+
   logout(): void {
     this.auth.logout();
   }

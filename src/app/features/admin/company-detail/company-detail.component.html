@@ -37,7 +37,7 @@
             class="bi"
             [class.bi-cash-coin]="what === 'due'"
             [class.bi-receipt]="what === 'never'"
-            [class.bi-lock-fill]="what === 'unpaid' || what === 'suspended'"
+            [class.bi-lock-fill]="what === 'unpaid' || what === 'suspended' || what === 'trial_over'"
           ></i>
           <div>
             <strong>
@@ -45,6 +45,7 @@
                 @case ("due") { {{ "admin.attention_due" | translate: { days: daysBeforeLock() } }} }
                 @case ("never") { {{ "admin.attention_never" | translate }} }
                 @case ("unpaid") { {{ "admin.attention_unpaid" | translate }} }
+                @case ("trial_over") { {{ "admin.attention_trial_over" | translate }} }
                 @case ("suspended") { {{ "admin.attention_suspended" | translate }} }
               }
             </strong>
@@ -85,17 +86,31 @@
     <!-- ============ Facturation : est-ce qu'ils paient ? ============ -->
     @if (activeTab() === "billing") {
       <div class="ac-summary">
-        <div class="ac-stat">
-          <span class="ac-stat-label">{{ "admin.billing_period" | translate }}</span>
-          <strong>{{ (c.subscription?.billing_period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate }}</strong>
+        <!-- A trial has chosen nothing yet: the formula on file is only what
+             the first payment will buy, so it is said as "then …". -->
+        <div class="ac-stat" [class.ac-stat--trial]="onTrial()">
+          <span class="ac-stat-label">{{ "admin.current_formula" | translate }}</span>
+          @if (onTrial()) {
+            <strong>{{ "admin.trial_running" | translate }}</strong>
+            <span class="ac-stat-sub">
+              {{ "admin.trial_days_left" | translate: { days: trialDaysLeft(), plan: ((c.subscription?.billing_period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate | lowercase) } }}
+            </span>
+          } @else {
+            <strong>{{ (c.subscription?.billing_period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate }}</strong>
+          }
         </div>
         <div class="ac-stat">
           <span class="ac-stat-label">{{ "admin.subscription_title" | translate }}</span>
-          <strong>{{ (c.monthly_subscription_cents / 100) | money: c.currency }} <span class="ac-stat-unit">{{ "admin.per_month" | translate }}</span></strong>
-          <span class="ac-stat-sub">{{ (c.annual_subscription_cents / 100) | money: c.currency }} {{ "admin.per_year" | translate }}</span>
+          @if (c.subscription?.billing_period === "yearly") {
+            <strong>{{ (c.annual_subscription_cents / 100) | money: c.currency }} <span class="ac-stat-unit">{{ "admin.per_year" | translate }}</span></strong>
+            <span class="ac-stat-sub">{{ (c.monthly_subscription_cents / 100) | money: c.currency }} {{ "admin.per_month" | translate }}</span>
+          } @else {
+            <strong>{{ (c.monthly_subscription_cents / 100) | money: c.currency }} <span class="ac-stat-unit">{{ "admin.per_month" | translate }}</span></strong>
+            <span class="ac-stat-sub">{{ (c.annual_subscription_cents / 100) | money: c.currency }} {{ "admin.per_year" | translate }}</span>
+          }
         </div>
         <div class="ac-stat">
-          <span class="ac-stat-label">{{ "admin.attention_paid_through" | translate }}</span>
+          <span class="ac-stat-label">{{ (onTrial() ? "admin.trial_until" : "admin.attention_paid_through") | translate }}</span>
           <strong>{{ (paidThrough() | date: "d MMM y") || ("admin.attention_never_paid" | translate) }}</strong>
         </div>
         <div class="ac-stat">
@@ -128,11 +143,16 @@
                 <span class="ac-cell-mark">
                   @switch (cell.state) {
                     @case ("paid") { ✓ }
+                    @case ("trial") { <i class="bi bi-gift"></i> }
                     @case ("future") { · }
+                    @case ("before") { }
                     @default { ✕ }
                   }
                 </span>
-                <span class="ac-cell-foot">{{ cell.invoice ? cell.invoice.number.slice(-4) : "" }}</span>
+                <span class="ac-cell-foot">
+                  @if (cell.state === "trial") { {{ "admin.trial" | translate }} }
+                  @else { {{ cell.invoice ? cell.invoice.number.slice(-4) : "" }} }
+                </span>
               </div>
             }
           </div>
@@ -159,7 +179,10 @@
                 <tbody>
                   @for (invoice of invoices(); track invoice.id) {
                     <tr>
-                      <td class="fx-strong" dir="ltr">{{ invoice.number }}</td>
+                      <td class="fx-strong" dir="ltr">
+                        {{ invoice.number }}
+                        @if (invoice.trial) { <span class="ac-tag">{{ "admin.trial" | translate }}</span> }
+                      </td>
                       <td>{{ invoice.period_start | date: "d MMM" }} — {{ invoice.period_end | date: "d MMM y" }}</td>
                       <td class="fx-num">{{ invoice.amount | money: invoice.currency }}</td>
                       <td class="text-end">
@@ -184,6 +207,22 @@
               </div>
             </div>
             <div class="app-card-body ac-form">
+              <!-- The plan is the owner's, not this gym's: every gym they
+                   run shares it and its price, so the hint says so instead
+                   of letting it read as a per-gym setting. -->
+              <div>
+                <label for="ac-plan">{{ "admin.plan_label" | translate }}</label>
+                <select id="ac-plan" class="form-select" [value]="plan()" [disabled]="savingPlan()"
+                        (change)="changePlan($any($event.target).value)">
+                  @for (opt of planOptions; track opt.value) {
+                    <option [value]="opt.value">{{ opt.nameKey | translate }}</option>
+                  }
+                </select>
+                <p class="fx-muted ac-hint">
+                  {{ "admin.plan_hint" | translate: { gyms: ownerGyms(), price: (c.monthly_subscription_cents / 100 | money: c.currency) } }}
+                </p>
+              </div>
+
               <div>
                 <label for="ac-period">{{ "admin.billing_period" | translate }}</label>
                 <select id="ac-period" class="form-select" [value]="billingPeriod()" (change)="changeBillingPeriod($any($event.target).value)">
@@ -192,6 +231,24 @@
                 </select>
                 <p class="fx-muted ac-hint">{{ "admin.billing_period_hint" | translate }}</p>
               </div>
+
+              <!-- Always reachable, not only from the banner: a trial gym that
+                   pays early, or a gym paying ahead, has no banner at all. -->
+              @if (nextInvoice(); as next) {
+                <div class="ac-next">
+                  <div class="ac-next-main">
+                    <span class="ac-stat-label">{{ "admin.next_invoice" | translate }}</span>
+                    <strong>{{ (next.amount_cents / 100) | money: c.currency }}</strong>
+                    <span class="fx-muted">{{ next.period_start | date: "d MMM y" }} → {{ next.period_end | date: "d MMM y" }}</span>
+                    @if (onTrial()) {
+                      <p class="fx-muted ac-hint mb-0">{{ "admin.next_invoice_after_trial" | translate }}</p>
+                    }
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="savingInvoice() || savingSub()" (click)="issueInvoice()">
+                    {{ (savingInvoice() ? "common.saving" : "admin.record_payment") | translate }}
+                  </button>
+                </div>
+              }
             </div>
             <div class="ac-card-foot">
               <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="savingSub()" (click)="toggleAccess()">

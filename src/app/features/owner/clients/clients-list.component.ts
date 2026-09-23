@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { DatePipe } from "@angular/common";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Client } from "../../../core/models/client.model";
-import { ClientsService, ClientStatusFilter, EnrolmentSubscription } from "../../../core/services/clients.service";
+import { ClientFilters, ClientSort, ClientsService, ClientStatusFilter, EnrolmentSubscription } from "../../../core/services/clients.service";
 import { ContractTypesService } from "../../../core/services/contract-types.service";
 import { ActivitiesService } from "../../../core/services/activities.service";
 import { ContractType } from "../../../core/models/contract-type.model";
@@ -62,6 +62,22 @@ export class ClientsListComponent implements OnInit {
   readonly search = signal("");
   readonly statusFilter = signal<ClientStatusFilter | "">("");
   readonly page = signal(1);
+
+  // ---- the advanced filters ----------------------------------------------
+  // Everything the status pills cannot say: which plan, which activity it
+  // covers, and when they joined. Folded away by default, because most
+  // visits to this page are "find this one person" — and opened, the drawer
+  // keeps its own state so a sort or a page turn does not shut it.
+  readonly advancedOpen = signal(false);
+  readonly planFilter = signal("");
+  readonly activityFilter = signal("");
+  readonly genderFilter = signal("");
+  readonly joinedFrom = signal("");
+  readonly joinedTo = signal("");
+
+  /** How the grid is ordered. Only the columns the API whitelists are sortable. */
+  readonly sort = signal<ClientSort>("name");
+  readonly direction = signal<"asc" | "desc">("asc");
 
   /** value "" is "all"; the colour is the strip the matching rows carry. */
   readonly statusOptions: { value: ClientStatusFilter | ""; labelKey: string; countKey: string; color: string }[] = [
@@ -137,11 +153,26 @@ export class ClientsListComponent implements OnInit {
     if (this.route.snapshot.queryParamMap.get("action") === "new") this.openCreate();
   }
 
+  /** Every filter the list is currently narrowed by, in one place. */
+  private filters(): ClientFilters {
+    return {
+      search: this.search() || undefined,
+      status: (this.statusFilter() as ClientStatusFilter) || undefined,
+      contract_type_id: this.planFilter() || undefined,
+      activity_id: this.activityFilter() || undefined,
+      gender: this.genderFilter() || undefined,
+      joined_from: this.joinedFrom() || undefined,
+      joined_to: this.joinedTo() || undefined,
+      sort: this.sort(),
+      direction: this.direction(),
+    };
+  }
+
   load(): void {
     this.loading.set(true);
     this.error.set(false);
     this.clientsService
-      .list({ search: this.search() || undefined, status: (this.statusFilter() as ClientStatusFilter) || undefined, page: this.page() })
+      .list({ ...this.filters(), page: this.page() })
       .subscribe({
         next: (res) => {
           this.clients.set(res.clients);
@@ -157,8 +188,16 @@ export class ClientsListComponent implements OnInit {
   }
 
   hasFilters(): boolean {
-    return this.search() !== "" || this.statusFilter() !== "";
+    return this.search() !== "" || this.statusFilter() !== "" || this.advancedCount() > 0;
   }
+
+  /** How many of the folded-away filters are set — the badge on the toggle. */
+  readonly advancedCount = computed(
+    () =>
+      [this.planFilter(), this.activityFilter(), this.genderFilter(), this.joinedFrom(), this.joinedTo()].filter(
+        (value) => value !== ""
+      ).length
+  );
 
   readonly filterChips = computed(() => {
     const chips: { label: string; clear: () => void }[] = [];
@@ -168,29 +207,119 @@ export class ClientsListComponent implements OnInit {
       const opt = this.statusOptions.find((o) => o.value === st);
       if (opt) chips.push({ label: this.translate.instant(opt.labelKey), clear: () => this.applyStatusFilter("") });
     }
+
+    const plan = this.plans().find((p) => p.id === this.planFilter());
+    if (plan) chips.push({ label: plan.name, clear: () => this.setPlanFilter("") });
+
+    const activity = this.activities().find((a) => a.id === this.activityFilter());
+    if (activity) chips.push({ label: activity.name, clear: () => this.setActivityFilter("") });
+
+    if (this.genderFilter()) {
+      chips.push({ label: this.genderLabel(this.genderFilter()), clear: () => this.setGenderFilter("") });
+    }
+
+    // One chip for the range, however many of its two ends are set: "joined
+    // after X" and "joined before Y" are the same filter read twice.
+    if (this.joinedFrom() || this.joinedTo()) {
+      const from = this.joinedFrom() || "…";
+      const to = this.joinedTo() || "…";
+      chips.push({
+        label: `${this.translate.instant("clients.member_since")} ${from} → ${to}`,
+        clear: () => {
+          this.joinedFrom.set("");
+          this.joinedTo.set("");
+          this.reload();
+        },
+      });
+    }
+
     return chips;
   });
+
+  genderLabel(value: string): string {
+    const key = { male: "clients.gender_male", female: "clients.gender_female" }[value];
+    return key ? this.translate.instant(key) : value;
+  }
 
   clearFilters(): void {
     this.search.set("");
     this.statusFilter.set("");
+    this.planFilter.set("");
+    this.activityFilter.set("");
+    this.genderFilter.set("");
+    this.joinedFrom.set("");
+    this.joinedTo.set("");
+    this.reload();
+  }
+
+  /** Any filter change puts the list back on page one before reloading. */
+  private reload(): void {
     this.page.set(1);
     this.load();
+  }
+
+  toggleAdvanced(): void {
+    this.advancedOpen.set(!this.advancedOpen());
+    // The selects are empty until the catalogue is in — load it the first
+    // time the drawer opens rather than with every visit to the page.
+    if (this.advancedOpen()) this.loadCatalogue();
+  }
+
+  setPlanFilter(id: string): void {
+    this.planFilter.set(id);
+    this.reload();
+  }
+
+  setActivityFilter(id: string): void {
+    this.activityFilter.set(id);
+    this.reload();
+  }
+
+  setGenderFilter(value: string): void {
+    this.genderFilter.set(value);
+    this.reload();
+  }
+
+  setJoinedFrom(value: string): void {
+    this.joinedFrom.set(value);
+    this.reload();
+  }
+
+  setJoinedTo(value: string): void {
+    this.joinedTo.set(value);
+    this.reload();
+  }
+
+  /**
+   * Clicking a column header sorts by it — and clicking the one already
+   * sorted flips the direction, which is what a header click means
+   * everywhere else.
+   */
+  sortBy(column: ClientSort): void {
+    if (this.sort() === column) {
+      this.direction.set(this.direction() === "asc" ? "desc" : "asc");
+    } else {
+      this.sort.set(column);
+      this.direction.set("asc");
+    }
+    this.reload();
+  }
+
+  /** What a header announces to a screen reader, and what its caret shows. */
+  ariaSort(column: ClientSort): "ascending" | "descending" | "none" {
+    if (this.sort() !== column) return "none";
+    return this.direction() === "asc" ? "ascending" : "descending";
   }
 
   onSearchChange(term: string): void {
     this.search.set(term);
     if (this.searchDebounce) clearTimeout(this.searchDebounce);
-    this.searchDebounce = setTimeout(() => {
-      this.page.set(1);
-      this.load();
-    }, SEARCH_DEBOUNCE_MS);
+    this.searchDebounce = setTimeout(() => this.reload(), SEARCH_DEBOUNCE_MS);
   }
 
   applyStatusFilter(status: ClientStatusFilter | ""): void {
     this.statusFilter.set(status);
-    this.page.set(1);
-    this.load();
+    this.reload();
   }
 
   onPageChange(page: number): void {
@@ -244,7 +373,7 @@ export class ClientsListComponent implements OnInit {
 
   exportCsv(): void {
     this.clientsService
-      .exportCsv({ search: this.search() || undefined, status: (this.statusFilter() as ClientStatusFilter) || undefined })
+      .exportCsv(this.filters())
       .subscribe({
         next: (blob) => downloadBlob(blob, `adherents-${new Date().toISOString().slice(0, 10)}.csv`),
         error: () => this.toast.error(this.translate.instant("common.error_generic")),

@@ -70,6 +70,18 @@
   .fx-cell-lead-sub { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
 }
 
+// A second line under a figure — what it was before the discount, and the
+// like. Same size as a lead's sub-line, aligned with the figure above it.
+.fx-cell-sub {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+// A date range in one cell: two columns for "from" and "to" cost more width
+// than the range itself needs.
+.fx-cell-period { white-space: nowrap; }
+
 // ---------------------------------------------------------------------------
 // Data grid density — zebra rows, a status strip, aligned figures
 // ---------------------------------------------------------------------------
@@ -89,4 +101,62 @@
   > :not(caption) > * > *:last-child { padding-inline-end: 1rem; }
 
   .fx-num { font-variant-numeric: tabular-nums; }
+}
+
+// ---------------------------------------------------------------------------
+// Sortable headers, and rows that open what they describe
+// ---------------------------------------------------------------------------
+// The header is a real button: sorting is an action, and a <th> alone gives
+// the keyboard nothing to press. The caret is doubled-headed until the column
+// is the one being sorted, so a sortable column says so before it is clicked.
+.fx-th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+
+  i { font-size: 0.7em; opacity: 0.55; }
+  &:hover { color: var(--color-text); i { opacity: 1; } }
+}
+
+.table.fx-grid thead th.is-sorted .fx-th-sort i { opacity: 1; }
+
+// The whole row opens the member; the name stays a real link inside it, so
+// middle-click, "open in new tab" and the keyboard all still work.
+.fx-row-link { cursor: pointer; }
+
+.fx-cell-lead-title a {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover { color: var(--color-primary); text-decoration: underline; }
+}
+
+// Columns that are context rather than answer: the first things to go when
+// the grid runs out of width.
+@media (max-width: 1199.98px) {
+  .fx-col-contact { display: none; }
+}
+
+@media (max-width: 991.98px) {
+  .fx-col-seen { display: none; }
+}
+
+// The chevron's column: as narrow as the glyph, and out of the way of the
+// figures beside it.
+.fx-col-go { width: 1px; text-align: end; color: var(--color-muted); }
+
+// A renewal already sold, sitting behind the term in force. Deliberately
+// quieter than the dates above it: it is reassurance that the renewal landed,
+// not the period anyone is being asked to act on today.
+.fx-renewal-queued {
+  color: var(--color-success);
+  font-weight: 600;
 }

@@ -75,7 +75,7 @@
       </button>
 
       @if (showSupport) {
-        <a routerLink="/owner/subscription" [queryParams]="{ tab: 'contact' }" class="app-navbar-support d-none d-md-inline-flex" routerLinkActive="is-active">
+        <a routerLink="/owner/support" class="app-navbar-support d-none d-md-inline-flex" routerLinkActive="is-active">
           <i class="bi bi-headset"></i>
           <span>{{ "nav.support" | translate }}</span>
         </a>
@@ -170,7 +170,7 @@
         </a>
       }
       @if (showSupport) {
-        <a routerLink="/owner/subscription" [queryParams]="{ tab: 'contact' }" routerLinkActive="is-active" class="app-navbar-m-item">
+        <a routerLink="/owner/support" routerLinkActive="is-active" class="app-navbar-m-item">
           <i class="bi bi-headset"></i> {{ "nav.support" | translate }}
         </a>
       }

@@ -23,7 +23,7 @@ import { SpinnerComponent } from "../../../shared/components/spinner.component";
 export class ProLoginComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  /** Set when the credentials were right but the account is a member's. */
+  readonly showPassword = signal(false);
 
   readonly form = this.fb.nonNullable.group({
     email: ["", [Validators.required, Validators.email]],

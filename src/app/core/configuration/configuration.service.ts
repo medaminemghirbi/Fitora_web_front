@@ -19,6 +19,10 @@ export interface BootstrapSubscription {
   current_period_paid: boolean;
   /** Days left before access closes. null when nothing is ticking. */
   days_before_lock: number | null;
+  /** On the free days signup gave away (or just past them). */
+  trial: boolean;
+  /** Free days left, today included. null outside a trial. */
+  trial_days_left: number | null;
 }
 
 export interface CompanyRole {

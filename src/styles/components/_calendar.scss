@@ -39,23 +39,55 @@
 
 .fx-cal-actions { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
 
-// Colour key for a grid (calendar statuses today)
+// The row under the toolbar: what to show, then what the colours mean.
+// It replaced the left rail — five days of grid need the width more than
+// two selects do.
+.fx-cal-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.fx-cal-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  .form-select { width: auto; min-width: 150px; max-width: 220px; }
+}
+
+// Colour key for a grid (calendar statuses today). It sits at the end of
+// the filter row, pushed to the far edge: a key is read once, not chosen.
 .fx-legend {
   list-style: none;
-  margin: 0;
+  margin: 0 0 0 auto;
   padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
 
   li { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--color-text-secondary); }
 }
+
+:dir(rtl) .fx-legend { margin: 0 auto 0 0; }
 
 .fx-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
 @media (max-width: 767.98px) {
   .fx-cal-toolbar { gap: var(--space-2); }
   .fx-cal-title { font-size: 1rem; flex-basis: 100%; }
+  .fx-cal-filter { flex: 1 1 100%; }
+  .fx-cal-filter .form-select { flex: 1; max-width: none; }
+  .fx-legend { margin-inline-start: 0; }
 }
 
 // ---------------------------------------------------------------------------

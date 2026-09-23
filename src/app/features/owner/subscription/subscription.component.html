@@ -13,41 +13,63 @@
       <div class="fx-stack">
 
         <!-- Where you stand, in one line. -->
-        <div class="sub-state" [attr.data-state]="accessOpen() ? (currentPeriodPaid() ? 'open' : 'due') : 'closed'">
-          <div>
-            <div class="sub-state-label">
-              @if (!accessOpen()) {
-                {{ "subscription.state_closed" | translate }}
-              } @else if (currentPeriodPaid()) {
-                {{ "subscription.state_open" | translate }}
-              } @else {
-                {{ "subscription.state_due" | translate: { days: daysBeforeLock() } }}
-              }
+        @if (onTrial()) {
+          <!-- On the free days: nothing paid, nothing chosen yet. -->
+          <div class="sub-state" [attr.data-state]="trialRunning() ? 'trial' : 'closed'">
+            <div>
+              <div class="sub-state-label">
+                @if (trialRunning()) {
+                  {{ "subscription.state_trial" | translate: { days: trialDaysLeft() } }}
+                } @else {
+                  {{ "subscription.state_trial_over" | translate }}
+                }
+              </div>
+              <div class="sub-state-head">
+                {{ (trialRunning() ? "subscription.trial_until" : "subscription.trial_ended_on") | translate }}
+                {{ paidThrough() | date: "d MMMM y" }}
+              </div>
+              <p class="sub-state-sub">
+                {{ (trialRunning() ? "subscription.trial_sub" : "subscription.trial_over_sub") | translate }}
+              </p>
             </div>
-            <div class="sub-state-head">
-              @if (paidThrough()) {
-                {{ "subscription.paid_until" | translate }} {{ paidThrough() | date: "d MMMM y" }}
-              } @else {
-                {{ "subscription.never_paid" | translate }}
-              }
-            </div>
-            <p class="sub-state-sub">
-              {{ (s.subscription?.billing_period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate }}
-              ·
-              {{ (s.subscription?.billing_period === "yearly" ? s.annual_subscription_cents / 100 : s.monthly_subscription_cents / 100) | money: currency() }}
-              @if (arrears() > 0) {
-                · <strong class="sub-arrears">{{ "subscription.arrears" | translate: { amount: (arrears() | money: currency()) } }}</strong>
-              }
-            </p>
           </div>
-        </div>
+        } @else {
+          <div class="sub-state" [attr.data-state]="accessOpen() ? (currentPeriodPaid() ? 'open' : 'due') : 'closed'">
+            <div>
+              <div class="sub-state-label">
+                @if (!accessOpen()) {
+                  {{ "subscription.state_closed" | translate }}
+                } @else if (currentPeriodPaid()) {
+                  {{ "subscription.state_open" | translate }}
+                } @else {
+                  {{ "subscription.state_due" | translate: { days: daysBeforeLock() } }}
+                }
+              </div>
+              <div class="sub-state-head">
+                @if (paidThrough()) {
+                  {{ "subscription.paid_until" | translate }} {{ paidThrough() | date: "d MMMM y" }}
+                } @else {
+                  {{ "subscription.never_paid" | translate }}
+                }
+              </div>
+              <p class="sub-state-sub">
+                {{ (s.subscription?.billing_period === "yearly" ? "subscription.plan_yearly" : "subscription.plan_monthly") | translate }}
+                ·
+                {{ (s.subscription?.billing_period === "yearly" ? s.annual_subscription_cents / 100 : s.monthly_subscription_cents / 100) | money: currency() }}
+                @if (arrears() > 0) {
+                  · <strong class="sub-arrears">{{ "subscription.arrears" | translate: { amount: (arrears() | money: currency()) } }}</strong>
+                }
+              </p>
+            </div>
+          </div>
+        }
 
         <!-- What this gym is using, against what its tier allows. -->
         <section class="sub-usage" aria-labelledby="sub-usage-h">
           <div class="sub-usage-head">
             <i class="bi bi-gem" aria-hidden="true"></i>
             <h2 id="sub-usage-h">{{ "subscription.current_plan" | translate }}</h2>
-            <span class="sub-usage-badge">{{ currentTierName() | translate }}</span>
+            <span class="sub-usage-badge" [class.is-over]="trialOver()">{{ currentTierName() | translate }}</span>
           </div>
           <div class="sub-usage-grid">
             @for (row of usage(); track row.key) {
@@ -76,33 +98,167 @@
             </div>
           </div>
 
-          <div class="sub-tiers">
-            @for (tier of tiers(); track tier.nameKey) {
-              <section class="sub-tier" [class.is-current]="tier.current" [attr.aria-label]="tier.nameKey | translate">
-                @if (tier.current) {
-                  <span class="sub-tier-ribbon"><i class="bi bi-check-lg"></i> {{ "subscription.tier_current" | translate }}</span>
-                }
-                <h3>{{ tier.nameKey | translate }}</h3>
-                <p class="sub-tier-for">{{ (tier.nameKey + "_for") | translate }}</p>
-                <p class="sub-tier-price">
-                  <strong>{{ tier.price | money: currency() }}</strong>
-                  <span>{{ (billingPeriod() === "yearly" ? "subscription.per_year" : "subscription.per_month") | translate }}</span>
-                </p>
-                <p class="sub-tier-limit">
-                  @if (tier.limit === null) {
-                    {{ "subscription.tier_limit_unlimited" | translate }}
-                  } @else {
-                    {{ "subscription.tier_limit" | translate: { count: tier.limit } }}
+          <!-- A table rather than three cards: the six modules would have
+               been repeated on every card, and the row a reader wants to
+               compare is the one that lines up across the columns. -->
+          <div class="sub-cmp-scroll">
+            <table class="sub-cmp">
+              <caption class="visually-hidden">{{ "subscription.cmp_caption" | translate }}</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sub-cmp-corner"></th>
+                  @for (tier of tiers(); track tier.nameKey) {
+                    <th scope="col" class="sub-cmp-tier" [class.is-current]="tier.current">
+                      @if (tier.current) {
+                        <span class="sub-cmp-ribbon"><i class="bi bi-check-lg"></i> {{ "subscription.tier_current" | translate }}</span>
+                      }
+                      <span class="sub-cmp-name">{{ tier.nameKey | translate }}</span>
+                      <span class="sub-cmp-for">{{ (tier.nameKey + "_for") | translate }}</span>
+                      <span class="sub-cmp-price">
+                        @if (tier.trial) {
+                          <strong>{{ "subscription.trial_price" | translate }}</strong>
+                        } @else {
+                          <strong>{{ tier.price | money: currency() }}</strong>
+                          <small>{{ (billingPeriod() === "yearly" ? "subscription.per_year" : "subscription.per_month") | translate }}</small>
+                        }
+                      </span>
+                      <span class="sub-cmp-limit">
+                        @if (tier.trial) {
+                          {{ "subscription.trial_length" | translate: { count: s.trial_days } }}
+                        } @else if (tier.limit === null) {
+                          {{ "subscription.tier_limit_unlimited" | translate }}
+                        } @else {
+                          {{ ("subscription.tier_limit" + (tier.limit === 1 ? "" : "_plural")) | translate: { count: tier.limit } }}
+                        }
+                      </span>
+                    </th>
                   }
-                </p>
-                @if (tier.current) {
-                  <span class="sub-tier-cta is-current"><i class="bi bi-check-lg"></i> {{ "subscription.tier_active" | translate }}</span>
-                }
-              </section>
-            }
+                </tr>
+              </thead>
+
+              @for (group of compareGroups(); track group.labelKey) {
+                <tbody>
+                  <tr class="sub-cmp-group">
+                    <th scope="colgroup" [attr.colspan]="tiers().length + 1">{{ group.labelKey | translate }}</th>
+                  </tr>
+                  @for (row of group.rows; track row.key) {
+                    <tr>
+                      <th scope="row">{{ row.labelKey | translate }}</th>
+                      @for (value of row.values; track $index) {
+                        <td [class.is-current]="tiers()[$index].current">
+                          @switch (value) {
+                            @case ("yes") {
+                              <i class="bi bi-check-lg sub-cmp-yes" aria-hidden="true"></i>
+                              <span class="visually-hidden">{{ "subscription.cmp_yes" | translate }}</span>
+                            }
+                            @case ("soon") {
+                              <span class="sub-cmp-soon">{{ "subscription.extra_soon" | translate }}</span>
+                            }
+                            @default {
+                              <span class="sub-cmp-no" aria-hidden="true">—</span>
+                              <span class="visually-hidden">{{ "subscription.cmp_no" | translate }}</span>
+                            }
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              }
+
+              <tfoot>
+                <tr>
+                  <td class="sub-cmp-corner"></td>
+                  @for (tier of tiers(); track tier.nameKey) {
+                    <td class="sub-cmp-act" [class.is-current]="tier.current">
+                      @if (tier.current) {
+                        <span class="sub-cmp-cta is-current">
+                          <i class="bi bi-check-lg"></i> {{ (tier.trial ? "subscription.trial_running" : "subscription.tier_active") | translate }}
+                        </span>
+                      } @else if (requested(tier)) {
+                        <span class="sub-cmp-cta is-sent"><i class="bi bi-hourglass-split"></i> {{ "subscription.request_pending" | translate }}</span>
+                      } @else {
+                        <button type="button" class="sub-cmp-cta is-request" (click)="openRequest(tier)">
+                          {{ "subscription.request_tier" | translate }}
+                        </button>
+                      }
+                    </td>
+                  }
+                </tr>
+              </tfoot>
+            </table>
           </div>
+
+          <p class="sub-cmp-note">{{ "subscription.request_note" | translate }}</p>
         }
       </div>
     }
+  }
+
+  <!-- Paying happens outside the app, so changing tier is a request, not a
+       checkout. It is sent as a support ticket: the owner reads it back on
+       the support page and Fitora answers from the inbox it already reads. -->
+  @if (requestTier(); as tier) {
+    <app-modal
+      [open]="true"
+      [title]="'subscription.request_title' | translate: { tier: (tier.nameKey | translate) }"
+      (closed)="closeRequest()"
+    >
+      <p class="fx-muted">
+        {{ "subscription.request_hint" | translate: {
+             tier: (tier.nameKey | translate),
+             price: (tier.price | money: currency()),
+             period: ((billingPeriod() === "yearly" ? "subscription.per_year" : "subscription.per_month") | translate)
+           } }}
+      </p>
+
+      <!-- Required: payment happens off-app, so Fitora calls back to set the
+           plan up. Prefilled from the owner's profile, then the gym's. -->
+      <div class="mb-3">
+        <label class="form-label" for="upgrade-phone">
+          {{ "subscription.request_phone_label" | translate }} <span class="text-danger" aria-hidden="true">*</span>
+        </label>
+        <input
+          id="upgrade-phone"
+          type="tel"
+          class="form-control"
+          autocomplete="tel"
+          inputmode="tel"
+          dir="ltr"
+          required
+          [class.is-invalid]="phoneTouched() && !phoneValid()"
+          [attr.aria-invalid]="phoneTouched() && !phoneValid()"
+          aria-describedby="upgrade-phone-hint"
+          [ngModel]="requestPhone()"
+          (ngModelChange)="requestPhone.set($event)"
+          (blur)="phoneTouched.set(true)"
+          [placeholder]="'subscription.request_phone_placeholder' | translate"
+        />
+        @if (phoneTouched() && !phoneValid()) {
+          <div id="upgrade-phone-hint" class="invalid-feedback d-block">
+            {{ (requestPhone().trim() ? "subscription.request_phone_invalid" : "subscription.request_phone_required") | translate }}
+          </div>
+        } @else {
+          <div id="upgrade-phone-hint" class="form-text">{{ "subscription.request_phone_hint" | translate }}</div>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="upgrade-note">{{ "subscription.request_note_label" | translate }}</label>
+        <textarea id="upgrade-note" class="form-control" rows="3"
+                  [ngModel]="requestNote()" (ngModelChange)="requestNote.set($event)"
+                  [placeholder]="'subscription.request_note_placeholder' | translate"></textarea>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeRequest()" [disabled]="requesting()">
+          {{ "common.cancel" | translate }}
+        </button>
+        <button type="button" class="btn btn-primary" (click)="submitRequest()" [disabled]="requesting()">
+          @if (requesting()) { <app-spinner [size]="16" /> } @else { <i class="bi bi-send-check"></i> }
+          {{ "subscription.request_send" | translate }}
+        </button>
+      </div>
+    </app-modal>
   }
 </div>

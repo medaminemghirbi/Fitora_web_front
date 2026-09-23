@@ -79,23 +79,36 @@
   flex-wrap: wrap;
 }
 
+// Figures as tiles, label over value. They were rows of "label ......... value"
+// in a three-wide grid: with four figures the fourth wrapped alone, and
+// `space-between` threw each value at the far edge of its column, so the
+// last one sat against the edge of the page reading like a clipped number.
 .fx-stats {
   flex: 1;
-  min-width: 260px;
   margin: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.35rem var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 
-  > div { display: flex; justify-content: space-between; gap: var(--space-3); }
-  dt { font-size: 0.8125rem; font-weight: 600; color: var(--color-text-secondary); }
-  dd { margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--color-text); font-variant-numeric: tabular-nums; }
+  > div {
+    flex: 1 1 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.55rem 0.85rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  dt { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-text-secondary); }
+  dd { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--color-text); font-variant-numeric: tabular-nums; }
 }
 
 .fx-stats-actions { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
 
 @media (max-width: 767.98px) {
-  .fx-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fx-stats > div { flex-basis: 120px; }
   .fx-stats-actions { width: 100%; }
   .fx-stats-actions .btn { flex: 1; }
 }

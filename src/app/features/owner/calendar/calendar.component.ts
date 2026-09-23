@@ -35,7 +35,6 @@ import { ModalComponent } from "../../../shared/components/modal.component";
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 import { StatusBadgeComponent } from "../../../shared/components/status-badge.component";
 import { SearchableSelectComponent } from "../../../shared/ui/searchable-select.component";
-import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
 
 // Local calendar date, not UTC — toISOString() would roll a local midnight
 // back to the previous day for any timezone ahead of UTC (e.g. Africa/Tunis),
@@ -51,7 +50,7 @@ function toDateInputValue(date: Date): string {
 @Component({
   selector: "app-calendar",
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, DatePipe, TranslateModule, FullCalendarModule, ModalComponent, SpinnerComponent, StatusBadgeComponent, SearchableSelectComponent, FilterRailComponent],
+  imports: [FormsModule, ReactiveFormsModule, DatePipe, TranslateModule, FullCalendarModule, ModalComponent, SpinnerComponent, StatusBadgeComponent, SearchableSelectComponent],
   templateUrl: "./calendar.component.html",
   styleUrl: "./calendar.component.scss",
 })

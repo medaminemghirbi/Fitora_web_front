@@ -59,6 +59,17 @@ export class AuthService {
   readonly isImpersonating = computed(() => this.impersonatorStashSignal() !== null);
   readonly impersonatedCompanyName = computed(() => this.impersonatorStashSignal()?.companyName ?? null);
 
+  /**
+   * An owner who signed up and has not clicked the emailed link yet. Nothing
+   * past sign-up opens for them — the backend refuses it with
+   * `email_unverified` — so every route sends them to /confirmation-email.
+   * An admin impersonating them is let through, as the backend does.
+   */
+  readonly emailConfirmationPending = computed(() => {
+    const user = this.currentUserSignal();
+    return user?.role === "owner" && user.email_verified === false && !this.isImpersonating();
+  });
+
   // Configuration (company, branding, permissions, modules, subscription) is
   // owned by ConfigurationService and hydrated from GET /api/v1/bootstrap;
   // these delegate so callers that already inject AuthService keep working.
@@ -197,6 +208,8 @@ export class AuthService {
     if (this.isClient()) return "/member/home";
     const user = this.currentUserSignal();
     if (user?.role === "admin") return "/admin/overview";
+    // The address first: nothing else opens until it is confirmed.
+    if (this.emailConfirmationPending()) return "/confirmation-email";
     // Anyone who coaches uses the dedicated coach shell ("My schedule" /
     // attendance) — whatever their role happens to be called.
     if (user?.is_coach) return "/coach/today";
@@ -238,12 +251,20 @@ export class AuthService {
   // the cached user object doesn't auto-update for, e.g. creating an
   // company (company_id is only known once one exists).
   refreshCurrentUser(): Observable<User> {
+    return this.fetchCurrentUser().pipe(tap(() => this.loadConfiguration()));
+  }
+
+  /**
+   * The same re-fetch without re-hydrating the configuration — cheap enough
+   * for the "check your inbox" screen to ask every few seconds whether the
+   * link has been clicked yet.
+   */
+  fetchCurrentUser(): Observable<User> {
     return this.http.get<{ user: User }>(`${API_BASE_URL}/auth/me`).pipe(
       map((res) => res.user),
       tap((user) => {
         localStorage.setItem(USER_KEY, JSON.stringify(user));
         this.currentUserSignal.set(user);
-        this.loadConfiguration();
       })
     );
   }

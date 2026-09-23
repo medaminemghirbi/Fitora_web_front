@@ -151,6 +151,8 @@ describe("OwnerShellComponent", () => {
         current_period_paid: true,
         days_before_lock: null,
         lock_reason: null,
+        trial: false,
+        trial_days_left: null,
         ...patch,
       });
       fixture = TestBed.createComponent(OwnerShellComponent);
@@ -173,11 +175,25 @@ describe("OwnerShellComponent", () => {
       expect(component.daysToSettle()).toBe(0);
     });
 
-    // The free trial is one of these periods like any other, so its last
-    // days warn exactly as a paid one's do.
-    it("warns on the way out of the free trial too", () => {
-      withSubscription({ current_period_paid: false, days_before_lock: 1 });
-      expect(component.daysToSettle()).toBe(1);
+    // The free days count down on their own banner, not as a debt.
+    it("stays out of the way of an ended trial", () => {
+      withSubscription({ current_period_paid: false, days_before_lock: 0, trial: true, trial_days_left: 0 });
+      expect(component.daysToSettle()).toBeNull();
+    });
+
+    it("counts the free days down while the trial runs", () => {
+      withSubscription({ trial: true, trial_days_left: 9 });
+      expect(component.trialDaysLeft()).toBe(9);
+    });
+
+    it("says zero on the trial's last evening, before the door shuts", () => {
+      withSubscription({ current_period_paid: false, days_before_lock: 0, trial: true, trial_days_left: 0 });
+      expect(component.trialDaysLeft()).toBe(0);
+    });
+
+    it("has no trial banner once a paid period follows", () => {
+      withSubscription({});
+      expect(component.trialDaysLeft()).toBeNull();
     });
   });
 });

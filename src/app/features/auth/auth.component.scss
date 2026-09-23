@@ -1,110 +1,234 @@
-// The form itself, shared by every account screen. The frame around it is
-// NOT shared: a gym gets <app-auth-pro-shell> (flat white, narrow column) and
-// a member gets <app-auth-member-shell> (gradient, floating card), because
-// the two audiences should be able to tell them apart at a glance.
+// Shared by every account screen (sign in, sign up, forgotten / new
+// password, e-mail confirmation): the form on the right and the content
+// each page projects into <app-auth-pro-shell>'s panel (`authPanel`).
+// "Éditorial" direction — serif headlines, tall fields, pill buttons.
 
+// ---------- The form half ---------------------------------------------------
 .auth-title {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.35rem;
+  font-family: var(--font-editorial);
+  font-size: 2.75rem;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--color-text);
+  margin: 0 0 0.625rem;
+  text-wrap: balance;
+
+  @media (max-width: 575.98px) { font-size: 2.25rem; }
 }
 
 .auth-subtitle {
   color: var(--color-text-secondary);
-  font-size: 0.9375rem;
-  margin: 0 0 var(--space-5);
+  font-size: 1rem;
+  margin: 0 0 var(--space-6);
+
+  b { color: var(--color-text); }
 }
 
 label {
   display: block;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
 .form-control,
 .form-select {
-  height: 46px;
+  height: 54px;
+  padding-inline: 1.125rem;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: var(--color-surface);
+
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-primary-soft);
+  }
 }
 
 textarea.form-control { height: auto; resize: vertical; }
 
-.btn-primary {
-  height: 46px;
-  font-weight: 600;
+.mb-3 { margin-bottom: 1.25rem !important; }
+
+// A password field with its show / hide button inside it.
+.auth-password {
+  position: relative;
+
+  .form-control { padding-inline-end: 3.25rem; }
+}
+
+.auth-eye {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 1.125rem;
+  cursor: pointer;
+
+  &:hover { color: var(--color-text); }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
+}
+
+.auth-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+
+  label { margin-bottom: 0.5rem; }
+}
+
+.auth-forgot-link {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.btn-primary,
+.btn-outline-secondary,
+.auth-btn-outline {
+  height: 56px;
+  border-radius: var(--radius-pill);
+  font-size: 1rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+// The secondary pill: an ink outline, as on the landing page.
+.auth-btn-outline {
+  width: 100%;
+  border: 1.5px solid var(--color-text);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-text);
+    text-decoration: none;
+  }
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin: 1.5rem 0 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
 }
 
 .auth-switch {
-  margin: var(--space-4) 0 0;
+  margin: var(--space-5) 0 0;
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   text-align: center;
 
-  a { font-weight: 600; }
+  a { font-weight: 700; }
 }
 
-.auth-forgot-link { font-size: 0.8125rem; font-weight: 600; }
+.alert { border-radius: 14px; }
 
+// ---------- A new password: strength + the two rules -----------------------
+.auth-strength {
+  display: flex;
+  gap: 6px;
+  margin-top: 0.75rem;
+
+  span {
+    flex: 1;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--color-border);
+    transition: background var(--transition-base);
+  }
+
+  &[data-level="1"] span:nth-child(-n + 1) { background: var(--color-danger); }
+  &[data-level="2"] span:nth-child(-n + 2) { background: var(--color-warning); }
+  &[data-level="3"] span:nth-child(-n + 3),
+  &[data-level="4"] span { background: var(--color-primary); }
+}
+
+.auth-strength-label {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-muted);
+
+  &[data-level="1"] { color: var(--color-danger); }
+  &[data-level="3"],
+  &[data-level="4"] { color: var(--color-primary); }
+}
+
+.auth-rules {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-muted);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .is-met { color: var(--color-success); }
+}
+
+// ---------- Done / sent states ---------------------------------------------
 .auth-request-mark {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto var(--space-4);
-  border-radius: var(--radius-pill);
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--space-5);
+  border-radius: 20px;
   background: var(--color-success-soft);
   color: var(--color-success);
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
-.role-toggle {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-}
-
-.role-toggle-option {
-  flex: 1;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  padding: 0.75rem;
-  text-align: center;
-  cursor: pointer;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
-
-  i {
-    display: block;
-    font-size: 1.25rem;
-    margin-bottom: 0.35rem;
-    color: var(--color-muted);
-  }
-
-  &.active {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-
-    i { color: var(--color-primary); }
-  }
-}
-
-
 
 // ---------- The three steps behind a sign-up -----------------------------
 // The account is one of three. Saying so up front is why someone finishes
 // the other two.
 .auth-steps {
   list-style: none;
-  margin: 0 0 1.375rem;
+  margin: 0 0 1.5rem;
   padding: 0;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.625rem;
 
   li {
@@ -113,13 +237,13 @@ textarea.form-control { height: auto; resize: vertical; }
     gap: 0.5625rem;
     flex-shrink: 0;
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--color-text-secondary);
     white-space: nowrap;
 
     span {
-      width: 25px;
-      height: 25px;
+      width: 26px;
+      height: 26px;
       display: grid;
       place-items: center;
       border-radius: 50%;
@@ -135,6 +259,12 @@ textarea.form-control { height: auto; resize: vertical; }
       background: var(--color-border);
     }
 
+    // Behind us: a check instead of the number.
+    &.is-done span {
+      background: var(--color-success-soft);
+      color: var(--color-success);
+    }
+
     &[aria-current="step"] {
       color: var(--color-text);
       font-weight: 700;
@@ -145,4 +275,109 @@ textarea.form-control { height: auto; resize: vertical; }
       }
     }
   }
+}
+
+// ---------- The panel (projected into the shell with `authPanel`) ----------
+// Colours come from the shell's --apro-* properties, so the same markup
+// works on the aubergine and on the lavender panel.
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  max-width: 520px;
+}
+
+.auth-panel-icon {
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  border-radius: 28px;
+  background: var(--apro-card-bg);
+  border: 1px solid var(--apro-card-border);
+  color: var(--apro-em);
+  font-size: 2.5rem;
+}
+
+.auth-panel-title {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: clamp(2.75rem, 4.6vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--apro-ink); // beat the global heading colour
+  text-wrap: balance;
+
+  em {
+    font-style: italic;
+    color: var(--apro-em);
+  }
+}
+
+.auth-panel-lead {
+  margin: 0;
+  max-width: 460px;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--apro-ink-soft);
+}
+
+.auth-panel-card {
+  max-width: 440px;
+  padding: 1.375rem 1.5rem;
+  border-radius: 20px;
+  background: var(--apro-card-bg);
+  border: 1px solid var(--apro-card-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.auth-panel-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--apro-em);
+}
+
+.auth-panel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+  }
+
+  i {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid var(--apro-card-border);
+    color: var(--apro-em);
+    font-size: 0.875rem;
+  }
+}
+
+// Fraunces has no Arabic: the headlines fall back to the app face there.
+:host-context([dir="rtl"]) {
+  .auth-title,
+  .auth-panel-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .auth-panel-title em { font-style: normal; }
 }

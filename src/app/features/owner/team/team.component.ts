@@ -23,7 +23,6 @@ import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 import { DrawerComponent } from "../../../shared/ui/drawer.component";
-import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
 import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
 
 type Tab = "all" | "coaches" | "backoffice";
@@ -74,7 +73,6 @@ const PERMISSION_ORDER = ["revenue", "payments", "clients", "sessions", "booking
     ErrorStateComponent,
     ActionMenuComponent,
     DrawerComponent,
-    FilterRailComponent,
     StatusFilterComponent,
   ],
   templateUrl: "./team.component.html",
@@ -225,20 +223,7 @@ export class TeamComponent implements OnInit {
     return base;
   });
 
-  /** The strip at the top — everything counted from the loaded team. */
-  readonly stats = computed(() => {
-    const all = this.members();
-    return {
-      total: all.length,
-      active: all.filter((m) => m.active).length,
-      inactive: all.filter((m) => !m.active).length,
-      coaches: all.filter((m) => m.coach).length,
-      withMobile: all.filter((m) => m.hasMobile).length,
-      withWeb: all.filter((m) => m.hasWeb).length,
-    };
-  });
-
-  /** Filter the rail's access list: who can sign in where. */
+  /** The access pills: who can sign in where. */
   readonly accessFilter = signal<"" | "mobile" | "web" | "none">("");
 
   readonly accessOptions = computed<StatusFilterOption[]>(() => {

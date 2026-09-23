@@ -51,7 +51,7 @@ describe("ContractsComponent", () => {
     amount_due: "0",
     plan: contractType,
     activity: { id: "a1", name: "Yoga", emoji: "\u{1F9D8}" },
-    all_access: false,
+    all_access: false, upcoming_periods: [], payable_period_id: null,
     activity_label: "Yoga",
     client: { id: "cl1", full_name: "Amy Client", phone: null },
   };
@@ -230,6 +230,9 @@ describe("ContractsComponent — acting on the row", () => {
     current_period_id: "p1",
     status: "active",
     payment_status: "unpaid",
+    amount_due: "100",
+    payable_period_id: null,
+    upcoming_periods: [],
     client: { id: "cl1", full_name: "Amy Client", phone: null },
   } as never as Contract;
 
@@ -278,6 +281,32 @@ describe("ContractsComponent — acting on the row", () => {
   it("will not collect against a contract with no current period", async () => {
     await component.collect({ ...contract, current_period_id: null } as never);
     expect(paymentsService.record).not.toHaveBeenCalled();
+  });
+
+  // Renewing early never rewrites the running term, so the row can hold a
+  // settled term and an unpaid renewal at once. The money owed is the
+  // renewal's, and that is what the button has to collect.
+  it("collects the period still owed rather than the term in force", async () => {
+    await component.collect({ ...contract, payable_period_id: "p2" } as never);
+
+    expect(paymentsService.record).toHaveBeenCalledWith({
+      client_id: "cl1",
+      payment_method: "cash",
+      contract_period_id: "p2",
+    });
+  });
+
+  it("reads how far a renewed contract is covered off the last period sold", () => {
+    const renewed = {
+      ...contract,
+      upcoming_periods: [
+        { id: "p2", starts_at: "2026-10-01T00:00:00Z", expires_at: "2026-11-01T00:00:00Z", final_price: "100", payment_status: "unpaid" },
+        { id: "p3", starts_at: "2026-11-01T00:00:00Z", expires_at: "2026-12-01T00:00:00Z", final_price: "100", payment_status: "unpaid" },
+      ],
+    } as never as Contract;
+
+    expect(component.renewedThrough(renewed)).toBe("2026-12-01T00:00:00Z");
+    expect(component.renewedThrough(contract)).toBeNull();
   });
 
   it("asks before renewing, and does nothing when told no", async () => {

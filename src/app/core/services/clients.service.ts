@@ -10,9 +10,20 @@ import { PageMeta } from "./sessions.service";
 
 export type ClientStatusFilter = "active" | "inactive" | "contract_active" | "contract_expired" | "no_contract";
 
+/** How the grid is ordered — a key the API whitelists, never a raw column. */
+export type ClientSort = "name" | "joined";
+
 export interface ClientFilters {
   search?: string;
   status?: ClientStatusFilter;
+  /** The advanced panel: a plan, the activity it covers, gender, joined range. */
+  contract_type_id?: string;
+  activity_id?: string;
+  gender?: string;
+  joined_from?: string;
+  joined_to?: string;
+  sort?: ClientSort;
+  direction?: "asc" | "desc";
   page?: number;
   per_page?: number;
 }

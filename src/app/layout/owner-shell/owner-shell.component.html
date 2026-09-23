@@ -7,6 +7,18 @@
         <i class="bi bi-box-arrow-left"></i> {{ "admin.exit_impersonation" | translate }}
       </button>
     </div>
+  } @else if (trialDaysLeft() !== null) {
+    <a routerLink="/owner/subscription" class="trial-shell-banner" [class.is-due]="trialDaysLeft()! <= 3">
+      <i class="bi bi-gift"></i>
+      <span>
+        @if (trialDaysLeft()! > 0) {
+          {{ "subscription.trial_banner_body" | translate: { days: trialDaysLeft() } }}
+        } @else {
+          {{ "subscription.trial_banner_over" | translate }}
+        }
+      </span>
+      <span class="trial-shell-banner-link">{{ "subscription.trial_banner_cta" | translate }}</span>
+    </a>
   } @else if (daysToSettle() !== null) {
     <a routerLink="/owner/subscription" class="trial-shell-banner is-due">
       <i class="bi bi-cash-coin"></i>

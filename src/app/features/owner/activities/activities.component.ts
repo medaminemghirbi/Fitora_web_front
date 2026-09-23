@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, effect, signal, Input } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ActivatedRoute, RouterLink } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Activity, CAPACITY_BOUNDS, SessionFormat } from "../../../core/models/activity.model";
 import { clientPageMeta, filterBySearch, pageSlice } from "../../../shared/utils/client-list";
@@ -28,7 +28,6 @@ import { PageHeaderComponent } from "../../../shared/ui/page-header.component";
     PageHeaderComponent,
     FormsModule,
     ReactiveFormsModule,
-    RouterLink,
     MoneyPipe,
     TranslateModule,
     EmptyStateComponent,

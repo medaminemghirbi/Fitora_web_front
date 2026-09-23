@@ -153,7 +153,7 @@ describe("PlansComponent", () => {
     });
 
     it("does not open a form nobody can complete", () => {
-      const newPlan = fixture.nativeElement.querySelector(".app-card-header button.btn-primary") as HTMLButtonElement;
+      const newPlan = fixture.nativeElement.querySelector(".fx-toolbar button.btn-primary") as HTMLButtonElement;
 
       expect(newPlan.disabled).toBe(true);
     });

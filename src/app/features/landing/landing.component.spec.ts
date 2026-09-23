@@ -1,16 +1,17 @@
+import { WritableSignal, signal } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
-import { LocaleService } from "../../core/services/locale.service";
+import { Locale, LocaleService } from "../../core/services/locale.service";
 import { LandingComponent } from "./landing.component";
 
 describe("LandingComponent", () => {
   let fixture: ComponentFixture<LandingComponent>;
   let component: LandingComponent;
-  let localeStub: jasmine.SpyObj<LocaleService>;
+  let localeStub: { locale: WritableSignal<Locale>; setLocale: jasmine.Spy };
 
   beforeEach(async () => {
-    localeStub = jasmine.createSpyObj<LocaleService>("LocaleService", ["setLocale"]);
+    localeStub = { locale: signal<Locale>("fr"), setLocale: jasmine.createSpy("setLocale") };
 
     await TestBed.configureTestingModule({
       imports: [LandingComponent, TranslateModule.forRoot()],
@@ -30,14 +31,6 @@ describe("LandingComponent", () => {
     expect(component.locales.length).toBeGreaterThan(0);
   });
 
-  it("the illustrative week grid has 3 rows", () => {
-    expect(component.week.length).toBe(3);
-  });
-
-  it("lists 3 illustrative testimonials", () => {
-    expect(component.testimonials.length).toBe(3);
-  });
-
   it("setLocale switches the language and closes the language menu", () => {
     component.langMenuOpen.set(true);
     component.setLocale("en");
@@ -45,37 +38,44 @@ describe("LandingComponent", () => {
     expect(component.langMenuOpen()).toBe(false);
   });
 
-  describe("ROI calculator", () => {
-    it("computes at-risk revenue from members, price and the late/churn rates", () => {
-      component.roiMembers.set(100);
-      component.roiPrice.set(50);
-      component.roiLatePct.set(10);
-      component.roiChurnPct.set(20);
-      // 100 * 50 * 12 = 60000 annual revenue; 30% at risk = 18000
-      expect(component.roiAtRisk()).toBe(18000);
+  it("numbers the six features 01 to 06", () => {
+    const numbers = Array.from(fixture.nativeElement.querySelectorAll(".lp-feature-n") as NodeListOf<HTMLElement>).map((n) =>
+      n.textContent?.trim()
+    );
+    expect(numbers).toEqual(["01", "02", "03", "04", "05", "06"]);
+  });
+
+  it("anchors every nav link to a section that exists", () => {
+    for (const id of ["features", "flow", "pricing", "faq"]) {
+      expect(fixture.nativeElement.querySelector(`#${id}`)).withContext(id).toBeTruthy();
+    }
+  });
+
+  describe("the hero's day", () => {
+    it("dates the card today, in the page's language, capitalised", () => {
+      const expected = new Intl.DateTimeFormat("fr", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+      expect(component.todayLabel()).toBe(expected.charAt(0).toUpperCase() + expected.slice(1));
+
+      localeStub.locale.set("en");
+      expect(component.todayLabel()).toContain(new Intl.DateTimeFormat("en", { weekday: "long" }).format(new Date()));
     });
 
-    it("computes recoverable revenue as 60% of the at-risk amount", () => {
-      component.roiMembers.set(100);
-      component.roiPrice.set(50);
-      component.roiLatePct.set(10);
-      component.roiChurnPct.set(20);
-      expect(component.roiRecoverable()).toBe(18000 * 0.6);
+    it("fills each class's bar by bookings over capacity, never past full", () => {
+      expect(component.fill({ time: "", name: "", coach: "", room: "", booked: 2, capacity: 4, waitlist: 0 })).toBe(50);
+      expect(component.fill({ time: "", name: "", coach: "", room: "", booked: 14, capacity: 12, waitlist: 2 })).toBe(100);
     });
 
-    it("clamps out-of-range percentages instead of producing a negative or inflated result", () => {
-      component.roiMembers.set(100);
-      component.roiPrice.set(50);
-      component.roiLatePct.set(-10);
-      component.roiChurnPct.set(200);
-      // late clamped to 0, churn clamped to 100 => 100% at risk = 60000
-      expect(component.roiAtRisk()).toBe(60000);
+    it("marks a class full once every place is booked", () => {
+      const full = component.todayClasses.filter((c) => component.isFull(c));
+      expect(full.map((c) => c.name)).toEqual(["Pilates"]);
+      expect(fixture.nativeElement.querySelectorAll(".lp-today-fill.is-full").length).toBe(1);
     });
   });
 
   describe("FAQ accordion", () => {
     it("starts with the first question open", () => {
       expect(component.openFaq()).toBe(1);
+      expect(fixture.nativeElement.querySelectorAll(".lp-faq-a:not([hidden])").length).toBe(1);
     });
 
     it("toggleFaq opens a different question and closes the previous one", () => {

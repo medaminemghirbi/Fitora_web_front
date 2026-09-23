@@ -9,8 +9,9 @@ import { AuthProShellComponent } from "../../../shared/ui/auth-pro-shell.compone
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 
 /**
- * A gym opening its own account: three fields, then the gym itself is named
- * on /owner/setup-company, where the 14 days start.
+ * A gym opening its own account: three fields, then the address is confirmed
+ * (/confirmation-email), then the gym itself is named on
+ * /owner/setup-company, where the 14 days start.
  *
  * Split that way on purpose — five fields in front of someone who has not
  * seen the product yet is four too many.
@@ -31,6 +32,15 @@ export class RegisterComponent {
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly showPassword = signal(false);
+
+  /** Four things Fitora does, for the panel beside the form. */
+  readonly pitchPoints = [
+    "auth.pitch_point_booking",
+    "auth.pitch_point_one_place",
+    "auth.pitch_point_receipts",
+    "auth.pitch_point_any_gym",
+  ];
 
   readonly form = this.fb.nonNullable.group({
     first_name: ["", Validators.required],
@@ -51,8 +61,9 @@ export class RegisterComponent {
     this.auth.register({ ...this.form.getRawValue(), locale: this.locale.locale() }).subscribe({
       next: () => {
         this.loading.set(false);
-        // They have a login and no gym yet; that is the next screen's job.
-        this.router.navigateByUrl("/owner/setup-company");
+        // The link is on its way; the next screen waits for the click, then
+        // hands over to naming the gym.
+        this.router.navigateByUrl("/confirmation-email");
       },
       error: (err) => {
         this.loading.set(false);

@@ -69,6 +69,9 @@
   --sidebar-hover-bg: rgba(255, 255, 255, 0.07);
   --sidebar-border: rgba(255, 255, 255, 0.09);
   --sidebar-section: #7a6c9a;
+  // Lavender for emphasis on the aubergine ground (the sign-in panel's
+  // italic half-headline, its ticks).
+  --sidebar-accent: #b79af0;
 
   // ---- Typography -------------------------------------------------------
   --font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -77,6 +80,10 @@
   // token stays so every call site keeps working and a display face can
   // come back without touching forty files.
   --font-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  // Editorial serif — the public pages only (landing + sign-in screens).
+  // Latin only: Arabic headings fall back to --font-display (see the RTL
+  // overrides in landing.component.scss and auth-pro-shell.component.scss).
+  --font-editorial: "Fraunces", Georgia, "Times New Roman", serif;
   --font-size-xs: 0.75rem;    // 12 — small metadata
   --font-size-sm: 0.8125rem;  // 13 — secondary
   --font-size-base: 0.9375rem;// 15 — body

@@ -23,7 +23,6 @@ import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { BrandingService } from "../../../core/services/branding.service";
-import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
 import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
 
@@ -48,7 +47,6 @@ type PayableOption = { kind: "contract" | "booking"; id: string; label: string; 
     HighlightPipe,
     SkeletonComponent,
     ErrorStateComponent,
-    FilterRailComponent,
     StatusFilterComponent,
     ActionMenuComponent,
   ],
@@ -147,12 +145,13 @@ export class OwnerPaymentsComponent implements OnInit {
   }
 
   hasFilters(): boolean {
-    return this.search() !== "" || this.statusFilter() !== "";
+    return this.search() !== "" || this.statusFilter() !== "" || this.methodFilter() !== "";
   }
 
   resetFilters(): void {
     this.search.set("");
     this.statusFilter.set("");
+    this.methodFilter.set("");
     this.applyFilters();
   }
 
@@ -163,6 +162,11 @@ export class OwnerPaymentsComponent implements OnInit {
     if (status) {
       const opt = this.statusOptions.find((o) => o.value === status);
       if (opt) chips.push({ label: this.translate.instant(opt.labelKey), clear: () => this.applyStatusFilter("") });
+    }
+    const method = this.methodFilter();
+    if (method) {
+      const opt = this.methodOptions.find((o) => o.value === method);
+      if (opt) chips.push({ label: this.translate.instant(opt.labelKey), clear: () => this.applyMethodFilter("") });
     }
     return chips;
   });

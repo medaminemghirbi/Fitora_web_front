@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from "@angular/core";
+import { Component, OnInit, computed, signal } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { AuthProShellComponent } from "../../shared/ui/auth-pro-shell.component";
@@ -13,6 +14,27 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   return password && confirmation && password !== confirmation ? { mismatch: true } : null;
 }
 
+export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * A rough read of a new password, for the bar under the field — a nudge,
+ * not a rule: the only thing the form enforces is the 8-character minimum.
+ * 0 = empty, 1 = too short, then 2–4 by how many of mixed case, a digit,
+ * a symbol and 12+ characters it has.
+ */
+export function passwordStrength(password: string): PasswordStrength {
+  if (!password) return 0;
+  if (password.length < 8) return 1;
+
+  let variety = 0;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) variety++;
+  if (/\d/.test(password)) variety++;
+  if (/[^A-Za-z0-9]/.test(password)) variety++;
+  if (password.length >= 12) variety++;
+
+  return variety >= 3 ? 4 : variety === 2 ? 3 : 2;
+}
+
 @Component({
   selector: "app-reset-password",
   standalone: true,
@@ -24,6 +46,7 @@ export class ResetPasswordComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly done = signal(false);
+  readonly showPassword = signal(false);
   private token = "";
 
   readonly form = this.fb.nonNullable.group(
@@ -33,6 +56,23 @@ export class ResetPasswordComponent implements OnInit {
     },
     { validators: passwordsMatch }
   );
+
+  private readonly value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
+
+  readonly strength = computed(() => passwordStrength(this.value().password ?? ""));
+  readonly longEnough = computed(() => (this.value().password ?? "").length >= 8);
+  readonly matches = computed(() => {
+    const { password, password_confirmation } = this.value();
+    return !!password && password === password_confirmation;
+  });
+
+  readonly strengthLabel: Record<PasswordStrength, string> = {
+    0: "",
+    1: "auth.strength_short",
+    2: "auth.strength_fair",
+    3: "auth.strength_good",
+    4: "auth.strength_strong",
+  };
 
   constructor(
     private readonly fb: FormBuilder,

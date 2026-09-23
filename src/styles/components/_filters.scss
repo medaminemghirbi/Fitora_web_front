@@ -117,6 +117,26 @@ mark.fx-hl {
   }
 }
 
+// The count on a tab, in its own pill rather than in parentheses: "(0)"
+// reads as part of the label, a pill reads as a quantity.
+.fx-cat-tab-count {
+  display: inline-block;
+  min-width: 1.25rem;
+  margin-inline-start: 0.35rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.71875rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.fx-cat-tab.is-active .fx-cat-tab-count {
+  background: var(--fx-tab-color, var(--color-primary));
+  color: #fff;
+}
+
 // ---------- Status chips -------------------------------------------------
 // The status filter, out of the left rail and onto one row above the table.
 // The radio stays for the semantics and is hidden; the label is the pill.
@@ -194,4 +214,58 @@ mark.fx-hl {
 .fx-chip-input:focus-visible + .fx-chip {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+// ---------------------------------------------------------------------------
+// Advanced filters — the drawer under the pill row
+// ---------------------------------------------------------------------------
+// The status pills answer "what state are they in". Everything else — which
+// plan, which activity, who, since when — is a question asked far less often,
+// so it folds away instead of taking a second permanent row above the grid.
+.fx-adv-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &.is-on {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+  }
+}
+
+.fx-adv-count {
+  min-width: 1.15rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.3rem;
+  text-align: center;
+}
+
+.fx-advanced {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.fx-advanced-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
 }

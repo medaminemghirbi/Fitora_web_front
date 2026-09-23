@@ -25,10 +25,26 @@ export interface AdminCompany {
   locale: string;
   active: boolean;
   created_at: string;
-  owner: { id: string; full_name: string; email: string; phone: string | null };
+  owner: {
+    id: string;
+    full_name: string;
+    email: string;
+    phone: string | null;
+    /**
+     * The plan, as a number of gyms. It governs the OWNER, not this one
+     * company: every gym they run shares it, and its price. null = unlimited.
+     */
+    company_limit: number | null;
+    companies_count: number;
+  };
   subscription: Subscription | null;
   /** Owed: periods with no invoice behind them, times the tariff. */
   arrears_cents: number;
+  /**
+   * What recording a payment would issue, now: the period and the amount.
+   * During a trial it starts the day after the free days end.
+   */
+  next_invoice: { period_start: string; period_end: string; amount_cents: number } | null;
   usage: AdminCompanyUsage;
   access_open: boolean;
   // The subscription price in the company's currency, read-only here.

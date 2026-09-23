@@ -1,19 +1,46 @@
-<app-auth-pro-shell>
+<app-auth-pro-shell tone="soft">
+  <div authPanel class="auth-panel">
+    <span class="auth-panel-icon" aria-hidden="true"><i class="bi bi-envelope-check"></i></span>
+    <p class="auth-panel-title">
+      {{ "auth.verify_panel_title_1" | translate }}
+      <em>{{ "auth.verify_panel_title_2" | translate }}</em>
+    </p>
+    <p class="auth-panel-lead">{{ "auth.verify_panel_lead" | translate }}</p>
+  </div>
+
+  <app-mail-stage [state]="stage()" />
+
   @switch (status()) {
     @case ("verifying") {
-      <div class="d-flex justify-content-center py-4">
-        <app-spinner [size]="28" />
-      </div>
+      <h1 class="auth-title">{{ "auth.verify_email_checking" | translate }}</h1>
     }
     @case ("success") {
-      <h1 class="auth-title">{{ "auth.verify_email_success_title" | translate }}</h1>
-      <p class="auth-subtitle">{{ "auth.verify_email_success_body" | translate }}</p>
-      <a [routerLink]="continueUrl()" class="btn btn-primary w-100">{{ "auth.continue" | translate }}</a>
+      <h1 class="auth-title">{{ "auth.confirm_done_title" | translate }}</h1>
+      @if (isAuthenticated()) {
+        <p class="auth-subtitle" role="status">{{ "auth.confirm_done_body" | translate }}</p>
+        @if (continuing()) {
+          <app-setup-progress [duration]="continueDelay" />
+        }
+        <button type="button" class="btn btn-primary w-100" (click)="continue()">
+          {{ "auth.continue" | translate }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </button>
+      } @else {
+        <!-- Opened on another device: the screen they signed up on has
+             already noticed, and moved on by itself. -->
+        <p class="auth-subtitle" role="status">{{ "auth.verify_done_elsewhere" | translate }}</p>
+        <a routerLink="/connexion" class="btn btn-primary w-100">{{ "auth.sign_in" | translate }}</a>
+      }
     }
     @case ("error") {
       <h1 class="auth-title">{{ "auth.verify_email_error_title" | translate }}</h1>
-      <div class="alert alert-danger" role="alert">{{ error() }}</div>
-      <a [routerLink]="continueUrl()" class="btn btn-outline-secondary w-100">{{ "auth.continue" | translate }}</a>
+      <p class="auth-subtitle" role="alert">{{ error() }}</p>
+      @if (isAuthenticated()) {
+        <!-- The waiting screen is where a fresh link is sent from. -->
+        <a [routerLink]="continueUrl()" class="btn btn-primary w-100">{{ "auth.verify_new_link" | translate }}</a>
+      } @else {
+        <p class="form-text">{{ "auth.verify_sign_in_for_new_link" | translate }}</p>
+        <a routerLink="/connexion" class="auth-btn-outline">{{ "auth.sign_in" | translate }}</a>
+      }
     }
   }
-</app-auth-pro-shell>>
+</app-auth-pro-shell>

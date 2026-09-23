@@ -60,6 +60,47 @@
 .ac-stat-unit { font-size: var(--font-size-sm); font-weight: 500; color: var(--color-text-secondary); }
 .ac-stat--ok { color: var(--color-success); }
 .ac-stat--due { color: var(--color-danger); }
+.ac-stat--trial {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+
+  strong { color: var(--color-primary); }
+}
+
+/* The free period in the invoice list: covered, but nothing was paid. */
+.ac-tag {
+  display: inline-block;
+  margin-inline-start: 0.4rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+/* What "payment received" will issue, beside the button that issues it. */
+.ac-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+
+  @media (max-width: 560px) { flex-direction: column; align-items: stretch; }
+}
+.ac-next-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+
+  strong { font-size: 1.0625rem; font-variant-numeric: tabular-nums; }
+}
 
 /* Two-column layout: subscription card left, settings stacked right. */
 .ac-grid {
@@ -163,7 +204,8 @@ label {
   background: var(--color-warning-soft);
 
   &[data-kind="never"],
-  &[data-kind="unpaid"] {
+  &[data-kind="unpaid"],
+  &[data-kind="trial_over"] {
     border-color: var(--color-danger);
     background: var(--color-danger-soft);
   }
@@ -247,6 +289,18 @@ label {
     background: var(--color-danger-soft);
     border-color: var(--color-danger);
     color: var(--color-danger);
+  }
+
+  &[data-state="trial"] {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  // The gym did not exist yet: nothing was owed, so nothing is marked.
+  &[data-state="before"] {
+    color: var(--color-text-secondary);
+    opacity: 0.35;
   }
 
   &[data-state="current"] {

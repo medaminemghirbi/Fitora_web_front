@@ -37,8 +37,19 @@ export class OwnerShellComponent implements OnInit {
    */
   readonly daysToSettle = computed(() => {
     const sub = this.configuration.subscription();
-    if (!sub || sub.current_period_paid) return null;
+    if (!sub || sub.current_period_paid || sub.trial) return null;
     return sub.days_before_lock;
+  });
+
+  /**
+   * Free days left, for the owner only — choosing a formula is theirs to do.
+   * A trial gets no grace, so this counts down to the door itself; 0 means
+   * it ended today and closes tonight.
+   */
+  readonly trialDaysLeft = computed(() => {
+    const sub = this.configuration.subscription();
+    if (!sub?.trial || !sub.active || !this.showOwnerOnlySections()) return null;
+    return sub.trial_days_left;
   });
 
   readonly versionSuffix = computed(() => (this.version.current() ? `v${this.version.current()}` : null));

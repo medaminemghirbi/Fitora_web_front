@@ -32,6 +32,11 @@ export interface User {
   role: UserRole;
   locale: string;
   email_verified: boolean;
+  /**
+   * Seconds before the confirmation link may be sent again (0 = now).
+   * Optional so fixtures elsewhere need not carry it.
+   */
+  email_verification_resend_in?: number;
   company_id: string | null;
   // The key of the role this login is assigned to: "receptionist", "coach",
   // or a custom role's own slug. For "does this person coach?", read

@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, convertToParamMap, provideRouter } from "@angul
 import { TranslateModule } from "@ngx-translate/core";
 import { of, throwError } from "rxjs";
 import { AccountRecoveryService } from "../../core/auth/account-recovery.service";
-import { ResetPasswordComponent } from "./reset-password.component";
+import { ResetPasswordComponent, passwordStrength } from "./reset-password.component";
 
 describe("ResetPasswordComponent", () => {
   let fixture: ComponentFixture<ResetPasswordComponent>;
@@ -84,5 +84,55 @@ describe("ResetPasswordComponent", () => {
     component.submit();
 
     expect(component.error()).toBe("Password too weak");
+  });
+  it("ticks each rule off as the passwords are typed", () => {
+    build("tok123");
+    expect(component.longEnough()).toBe(false);
+    expect(component.matches()).toBe(false);
+
+    component.form.controls.password.setValue("secret123");
+    expect(component.longEnough()).toBe(true);
+    expect(component.matches()).toBe(false);
+
+    component.form.controls.password_confirmation.setValue("secret123");
+    expect(component.matches()).toBe(true);
+
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll(".auth-rules .is-met").length).toBe(2);
+  });
+
+  it("shows the strength bar only once something is typed", () => {
+    build("tok123");
+    expect(fixture.nativeElement.querySelector(".auth-strength")).toBeNull();
+
+    component.form.controls.password.setValue("Secret-2026!");
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector(".auth-strength")?.getAttribute("data-level")).toBe("4");
+  });
+
+  it("shows and hides both passwords together", () => {
+    build("tok123");
+    const types = () =>
+      Array.from(fixture.nativeElement.querySelectorAll("input") as NodeListOf<HTMLInputElement>).map((i) => i.type);
+    expect(types()).toEqual(["password", "password"]);
+
+    component.showPassword.set(true);
+    fixture.detectChanges();
+    expect(types()).toEqual(["text", "text"]);
+  });
+});
+
+describe("passwordStrength", () => {
+  it("is 0 when empty and 1 when under the 8-character minimum", () => {
+    expect(passwordStrength("")).toBe(0);
+    expect(passwordStrength("Ab1!")).toBe(1);
+  });
+
+  it("rates a long enough password by its variety", () => {
+    expect(passwordStrength("abcdefgh")).toBe(2);
+    expect(passwordStrength("abcdefg1")).toBe(2);
+    expect(passwordStrength("Abcdefg1")).toBe(3);
+    expect(passwordStrength("Abcdefg1!")).toBe(4);
+    expect(passwordStrength("abcdefgh1234")).toBe(3);
   });
 });

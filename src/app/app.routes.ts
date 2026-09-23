@@ -5,6 +5,7 @@ import { noCompanyGuard, companyGuard } from "./core/guards/company.guard";
 import { roleGuard } from "./core/guards/role.guard";
 import { capabilityGuard, deskAreaGuard, featureGuard, ownerAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
 import { memberGuard } from "./core/guards/member.guard";
+import { emailConfirmedGuard, emailPendingGuard } from "./core/guards/email.guard";
 
 /**
  * Fitora is sold to gyms. Everything before signing in is written for one:
@@ -35,6 +36,13 @@ export const routes: Routes = [
     loadComponent: () => import("./features/auth/verify-email.component").then((m) => m.VerifyEmailComponent),
   },
   {
+    // Between signing up and clicking the emailed link: waits for the click
+    // (from this tab, another one, or a phone) and moves on by itself.
+    path: "confirmation-email",
+    canActivate: [authGuard, emailPendingGuard],
+    loadComponent: () => import("./features/auth/confirm-email.component").then((m) => m.ConfirmEmailComponent),
+  },
+  {
     path: "auth/reset-password",
     loadComponent: () => import("./features/auth/reset-password.component").then((m) => m.ResetPasswordComponent),
   },
@@ -49,13 +57,13 @@ export const routes: Routes = [
   { path: "trial-expired", pathMatch: "full", redirectTo: "/account-locked" },
   {
     path: "owner/setup-company",
-    canActivate: [authGuard, roleGuard("owner"), noCompanyGuard],
+    canActivate: [authGuard, roleGuard("owner"), emailConfirmedGuard, noCompanyGuard],
     loadComponent: () =>
       import("./features/owner/onboarding/company-setup.component").then((m) => m.CompanySetupComponent),
   },
   {
     path: "owner",
-    canActivate: [authGuard, ownerAreaGuard, companyGuard],
+    canActivate: [authGuard, emailConfirmedGuard, ownerAreaGuard, companyGuard],
     loadComponent: () => import("./layout/owner-shell/owner-shell.component").then((m) => m.OwnerShellComponent),
     children: [
       { path: "dashboard", canActivate: [capabilityGuard("reports")], loadComponent: () => import("./features/owner/dashboard/dashboard.component").then((m) => m.DashboardComponent) },
@@ -86,6 +94,7 @@ export const routes: Routes = [
       { path: "coaches", pathMatch: "full", redirectTo: "team" },
       { path: "staff", pathMatch: "full", redirectTo: "team" },
       { path: "subscription", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/subscription/subscription.component").then((m) => m.SubscriptionComponent) },
+      { path: "support", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/support/support.component").then((m) => m.OwnerSupportComponent) },
       { path: "notifications", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/notifications/notifications-inbox.component").then((m) => m.NotificationsInboxComponent) },
       { path: "notifications/:id", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/notifications/notification-detail.component").then((m) => m.NotificationDetailComponent) },
       { path: "settings", canActivate: [settingsAccessGuard], loadComponent: () => import("./features/owner/settings/settings-shell.component").then((m) => m.SettingsShellComponent) },

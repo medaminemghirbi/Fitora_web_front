@@ -23,6 +23,14 @@
           @if (contract.expires_at) {
             · {{ "clients.until" | translate: { date: (contract.expires_at | date: "d MMM y") } }}
           }
+          <!-- A renewal taken before the term ran out queues behind it
+               instead of replacing it, so say how far they are covered. -->
+          @if (contract.upcoming_periods.length) {
+            <span class="fx-renewal-queued">
+              <i class="bi bi-arrow-repeat"></i>
+              {{ "contracts.renewed_until" | translate: { date: (renewedThrough(contract) | date: "d MMM y") } }}
+            </span>
+          }
           ·
         }
         {{ "clients.member_since" | translate }} {{ c.joined_at | date: "MMM y" }}

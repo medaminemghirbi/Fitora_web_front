@@ -28,12 +28,30 @@
 
     <div class="lst-filters">
       <app-status-filter
-      name="client-status"
-      [legend]="'clients.filter_status' | translate"
-      [value]="statusFilter()"
-      [options]="railOptions()"
-      (valueChange)="applyStatusFilter($any($event))"
+        name="client-status"
+        [legend]="'clients.filter_status' | translate"
+        [value]="statusFilter()"
+        [options]="railOptions()"
+        (valueChange)="applyStatusFilter($any($event))"
       />
+
+      <!-- Everything the pills cannot say lives one click away, so the row
+           above the grid stays one row. -->
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary fx-adv-toggle"
+        [class.is-on]="advancedOpen()"
+        [attr.aria-expanded]="advancedOpen()"
+        aria-controls="cl-advanced"
+        (click)="toggleAdvanced()"
+      >
+        <i class="bi bi-sliders"></i>
+        {{ "common.filters" | translate }}
+        @if (advancedCount() > 0) {
+          <span class="fx-adv-count">{{ advancedCount() }}</span>
+        }
+      </button>
+
       @if (hasFilters()) {
         <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">
           <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
@@ -41,6 +59,48 @@
       }
     </div>
 
+    @if (advancedOpen()) {
+      <div class="fx-advanced" id="cl-advanced">
+        <div class="fx-advanced-field">
+          <label for="cl-f-activity">{{ "clients.abo_activity" | translate }}</label>
+          <select id="cl-f-activity" class="form-select form-select-sm" [value]="activityFilter()" (change)="setActivityFilter($any($event.target).value)">
+            <option value="">{{ "common.all" | translate }}</option>
+            @for (a of activities(); track a.id) {
+              <option [value]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="fx-advanced-field">
+          <label for="cl-f-plan">{{ "contract_types.plan" | translate }}</label>
+          <select id="cl-f-plan" class="form-select form-select-sm" [value]="planFilter()" (change)="setPlanFilter($any($event.target).value)">
+            <option value="">{{ "common.all" | translate }}</option>
+            @for (p of plans(); track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="fx-advanced-field">
+          <label for="cl-f-gender">{{ "clients.gender" | translate }}</label>
+          <select id="cl-f-gender" class="form-select form-select-sm" [value]="genderFilter()" (change)="setGenderFilter($any($event.target).value)">
+            <option value="">{{ "common.all" | translate }}</option>
+            <option value="male">{{ "clients.gender_male" | translate }}</option>
+            <option value="female">{{ "clients.gender_female" | translate }}</option>
+          </select>
+        </div>
+
+        <div class="fx-advanced-field">
+          <label for="cl-f-from">{{ "clients.joined_from" | translate }}</label>
+          <input id="cl-f-from" type="date" class="form-control form-control-sm" [value]="joinedFrom()" (change)="setJoinedFrom($any($event.target).value)" />
+        </div>
+
+        <div class="fx-advanced-field">
+          <label for="cl-f-to">{{ "clients.joined_to" | translate }}</label>
+          <input id="cl-f-to" type="date" class="form-control form-control-sm" [value]="joinedTo()" (change)="setJoinedTo($any($event.target).value)" />
+        </div>
+      </div>
+    }
 
     <div class="app-card">
       @if (filterChips().length > 0) {
@@ -69,53 +129,98 @@
           </app-empty-state>
         </div>
       } @else {
-        <ul class="lst">
-          @for (client of clients(); track client.id) {
-            <li [style.--fx-row-color]="rowColor(client)">
-              <a class="lst-row" [routerLink]="['/owner/clients', client.id]">
-                <app-avatar [name]="client.full_name" [size]="34" />
+        <div class="fx-table-scroll">
+          <table class="table table-hover fx-grid">
+            <thead>
+              <tr>
+                <!-- Only the two columns the API can actually order on are
+                     sortable; a caret on the others would be a lie. -->
+                <th [attr.aria-sort]="ariaSort('name')" [class.is-sorted]="sort() === 'name'">
+                  <button type="button" class="fx-th-sort" (click)="sortBy('name')">
+                    {{ "clients.title" | translate }}
+                    <i class="bi" [class.bi-arrow-down-up]="sort() !== 'name'" [class.bi-arrow-up]="sort() === 'name' && direction() === 'asc'" [class.bi-arrow-down]="sort() === 'name' && direction() === 'desc'"></i>
+                  </button>
+                </th>
+                <th class="fx-col-contact">{{ "auth.email" | translate }}</th>
+                <th>{{ "contract_types.plan" | translate }}</th>
+                <th>{{ "common.status" | translate }}</th>
+                <th class="fx-col-seen">{{ "clients.last_visit" | translate }}</th>
+                <th [attr.aria-sort]="ariaSort('joined')" [class.is-sorted]="sort() === 'joined'" class="fx-col-seen">
+                  <button type="button" class="fx-th-sort" (click)="sortBy('joined')">
+                    {{ "clients.member_since" | translate }}
+                    <i class="bi" [class.bi-arrow-down-up]="sort() !== 'joined'" [class.bi-arrow-up]="sort() === 'joined' && direction() === 'asc'" [class.bi-arrow-down]="sort() === 'joined' && direction() === 'desc'"></i>
+                  </button>
+                </th>
+                <!-- The chevron's column. It has no heading because the
+                     chevron is not data — it is the row saying it opens. -->
+                <th class="fx-col-go"><span class="visually-hidden">{{ "common.actions" | translate }}</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (client of clients(); track client.id) {
+                <tr [style.--fx-row-color]="rowColor(client)" class="fx-row-link" (click)="openClient(client)">
+                  <td>
+                    <div class="fx-cell-lead">
+                      <app-avatar [name]="client.full_name" [size]="34" />
+                      <div class="fx-cell-lead-text">
+                        <div class="fx-cell-lead-title">
+                          <a [routerLink]="['/owner/clients', client.id]" (click)="$event.stopPropagation()" [innerHTML]="client.full_name | highlight: search()"></a>
+                        </div>
+                        @if (client.phone) {
+                          <div class="fx-cell-lead-sub" dir="ltr" [innerHTML]="client.phone | highlight: search()"></div>
+                        }
+                      </div>
+                    </div>
+                  </td>
 
-                <span class="lst-who">
-                  <span class="lst-who-name" [innerHTML]="client.full_name | highlight: search()"></span>
-                  @if (client.phone) {
-                    <span class="lst-who-sub" dir="ltr" [innerHTML]="client.phone | highlight: search()"></span>
-                  } @else if (client.email) {
-                    <span class="lst-who-sub" [innerHTML]="client.email | highlight: search()"></span>
-                  }
-                </span>
+                  <td class="fx-col-contact">
+                    @if (client.email) {
+                      <span dir="ltr" [innerHTML]="client.email | highlight: search()"></span>
+                    } @else {
+                      <span class="fx-muted">—</span>
+                    }
+                  </td>
 
-                <!-- The subscription and what is wrong with it, together.
-                     "Plan", "paiement" and "statut" were three columns
-                     answering one question. -->
-                <span class="lst-sub">
-                  @if (client.current_contract; as contract) {
-                    <span class="lst-sub-name">{{ contract.plan.name }}</span>
-                    <span class="lst-sub-state" [attr.data-tone]="contractTone(client)">
-                      {{ contractState(client) }}
-                    </span>
-                  } @else {
-                    <span class="lst-sub-name fx-muted">{{ "clients.no_contract" | translate }}</span>
-                    <span class="lst-sub-state is-link">{{ "clients.subscribe_cta" | translate }}</span>
-                  }
-                </span>
+                  <td>
+                    @if (client.current_contract; as contract) {
+                      <span class="fx-plan-tag">
+                        <span class="fx-dot" [style.background]="contract.plan.color"></span>
+                        {{ contract.plan.name }}
+                      </span>
+                    } @else {
+                      <span class="fx-muted">{{ "clients.no_contract" | translate }}</span>
+                    }
+                  </td>
 
-                <span class="lst-seen">
-                  @if (client.last_visit_at) {
-                    {{ client.last_visit_at | date: "d MMM" }}
-                  } @else {
-                    <span class="fx-muted">{{ "clients.never_came" | translate }}</span>
-                  }
-                </span>
+                  <!-- The subscription's state in words — what is wrong with
+                       it first, "actif" only when nothing is. -->
+                  <td>
+                    @if (client.current_contract) {
+                      <span class="lst-sub-state" [attr.data-tone]="contractTone(client)">{{ contractState(client) }}</span>
+                    } @else {
+                      <span class="lst-sub-state is-link">{{ "clients.subscribe_cta" | translate }}</span>
+                    }
+                    @if (!client.active) {
+                      <span class="badge text-bg-secondary ms-1">{{ "common.inactive" | translate }}</span>
+                    }
+                  </td>
 
-                @if (!client.active) {
-                  <span class="badge text-bg-secondary">{{ "common.inactive" | translate }}</span>
-                }
+                  <td class="fx-col-seen fx-num">
+                    @if (client.last_visit_at) {
+                      {{ client.last_visit_at | date: "d MMM y" }}
+                    } @else {
+                      <span class="fx-muted">{{ "clients.never_came" | translate }}</span>
+                    }
+                  </td>
 
-                <i class="bi bi-chevron-right lst-go" aria-hidden="true"></i>
-              </a>
-            </li>
-          }
-        </ul>
+                  <td class="fx-col-seen fx-num">{{ client.joined_at | date: "d MMM y" }}</td>
+
+                  <td class="fx-col-go"><i class="bi bi-chevron-right lst-go" aria-hidden="true"></i></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
 
         <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
       }

@@ -10,7 +10,7 @@ describe("AccountLockedComponent", () => {
   let component: AccountLockedComponent;
   let authStub: { logout: jasmine.Spy; currentUser: jasmine.Spy };
 
-  function build(role = "owner", lockReason: string | null = "unpaid"): void {
+  function build(role = "owner", lockReason: string | null = "unpaid", trial = false): void {
     TestBed.resetTestingModule();
     authStub = {
       logout: jasmine.createSpy("logout"),
@@ -22,7 +22,7 @@ describe("AccountLockedComponent", () => {
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: authStub },
-        { provide: ConfigurationService, useValue: { subscription: () => ({ lock_reason: lockReason }) } },
+        { provide: ConfigurationService, useValue: { subscription: () => ({ lock_reason: lockReason, trial }) } },
       ],
     });
 
@@ -37,6 +37,18 @@ describe("AccountLockedComponent", () => {
 
     build("owner", "suspended");
     expect(component.reason()).toBe("suspended");
+  });
+
+  it("words an ended trial as the end of the free days, not a missed payment", () => {
+    build("owner", "unpaid", true);
+    expect(component.trialOver()).toBeTrue();
+    expect(component.copyKey()).toBe("trial_over");
+    expect(fixture.nativeElement.querySelector("a[href]")!.textContent).toContain("locked.choose_plan");
+  });
+
+  it("keeps a suspension a suspension, trial or not", () => {
+    build("owner", "suspended", true);
+    expect(component.copyKey()).toBe("suspended");
   });
 
   it("falls back to suspended rather than showing nothing", () => {

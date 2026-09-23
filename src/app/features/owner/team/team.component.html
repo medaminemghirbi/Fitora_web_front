@@ -1,7 +1,12 @@
 <div class="fx-listpage">
-  <app-filter-rail [activeCount]="filterChips().length">
-    <div class="fx-rail-block">
-      <div class="fx-input-icon">
+  <div class="fx-listpage-main">
+    <!-- Search rides in the header next to the count and the action; the
+         rail held nothing else, and a column of four pills was a column's
+         worth of page spent on one filter. -->
+    <header class="lst-head">
+      <h1>{{ "nav.team" | translate }}</h1>
+      <span class="lst-head-count">{{ members().length }}</span>
+      <div class="lst-head-search fx-input-icon">
         <i class="bi bi-search"></i>
         <input
           type="search"
@@ -12,61 +17,38 @@
           [attr.aria-label]="'team.search_placeholder' | translate"
         />
       </div>
-    </div>
-
-    <app-status-filter
-      name="team-access"
-      [legend]="'team.filter_access' | translate"
-      [value]="accessFilter()"
-      [options]="accessOptions()"
-      (valueChange)="applyAccessFilter($event)"
-    />
-
-    @if (hasFilters()) {
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
-        <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
-      </button>
-    }
-  </app-filter-rail>
-
-  <div class="fx-listpage-main">
-    <header class="lst-head">
-      <h1>{{ "nav.team" | translate }}</h1>
-      <span class="lst-head-count">{{ members().length }}</span>
       <button type="button" class="btn btn-primary" (click)="openCreate('coach')">
         <i class="bi bi-plus-lg"></i> {{ "team.new" | translate }}
       </button>
     </header>
 
-    <nav class="fx-cat-tabs" [attr.aria-label]="'team.title' | translate">
-      @for (t of tabs(); track t.id) {
-        <button type="button" class="fx-cat-tab" [class.is-active]="tab() === t.id"
-                [style.--fx-tab-color]="t.color" (click)="applyTab(t.id)">
-          {{ t.label }} ({{ t.count }})
-        </button>
-      }
-    </nav>
+    <!-- An empty team has nothing to narrow: the tabs and the pills would
+         be six zeros above an empty-state that already says so. -->
+    @if (members().length > 0) {
+      <!-- Two questions, two rows: which kind of person (the tabs), and what
+           they can sign in to (the pills). The stats strip under them counted
+           the same six things the tabs and pills already carry. -->
+      <nav class="fx-cat-tabs" [attr.aria-label]="'team.title' | translate">
+        @for (t of tabs(); track t.id) {
+          <button type="button" class="fx-cat-tab" [class.is-active]="tab() === t.id"
+                  [style.--fx-tab-color]="t.color" (click)="applyTab(t.id)">
+            {{ t.label }} <span class="fx-cat-tab-count">{{ t.count }}</span>
+          </button>
+        }
+      </nav>
 
-    <div class="fx-stats-bar">
-      <dl class="fx-stats">
-        <div><dt>{{ "team.stat_total" | translate }}</dt><dd>{{ stats().total }}</dd></div>
-        <div><dt>{{ "team.stat_coaches" | translate }}</dt><dd>{{ stats().coaches }}</dd></div>
-        <div><dt>{{ "common.active" | translate }}</dt><dd class="text-success-token">{{ stats().active }}</dd></div>
-        <div><dt>{{ "team.access_mobile" | translate }}</dt><dd>{{ stats().withMobile }}</dd></div>
-        <div><dt>{{ "team.access_web" | translate }}</dt><dd>{{ stats().withWeb }}</dd></div>
-        <div><dt>{{ "common.inactive" | translate }}</dt><dd class="fx-muted">{{ stats().inactive }}</dd></div>
-      </dl>
-    </div>
-
-    @if (filterChips().length > 0) {
-      <div class="fx-active-filters">
-        @for (chip of filterChips(); track chip.label) {
-          <span class="fx-active-chip">
-            {{ chip.label }}
-            <button type="button" (click)="chip.clear()" [attr.aria-label]="'common.reset' | translate">
-              <i class="bi bi-x"></i>
-            </button>
-          </span>
+      <div class="lst-filters">
+        <app-status-filter
+          name="team-access"
+          [legend]="'team.filter_access' | translate"
+          [value]="accessFilter()"
+          [options]="accessOptions()"
+          (valueChange)="applyAccessFilter($event)"
+        />
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+            <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+          </button>
         }
       </div>
     }

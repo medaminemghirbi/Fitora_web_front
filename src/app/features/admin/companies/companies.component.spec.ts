@@ -14,6 +14,7 @@ describe("AdminCompaniesComponent", () => {
   const meta = { page: 1, per_page: 20, total: 1, total_pages: 1 };
   const company: AdminCompany = {
     arrears_cents: 0,
+    next_invoice: null,
     access_open: true,
     usage: { clients: 0, staff: 0, activities: 0, sessions_last_30_days: 0, last_session_at: null },
     id: "c1",
@@ -25,7 +26,7 @@ describe("AdminCompaniesComponent", () => {
     locale: "fr",
     active: true,
     created_at: "2026-01-01T00:00:00Z",
-    owner: { id: "o1", full_name: "Sami Owner", email: "sami@x.test", phone: null },
+    owner: { id: "o1", full_name: "Sami Owner", email: "sami@x.test", phone: null, company_limit: 1, companies_count: 1 },
     subscription: null,
     monthly_subscription_cents: 15000,
     annual_subscription_cents: 162000,

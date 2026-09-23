@@ -19,6 +19,13 @@ export interface Subscription {
   current_period_paid: boolean;
   /** Days left before the nightly sweep closes access. null = nothing ticking. */
   days_before_lock: number | null;
+  /**
+   * Nothing paid yet: the last period on record is the free one signup gave
+   * away, running or run out. No tier is chosen while this is true.
+   */
+  trial: boolean;
+  /** Free days left, today included. null outside a trial. */
+  trial_days_left: number | null;
 }
 
 /** One period of access, paid for and recorded. The gym downloads it. */
@@ -31,6 +38,8 @@ export interface Invoice {
   amount: number;
   currency: string;
   billing_period: BillingPeriod;
+  /** The free period signup gave away. */
+  trial: boolean;
   issued_at: string;
   issued_by: string | null;
   notes: string | null;

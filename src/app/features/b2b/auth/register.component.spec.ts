@@ -66,13 +66,13 @@ describe("RegisterComponent", () => {
     });
   });
 
-  // They have a login and no gym yet: the dashboard would have nothing to
-  // show and the company guard would bounce them anyway.
-  it("sends them to name their gym, not to the dashboard", () => {
+  // Nothing past sign-up opens until the address is confirmed: the next
+  // screen waits for the click, then hands over to naming the gym.
+  it("sends them to confirm their address, not straight to naming their gym", () => {
     fill();
     component.submit();
 
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/setup-company");
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/confirmation-email");
   });
 
   it("stays put and says why when the address is already taken", () => {

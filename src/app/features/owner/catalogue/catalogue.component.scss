@@ -23,8 +23,8 @@
 
 .cat {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 24rem;
-  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr) 26rem;
+  gap: var(--space-6);
   align-items: start;
 
   // Below this the two columns would each be too narrow to read, so they
@@ -35,11 +35,26 @@
 .cat-main,
 .cat-side { min-width: 0; }
 
+// The two halves are told apart by their headings, not by a frame each: the
+// plan cards and the activity list already carry their own surfaces, and
+// boxing them again only narrowed both columns.
 .cat-label {
-  margin: 0 0 var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
   font-size: var(--font-size-xs);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-text-secondary);
+
+  // A rule running out to the column's edge, so the eye sees where one half
+  // ends and the other begins even when they stack.
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
 }

@@ -468,6 +468,11 @@ export class ClientProfileComponent implements OnInit {
     });
   }
 
+  /** How far this contract is sold once its queued renewals are counted. */
+  renewedThrough(contract: Contract): string | null {
+    return contract.upcoming_periods.at(-1)?.expires_at ?? null;
+  }
+
   async renewContract(contract: Contract): Promise<void> {
     const confirmed = await this.confirm.ask({
       title: this.translate.instant("contracts.renew_confirm_title"),

@@ -21,7 +21,6 @@ import { SEARCH_DEBOUNCE_MS } from "../../../shared/utils/client-list";
 import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
 import { ErrorStateComponent } from "../../../shared/ui/error-state.component";
 import { ActionMenuComponent } from "../../../shared/ui/action-menu.component";
-import { FilterRailComponent } from "../../../shared/ui/filter-rail.component";
 import { StatusFilterComponent, StatusFilterOption } from "../../../shared/ui/status-filter.component";
 import { MoneyPipe } from "../../../shared/pipes/money.pipe";
 import { BrandingService } from "../../../core/services/branding.service";
@@ -42,7 +41,6 @@ import { BrandingService } from "../../../core/services/branding.service";
     SkeletonComponent,
     ErrorStateComponent,
     ActionMenuComponent,
-    FilterRailComponent,
     StatusFilterComponent,
     MoneyPipe,
   ],
@@ -202,6 +200,14 @@ export class ContractsComponent implements OnInit {
   // row you were already looking at. The row does both now.
   readonly rowBusy = signal<string | null>(null);
 
+  /**
+   * How far the contract is paid up once the queued renewals are counted —
+   * the end of the LAST period sold, not the one running today.
+   */
+  renewedThrough(contract: Contract): string | null {
+    return contract.upcoming_periods.at(-1)?.expires_at ?? null;
+  }
+
   async renew(contract: Contract): Promise<void> {
     if (this.rowBusy()) return;
 
@@ -232,11 +238,14 @@ export class ContractsComponent implements OnInit {
    * else still goes through Encaissements.
    */
   collect(contract: Contract): void {
-    if (this.rowBusy() || !contract.current_period_id) return;
+    // The oldest period still owed — which is the renewal, not the term in
+    // force, once the running term has been paid for and renewed early.
+    const period = contract.payable_period_id ?? contract.current_period_id;
+    if (this.rowBusy() || !period) return;
 
     this.rowBusy.set(contract.id);
     this.paymentsService
-      .record({ client_id: contract.client.id, payment_method: "cash", contract_period_id: contract.current_period_id })
+      .record({ client_id: contract.client.id, payment_method: "cash", contract_period_id: period })
       .subscribe({
         next: () => {
           this.rowBusy.set(null);

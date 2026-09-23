@@ -4,7 +4,7 @@
   }
 
   @if (!loading() && !error() && activities().length > 0) {
-    <div class="fx-toolbar">
+    <div class="fx-toolbar act-toolbar">
       <div class="fx-input-icon">
         <i class="bi bi-search"></i>
         <input
@@ -15,7 +15,7 @@
           [placeholder]="'activities.search_placeholder' | translate"
         />
       </div>
-      <button type="button" class="btn btn-primary ms-auto" (click)="openCreate()">
+      <button type="button" class="btn btn-primary btn-sm ms-auto" (click)="openCreate()">
         <i class="bi bi-plus-lg"></i> {{ "activities.new" | translate }}
       </button>
     </div>
@@ -23,7 +23,7 @@
 
   <div class="app-card">
     @if (loading()) {
-      <div class="app-card-body"><app-skeleton variant="table" [rows]="6" [cols]="6" /></div>
+      <div class="app-card-body"><app-skeleton variant="table" [rows]="5" [cols]="2" /></div>
     } @else if (error()) {
       <div class="app-card-body"><app-error-state (retry)="load()" /></div>
     } @else if (activities().length === 0) {
@@ -37,65 +37,57 @@
     } @else if (filtered().length === 0) {
       <div class="app-card-body"><app-empty-state [title]="'common.no_results' | translate" body="" icon="bi-search" /></div>
     } @else {
-      <div class="fx-table-scroll">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>{{ "activities.name" | translate }}</th>
-              <th>{{ "activities.format" | translate }}</th>
-              <th>{{ "activities.duration" | translate }}</th>
-              <th>{{ "activities.capacity" | translate }}</th>
-              <th>{{ "activities.prices" | translate }}</th>
-              <th>{{ "common.status" | translate }}</th>
-              <th class="text-end">{{ "common.actions" | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (activity of pagedActivities(); track activity.id) {
-              <tr>
-                <td class="fx-strong">
-                  @if (activity.emoji) { <span class="me-1">{{ activity.emoji }}</span> }
-                  <span [innerHTML]="activity.name | highlight: search()"></span>
-                </td>
-                <td>{{ ("activities.format_" + activity.session_format) | translate }}</td>
-                <td>{{ activity.duration }} min</td>
-                <td>
-                  @if (activity.prices.length === 0) {
-                    <a class="small" routerLink="/owner/catalogue">{{ "activities.no_price" | translate }}</a>
-                  } @else {
-                    <ul class="fx-tariff-list">
-                      @for (tariff of activity.prices; track tariff.contract_type_id) {
-                        <li>
-                          <span class="text-muted-token">{{ tariff.contract_type_name }}</span>
-                          <span class="fx-strong">{{ tariff.price | money: activity.currency }}</span>
-                        </li>
-                      }
-                    </ul>
+      <!-- A list, not a table. Seven columns beside the plans left every one
+           of them too narrow to read, and pushed the tariffs off the edge. -->
+      <ul class="act-list">
+        @for (activity of pagedActivities(); track activity.id) {
+          <li class="act-item" [class.is-off]="!activity.active">
+            <span class="act-emoji" aria-hidden="true">{{ activity.emoji || "•" }}</span>
+
+            <div class="act-body">
+              <div class="act-title">
+                <span class="fx-strong" [innerHTML]="activity.name | highlight: search()"></span>
+                @if (!activity.active) {
+                  <app-status-badge status="inactive">{{ "common.inactive" | translate }}</app-status-badge>
+                }
+              </div>
+
+              <p class="act-meta">
+                <span>{{ ("activities.format_" + activity.session_format) | translate }}</span>
+                <span>{{ activity.duration }} min</span>
+                @if (activity.capacity > 1) {
+                  <span>{{ activity.capacity }} {{ "activities.capacity_short" | translate }}</span>
+                }
+              </p>
+
+              @if (activity.prices.length === 0) {
+                <p class="act-noprice"><i class="bi bi-exclamation-circle"></i> {{ "activities.no_price" | translate }}</p>
+              } @else {
+                <ul class="act-prices">
+                  @for (tariff of activity.prices; track tariff.contract_type_id) {
+                    <li>
+                      <span class="act-price-name">{{ tariff.contract_type_name }}</span>
+                      <span class="act-price-value">{{ tariff.price | money: activity.currency }}</span>
+                    </li>
                   }
-                </td>
-                <td>
-                  <app-status-badge [status]="activity.active ? 'active' : 'inactive'">
-                    {{ (activity.active ? "common.active" : "common.inactive") | translate }}
-                  </app-status-badge>
-                </td>
-                <td class="text-end">
-                  <app-action-menu>
-                    <button type="button" class="fx-menu-item" (click)="openEdit(activity)">
-                      <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
-                    </button>
-                    @if (activity.active) {
-                      <div class="fx-menu-divider"></div>
-                      <button type="button" class="fx-menu-item is-danger" (click)="deactivate(activity)">
-                        <i class="bi bi-slash-circle"></i> {{ "common.deactivate" | translate }}
-                      </button>
-                    }
-                  </app-action-menu>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+                </ul>
+              }
+            </div>
+
+            <app-action-menu>
+              <button type="button" class="fx-menu-item" (click)="openEdit(activity)">
+                <i class="bi bi-pencil"></i> {{ "common.edit" | translate }}
+              </button>
+              @if (activity.active) {
+                <div class="fx-menu-divider"></div>
+                <button type="button" class="fx-menu-item is-danger" (click)="deactivate(activity)">
+                  <i class="bi bi-slash-circle"></i> {{ "common.deactivate" | translate }}
+                </button>
+              }
+            </app-action-menu>
+          </li>
+        }
+      </ul>
 
       <app-pagination [meta]="meta()" (pageChange)="page.set($event)" />
     }

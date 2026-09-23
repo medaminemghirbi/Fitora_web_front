@@ -77,6 +77,17 @@ export class AdminCompaniesService {
 
   // Records what the company currently owes Fitora off-app — informational,
   // no invoicing happens in-app.
+  /**
+   * The owner's plan, as a number of gyms (1 = Solo, 3 = Club, null =
+   * unlimited / Réseau). Reached through one of their companies, but it
+   * moves every company they run — the backend says so too.
+   */
+  updateCompanyLimit(id: string, companyLimit: number | null): Observable<{ company: AdminCompany }> {
+    return this.http.patch<{ company: AdminCompany }>(`${API_BASE_URL}/admin/companies/${id}/company_limit`, {
+      company_limit: companyLimit,
+    });
+  }
+
   impersonate(id: string): Observable<{ token: string; user: User }> {
     return this.http.post<{ token: string; user: User }>(`${API_BASE_URL}/admin/companies/${id}/impersonate`, {});
   }

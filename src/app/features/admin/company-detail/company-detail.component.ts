@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from "@angular/core";
-import { DatePipe } from "@angular/common";
+import { DatePipe, LowerCasePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
@@ -19,7 +19,7 @@ import { LedgerCell, ledgerFor, ledgerYears as yearsFrom } from "../../../shared
 @Component({
   selector: "app-admin-company-detail",
   standalone: true,
-  imports: [FormsModule, DatePipe, RouterLink, TranslateModule, MoneyPipe, SpinnerComponent, ErrorStateComponent, StatusBadgeComponent],
+  imports: [FormsModule, DatePipe, LowerCasePipe, RouterLink, TranslateModule, MoneyPipe, SpinnerComponent, ErrorStateComponent, StatusBadgeComponent],
   templateUrl: "./company-detail.component.html",
   styleUrl: "./company-detail.component.scss",
 })
@@ -38,6 +38,7 @@ export class AdminCompanyDetailComponent implements OnInit {
 
   readonly billingPeriod = signal<string>("monthly");
   readonly savingSub = signal(false);
+  readonly savingPlan = signal(false);
   readonly savingInvoice = signal(false);
 
   readonly currencyOptions = signal<AdminCurrencyOption[]>([]);
@@ -64,6 +65,24 @@ export class AdminCompanyDetailComponent implements OnInit {
   private id!: string;
 
   // ---- the access, read not computed --------------------------------------
+  // ---- the plan ------------------------------------------------------------
+  // The three tiers, named as the owner sees them on their own subscription
+  // page. "" is unlimited: the backend reads a blank company_limit as nil,
+  // and a select cannot carry null.
+  readonly planOptions = [
+    { value: "1", nameKey: "subscription.tier_1" },
+    { value: "3", nameKey: "subscription.tier_3" },
+    { value: "", nameKey: "subscription.tier_unlimited" },
+  ];
+
+  readonly plan = computed(() => {
+    const limit = this.company()?.owner.company_limit ?? null;
+    return limit === null ? "" : String(limit);
+  });
+
+  /** How many gyms the owner actually runs, against what the plan allows. */
+  readonly ownerGyms = computed(() => this.company()?.owner.companies_count ?? 0);
+
   readonly accessOpen = computed(() => this.company()?.subscription?.active ?? false);
   readonly lockReason = computed(() => this.company()?.subscription?.lock_reason ?? null);
   readonly paidThrough = computed(() => this.company()?.subscription?.paid_through ?? null);
@@ -71,13 +90,25 @@ export class AdminCompanyDetailComponent implements OnInit {
   readonly daysBeforeLock = computed(() => this.company()?.subscription?.days_before_lock ?? null);
   readonly arrears = computed(() => (this.company()?.arrears_cents ?? 0) / 100);
 
+  // Nothing paid yet: the period on record is the free one. The formula
+  // shown during it is only what the first payment will buy.
+  readonly onTrial = computed(() => this.company()?.subscription?.trial ?? false);
+  readonly trialDaysLeft = computed(() => this.company()?.subscription?.trial_days_left ?? 0);
+
+  /** What "payment received" will issue, so the button says it before the click. */
+  readonly nextInvoice = computed(() => this.company()?.next_invoice ?? null);
+
   /**
    * The one thing this page is for, when there is one. A gym that is open
    * and paid up gets no banner at all.
    */
-  readonly attention = computed<"suspended" | "unpaid" | "never" | "due" | null>(() => {
+  readonly attention = computed<"suspended" | "unpaid" | "trial_over" | "never" | "due" | null>(() => {
     if (!this.company()) return null;
-    if (!this.accessOpen()) return this.lockReason() === "unpaid" ? "unpaid" : "suspended";
+    if (!this.accessOpen()) {
+      if (this.lockReason() !== "unpaid") return "suspended";
+      // Closed because the free days ran out, not because a payment lapsed.
+      return this.company()?.subscription?.trial ? "trial_over" : "unpaid";
+    }
     if (this.currentPeriodPaid()) return null;
     // Nothing was ever invoiced, so there is no period to count down from.
     return this.paidThrough() === null ? "never" : "due";
@@ -87,12 +118,23 @@ export class AdminCompanyDetailComponent implements OnInit {
   // Years come from the invoices, not from a window around today: a gym that
   // has been a client for four years has invoices a fixed window cannot reach.
   readonly ledgerYears = computed(() => yearsFrom(this.invoices()));
-  readonly ledger = computed<LedgerCell[]>(() => ledgerFor(this.ledgerYear(), this.invoices()));
+
+  /** The gym's first day, or its first invoice if an import predates it. */
+  private readonly since = computed<Date | null>(() => {
+    const created = this.company()?.created_at;
+    const starts = this.invoices().map((i) => new Date(i.period_start).getTime());
+    if (created) starts.push(new Date(created).getTime());
+    return starts.length ? new Date(Math.min(...starts)) : null;
+  });
+
+  readonly ledger = computed<LedgerCell[]>(() => ledgerFor(this.ledgerYear(), this.invoices(), new Date(), this.since()));
 
   readonly ledgerPaidCount = computed(() => this.ledger().filter((c) => c.state === "paid").length);
-  readonly ledgerCollected = computed(() =>
-    this.ledger().reduce((sum, c) => sum + (c.invoice ? c.invoice.amount : 0), 0)
-  );
+  // Each invoice once: a yearly one paints twelve cells but was paid once.
+  readonly ledgerCollected = computed(() => {
+    const paid = new Set(this.ledger().flatMap((c) => (c.state === "paid" && c.invoice ? [c.invoice] : [])));
+    return [...paid].reduce((sum, i) => sum + i.amount, 0);
+  });
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get("id")!;
@@ -177,6 +219,35 @@ export class AdminCompanyDetailComponent implements OnInit {
   // ---- access, and what an invoice covers ---------------------------------
   toggleAccess(): void {
     this.updateSubscription({ active: !this.accessOpen() }, this.accessOpen() ? "admin.access_suspended" : "admin.access_restored");
+  }
+
+  /**
+   * Moves the owner between plans. It is their tier, not this gym's, so
+   * every gym they run moves with it — the card says so, and a plan that
+   * would sit below the number of gyms they already have is refused here
+   * rather than leaving them over the limit.
+   */
+  changePlan(value: string): void {
+    if (this.savingPlan() || value === this.plan()) return;
+
+    const limit = value === "" ? null : Number(value);
+    if (limit !== null && limit < this.ownerGyms()) {
+      this.toast.error(this.translate.instant("admin.plan_below_gyms", { count: this.ownerGyms() }));
+      return;
+    }
+
+    this.savingPlan.set(true);
+    this.service.updateCompanyLimit(this.id, limit).subscribe({
+      next: (res) => {
+        this.savingPlan.set(false);
+        this.hydrate(res.company);
+        this.toast.success(this.translate.instant("admin.plan_changed"));
+      },
+      error: (err) => {
+        this.savingPlan.set(false);
+        this.toast.error(extractErrorMessage(err, this.translate.instant("common.error_generic")));
+      },
+    });
   }
 
   changeBillingPeriod(period: string): void {

@@ -85,4 +85,25 @@ describe("ledgerFor", () => {
   it("treats a whole future year as future", () => {
     expect(ledgerFor(2027, [], today).every((c) => c.state === "future")).toBe(true);
   });
+
+  // A gym that signed up on 23 September owed nothing in January.
+  it("leaves the months before the gym existed blank, never missed", () => {
+    const cells = ledgerFor(2026, [], today, new Date("2026-09-23T10:00:00Z"));
+    expect(cells.slice(0, 8).every((c) => c.state === "before")).toBe(true);
+    expect(cells[8].state).toBe("current");
+  });
+
+  it("reads the signup month from the signup day, so the first days show covered", () => {
+    const trial = { ...invoice("2026-09-23", "2026-10-06"), trial: true };
+    const cells = ledgerFor(2026, [trial], today, new Date("2026-09-23T10:00:00Z"));
+    expect(cells[8].invoice).toBe(trial);
+  });
+
+  // The free days are covered, but nothing was paid for them.
+  it("tells the trial apart from a paid month", () => {
+    const trial = { ...invoice("2026-09-23", "2026-10-06", "t"), trial: true };
+    const paid = invoice("2026-10-07", "2027-10-06", "y");
+    const cells = ledgerFor(2026, [trial, paid], today, new Date("2026-09-23T00:00:00Z"));
+    expect(cells.slice(8).map((c) => c.state)).toEqual(["trial", "trial", "paid", "paid"]);
+  });
 });

@@ -57,6 +57,11 @@ export class AdminSupportTicketsComponent implements OnInit {
     });
   }
 
+  /** A dialable link: separators out, the leading + kept. */
+  telHref(phone: string): string {
+    return `tel:${phone.replace(/[^\d+]/g, "")}`;
+  }
+
   open(ticket: AdminSupportTicket): void {
     this.selected.set(ticket);
   }

@@ -26,7 +26,7 @@ describe("AdminCompanyDetailComponent", () => {
     locale: "fr",
     active: true,
     created_at: "2026-01-01T00:00:00Z",
-    owner: { id: "u1", full_name: "Amine", email: "a@x.test", phone: null },
+    owner: { id: "u1", full_name: "Amine", email: "a@x.test", phone: null, company_limit: 1, companies_count: 1 },
     subscription: {
       id: "s1",
       active: true,
@@ -70,6 +70,7 @@ describe("AdminCompanyDetailComponent", () => {
       "voidInvoice",
       "updateSubscription",
       "updateSettings",
+      "updateCompanyLimit",
       "impersonate",
     ]);
     service.get.and.returnValue(
@@ -95,6 +96,73 @@ describe("AdminCompanyDetailComponent", () => {
   }
 
   beforeEach(() => build());
+
+  // The tier governs the owner, so it is read off them, and a plan
+  // narrower than the gyms they already run is refused before it is sent.
+  describe("the plan", () => {
+    function withOwner(limit: number | null, gyms: number): void {
+      build({ owner: { ...company.owner, company_limit: limit, companies_count: gyms } });
+    }
+
+    it("reads the owner's tier, with unlimited as the blank option", () => {
+      withOwner(3, 2);
+      expect(component.plan()).toBe("3");
+      expect(component.ownerGyms()).toBe(2);
+
+      withOwner(null, 5);
+      expect(component.plan()).toBe("");
+    });
+
+    it("moves the owner to the chosen tier", () => {
+      withOwner(1, 1);
+      service.updateCompanyLimit.and.returnValue(
+        of({ company: { ...company, owner: { ...company.owner, company_limit: 3, companies_count: 1 } } as AdminCompany })
+      );
+
+      component.changePlan("3");
+
+      expect(service.updateCompanyLimit).toHaveBeenCalledWith("c1", 3);
+      expect(component.plan()).toBe("3");
+      expect(component.savingPlan()).toBeFalse();
+    });
+
+    it("sends null for unlimited", () => {
+      withOwner(3, 2);
+      service.updateCompanyLimit.and.returnValue(
+        of({ company: { ...company, owner: { ...company.owner, company_limit: null, companies_count: 2 } } as AdminCompany })
+      );
+
+      component.changePlan("");
+
+      expect(service.updateCompanyLimit).toHaveBeenCalledWith("c1", null);
+    });
+
+    it("refuses a plan narrower than the gyms the owner already runs", () => {
+      withOwner(null, 4);
+
+      component.changePlan("3");
+
+      expect(service.updateCompanyLimit).not.toHaveBeenCalled();
+    });
+
+    it("does nothing when the tier picked is the one already in force", () => {
+      withOwner(3, 1);
+
+      component.changePlan("3");
+
+      expect(service.updateCompanyLimit).not.toHaveBeenCalled();
+    });
+
+    it("stops saving and reports when the change fails", () => {
+      withOwner(1, 1);
+      service.updateCompanyLimit.and.returnValue(throwError(() => new Error("nope")));
+
+      component.changePlan("3");
+
+      expect(component.savingPlan()).toBeFalse();
+      expect(component.plan()).toBe("1");
+    });
+  });
 
   it("loads the gym and its invoices", () => {
     expect(service.get).toHaveBeenCalledWith("c1");
@@ -175,6 +243,62 @@ describe("AdminCompanyDetailComponent", () => {
 
       component.ledgerYear.set(year);
       expect(component.ledgerCollected()).toBe(219);
+    });
+
+    // One yearly invoice paints twelve cells, and was paid once.
+    it("counts a yearly invoice once, however many months it paints", () => {
+      const year = new Date().getFullYear();
+      build({}, [invoice({ period_start: `${year}-01-01`, period_end: `${year}-12-31`, billing_period: "yearly", amount: 1069.2 })]);
+
+      component.ledgerYear.set(year);
+      expect(component.ledgerCollected()).toBe(1069.2);
+    });
+
+    it("leaves the months before the gym signed up blank", () => {
+      const year = new Date().getFullYear();
+      build({ created_at: `${year}-06-15T00:00:00Z` });
+
+      component.ledgerYear.set(year);
+      expect(component.ledger().slice(0, 5).every((c) => c.state === "before")).toBe(true);
+      expect(component.ledger()[5].state).not.toBe("before");
+    });
+
+    it("never counts the free period as collected", () => {
+      const year = new Date().getFullYear();
+      build({ created_at: `${year}-01-01T00:00:00Z` }, [
+        invoice({ period_start: `${year}-01-01`, period_end: `${year}-01-14`, amount: 0, trial: true }),
+      ]);
+
+      component.ledgerYear.set(year);
+      expect(component.ledger()[0].state).toBe("trial");
+      expect(component.ledgerPaidCount()).toBe(0);
+    });
+  });
+
+  // Choosing a formula during the free days changes nothing until money
+  // arrives, so the page must show the trial and still offer the payment.
+  describe("a gym on its free days", () => {
+    const next = { period_start: "2026-10-07", period_end: "2027-10-06", amount_cents: 106_920 };
+
+    beforeEach(() =>
+      build({
+        subscription: { ...company.subscription!, billing_period: "yearly", trial: true, trial_days_left: 13 },
+        next_invoice: next,
+      })
+    );
+
+    it("is shown as on trial, not as on the formula picked for later", () => {
+      expect(component.onTrial()).toBe(true);
+      expect(fixture.nativeElement.querySelector(".ac-stat--trial")).not.toBeNull();
+    });
+
+    it("can be recorded as paid before the trial runs out, with the period it will buy", () => {
+      expect(component.attention()).toBeNull();
+      expect(component.nextInvoice()).toEqual(next);
+
+      service.issueInvoice.and.returnValue(of({ invoice: invoice(), company }));
+      (fixture.nativeElement.querySelector(".ac-next button") as HTMLButtonElement).click();
+      expect(service.issueInvoice).toHaveBeenCalledWith("c1");
     });
   });
 

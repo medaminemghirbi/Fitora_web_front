@@ -118,7 +118,7 @@ describe("ClientsListComponent", () => {
     component.onSearchChange("amy");
     tick(1000);
     expect(component.page()).toBe(1);
-    expect(service.list).toHaveBeenCalledWith({ search: "amy", status: undefined, page: 1 });
+    expect(service.list).toHaveBeenCalledWith(jasmine.objectContaining({ search: "amy", status: undefined, page: 1 }));
   }));
 
   it("onSearchChange cancels a pending debounce timer on rapid typing", fakeAsync(() => {
@@ -132,6 +132,62 @@ describe("ClientsListComponent", () => {
     component.applyStatusFilter("inactive");
     expect(component.statusFilter()).toBe("inactive");
     expect(component.page()).toBe(1);
+  });
+
+  it("counts only the folded-away filters on the toggle's badge", () => {
+    component.statusFilter.set("active");
+    expect(component.advancedCount()).toBe(0);
+
+    component.setPlanFilter("p1");
+    component.setGenderFilter("female");
+    expect(component.advancedCount()).toBe(2);
+    expect(component.hasFilters()).toBe(true);
+  });
+
+  it("sends every advanced filter with the list request, from page 1", () => {
+    component.page.set(4);
+    component.setActivityFilter("a1");
+    component.setJoinedFrom("2026-01-01");
+
+    expect(component.page()).toBe(1);
+    expect(service.list).toHaveBeenCalledWith(
+      jasmine.objectContaining({ activity_id: "a1", joined_from: "2026-01-01", page: 1 })
+    );
+  });
+
+  it("clearFilters drops the advanced filters too", () => {
+    component.setPlanFilter("p1");
+    component.setJoinedTo("2026-03-01");
+    component.clearFilters();
+
+    expect(component.advancedCount()).toBe(0);
+    expect(component.hasFilters()).toBe(false);
+  });
+
+  it("gives the joined range one chip, whichever of its ends is set", () => {
+    component.setJoinedFrom("2026-01-01");
+    const chips = component.filterChips();
+    expect(chips.length).toBe(1);
+
+    chips[0].clear();
+    expect(component.joinedFrom()).toBe("");
+    expect(component.joinedTo()).toBe("");
+  });
+
+  it("sorts by a column, and flips the direction when it is already the one sorted", () => {
+    component.sortBy("joined");
+    expect(component.sort()).toBe("joined");
+    expect(component.direction()).toBe("asc");
+    expect(component.ariaSort("joined")).toBe("ascending");
+    expect(component.ariaSort("name")).toBe("none");
+
+    component.sortBy("joined");
+    expect(component.direction()).toBe("desc");
+
+    // A different column starts over rather than keeping the flip.
+    component.sortBy("name");
+    expect(component.direction()).toBe("asc");
+    expect(service.list).toHaveBeenCalledWith(jasmine.objectContaining({ sort: "name", direction: "asc" }));
   });
 
   it("onPageChange loads the requested page", () => {

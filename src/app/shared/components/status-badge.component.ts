@@ -37,6 +37,7 @@ const TONE_BY_STATUS: Record<string, BadgeTone> = {
   absent: "danger",
   unpaid: "danger",
   refunded: "info",
+  trial: "info",
   inactive: "neutral",
 };
 

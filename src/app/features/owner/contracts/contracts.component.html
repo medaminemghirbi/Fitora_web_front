@@ -1,28 +1,4 @@
 <div class="fx-listpage">
-  <app-filter-rail [activeCount]="filterChips().length">
-
-    <div class="fx-rail-block">
-      <label class="fx-rail-label" for="contract-plan-filter">{{ "contract_types.plan" | translate }}</label>
-      <select
-        id="contract-plan-filter"
-        class="form-select form-select-sm"
-        [ngModel]="contractTypeFilter()"
-        (ngModelChange)="applyContractTypeFilter($event)"
-      >
-        <option value="">{{ "contracts.filter_all_plans" | translate }}</option>
-        @for (plan of plans(); track plan.id) {
-          <option [value]="plan.id">{{ plan.name }}</option>
-        }
-      </select>
-    </div>
-
-    @if (hasFilters()) {
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
-        <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
-      </button>
-    }
-  </app-filter-rail>
-
   <div class="fx-listpage-main">
     <header class="lst-head">
       <h1>{{ "nav.subscriptions" | translate }}</h1>
@@ -75,14 +51,20 @@
       </dl>
     </div>
 
-    <app-status-filter
-      name="contract-status"
-      [legend]="'clients.filter_status' | translate"
-      [value]="contractStatusFilter()"
-      [options]="railOptions()"
-      (valueChange)="applyContractFilter($any($event))"
-    />
-
+    <div class="lst-filters">
+      <app-status-filter
+        name="contract-status"
+        [legend]="'clients.filter_status' | translate"
+        [value]="contractStatusFilter()"
+        [options]="railOptions()"
+        (valueChange)="applyContractFilter($any($event))"
+      />
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+        </button>
+      }
+    </div>
 
     <div class="app-card">
       @if (filterChips().length > 0) {
@@ -113,11 +95,8 @@
               <tr>
                 <th>{{ "bookings.client" | translate }}</th>
                 <th>{{ "contract_types.plan" | translate }}</th>
-                <th class="text-end">{{ "clients.abo_price" | translate }}</th>
-                <th class="text-end">{{ "clients.abo_discount" | translate }}</th>
                 <th class="text-end">{{ "clients.abo_total" | translate }}</th>
-                <th>{{ "schedule.starts_on" | translate }}</th>
-                <th>{{ "schedule.ends_on" | translate }}</th>
+                <th>{{ "contracts.period" | translate }}</th>
                 <th>{{ "common.status" | translate }}</th>
                 <th>{{ "payments.status_paid" | translate }}</th>
                 <th class="text-end">{{ "common.actions" | translate }}</th>
@@ -144,26 +123,42 @@
                       {{ m.activity?.emoji ? m.activity!.emoji + " " : "" }}{{ m.activity_label }}
                     </div>
                   </td>
-                  <td class="text-end fx-num">
-                    @if (m.base_price !== null && m.base_price !== undefined) {
-                      {{ m.base_price | money: m.plan.currency }}
-                    } @else { <span class="fx-muted">—</span> }
-                  </td>
-                  <td class="text-end fx-num">
+                  <!-- What they pay, and only when it differs from the
+                       catalogue price, what it was before the discount.
+                       Three money columns for one number pushed the row's
+                       own buttons off the end of the table. -->
+                  <td class="text-end fx-num fw-semibold">
+                    {{ m.final_price | money: m.plan.currency }}
                     @if (m.discount) {
-                      <span class="text-warning-token">− {{ m.discount | money: m.plan.currency }}</span>
-                    } @else { <span class="fx-muted">—</span> }
+                      <div class="fx-cell-sub text-warning-token">
+                        {{ m.base_price | money: m.plan.currency }} − {{ m.discount | money: m.plan.currency }}
+                      </div>
+                    }
                   </td>
-                  <td class="text-end fx-num fw-semibold">{{ m.final_price | money: m.plan.currency }}</td>
-                  <td class="fx-num">{{ (m.starts_at | date: "mediumDate") || "—" }}</td>
-                  <td class="fx-num">{{ (m.expires_at | date: "mediumDate") || "—" }}</td>
+                  <!-- The term in force, and under it whatever has already
+                       been renewed behind it. Renewing early never rewrites
+                       the running term, so the row has to show both or it
+                       looks like the renewal did nothing. -->
+                  <td class="fx-num fx-cell-period">
+                    {{ (m.starts_at | date: "dd/MM/yy") || "—" }}
+                    <span class="fx-muted">→</span>
+                    {{ (m.expires_at | date: "dd/MM/yy") || "—" }}
+                    @if (m.upcoming_periods.length) {
+                      <div class="fx-cell-sub fx-renewal-queued">
+                        <i class="bi bi-arrow-repeat"></i>
+                        {{ "contracts.renewed_until" | translate: { date: (renewedThrough(m) | date: "dd/MM/yy") } }}
+                      </div>
+                    }
+                  </td>
                   <td><app-status-badge [status]="m.status">{{ ("contract.status_" + m.status) | translate }}</app-status-badge></td>
                   <td><app-status-badge [status]="m.payment_status">{{ ("payments.status_" + m.payment_status) | translate }}</app-status-badge></td>
                   <td class="text-end">
                     <!-- The two things the dashboard sends people here to do,
                          on the row rather than inside the member's file. -->
                     <div class="fx-row-actions">
-                      @if (m.payment_status === "unpaid" && m.status !== "cancelled") {
+                      <!-- Owed money, wherever it sits: an early renewal is
+                           sold unpaid while the term in force is settled. -->
+                      @if (+m.amount_due > 0 && m.status !== "cancelled") {
                         <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="rowBusy() !== null" (click)="collect(m)">
                           {{ "payments.collect" | translate }}
                         </button>

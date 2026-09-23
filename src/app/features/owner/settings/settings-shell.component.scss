@@ -24,6 +24,10 @@
 .settings-tabs {
   display: none;
   align-items: center;
+  // Seven sections plus the way out no longer fit on one line at every
+  // width, so the row wraps instead of hiding the last of them behind a
+  // scrollbar.
+  flex-wrap: wrap;
   gap: 2px;
   align-self: flex-start;
   max-width: 100%;
@@ -31,7 +35,6 @@
   border: 1px solid var(--color-border);
   border-radius: 12px;
   background: var(--color-bg);
-  overflow-x: auto;
 
   @media (min-width: 992px) {
     display: flex;
@@ -42,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 0.4375rem;
-  padding: 0.5rem 0.8125rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid transparent;
   border-radius: 8px;
   color: var(--color-text-secondary);
@@ -77,6 +80,15 @@
   border-inline-start: 1px solid var(--color-border);
   border-radius: 0 8px 8px 0;
   padding-inline-start: 0.875rem;
+
+  // On a wrapped line the divider would hang off the left edge with
+  // nothing before it, so it only marks the break when there is one.
+  @media (max-width: 1199px) {
+    margin-inline-start: 0;
+    border-inline-start: 0;
+    border-radius: 8px;
+    padding-inline-start: 0.75rem;
+  }
 
   i:last-child {
     font-size: 0.6875rem;
