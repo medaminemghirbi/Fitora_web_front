@@ -6,7 +6,7 @@
       <div class="dropdown-wrap">
         <button type="button" class="member-brand member-brand--switch" (click)="gymMenuOpen.set(!gymMenuOpen())">
           <span class="member-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span>
-          <span class="member-brand-text">{{ member.companyName() || "Fitora" }}</span>
+          <span class="member-brand-text">{{ member.companyName() || "Gymly" }}</span>
           <i class="bi bi-chevron-down member-brand-caret" aria-hidden="true"></i>
         </button>
         @if (gymMenuOpen()) {
@@ -27,11 +27,15 @@
     } @else {
       <a routerLink="/member/home" class="member-brand">
         <span class="member-brand-mark"><i class="bi bi-lightning-charge-fill"></i></span>
-        <span class="member-brand-text">{{ member.companyName() || "Fitora" }}</span>
+        <span class="member-brand-text">{{ member.companyName() || "Gymly" }}</span>
       </a>
     }
 
     <div class="member-topbar-actions">
+      <!-- A member has no inbox page: each notification opens what it is
+           about (their bookings, their subscription). -->
+      <app-notification-bell [detailRoute]="null" />
+
       <button type="button" class="icon-btn" (click)="theme.toggle()" [attr.aria-label]="'common.toggle_theme' | translate">
         <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
       </button>

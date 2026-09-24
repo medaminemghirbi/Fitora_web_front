@@ -10,7 +10,8 @@
     "spec": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
     "lint": "ng lint",
     "check:i18n": "node scripts/check-i18n.mjs",
-    "check:css": "node scripts/check-css.mjs"
+    "check:css": "node scripts/check-css.mjs",
+    "e2e": "playwright test"
   },
   "private": true,
   "dependencies": {
@@ -50,6 +51,7 @@
     "@angular-eslint/template-parser": "17.5.3",
     "@angular/cli": "^17.3.17",
     "@angular/compiler-cli": "^17.3.0",
+    "@playwright/test": "^1.63.0",
     "@types/jasmine": "~5.1.0",
     "@typescript-eslint/eslint-plugin": "7.11.0",
     "@typescript-eslint/parser": "7.11.0",

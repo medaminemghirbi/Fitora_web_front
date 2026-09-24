@@ -87,3 +87,13 @@
   font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.64);
 }
+
+.mb-card--danger {
+  border-color: var(--color-danger-soft);
+}
+
+.mb-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}

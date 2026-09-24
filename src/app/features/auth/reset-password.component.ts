@@ -42,7 +42,38 @@ export function passwordStrength(password: string): PasswordStrength {
   templateUrl: "./reset-password.component.html",
   styleUrl: "./auth.component.scss",
 })
+/**
+ * Choosing a password from an emailed link. Two links lead here: a password
+ * reset, and a member's invitation to their gym's app (route data
+ * `mode: "invitation"`). The form is the same; the words and the endpoint
+ * differ.
+ */
 export class ResetPasswordComponent implements OnInit {
+  readonly invitation = this.route.snapshot.data?.["mode"] === "invitation";
+  readonly copy = this.invitation
+    ? {
+        titleKey: "auth.invitation_title",
+        subtitleKey: "auth.invitation_hint",
+        labelKey: "auth.invitation_submit",
+        doneTitleKey: "auth.invitation_done_title",
+        doneBodyKey: "auth.invitation_done_body",
+        invalidKey: "auth.invitation_invalid_link",
+        panelTitle1Key: "auth.invitation_panel_title_1",
+        panelTitle2Key: "auth.invitation_panel_title_2",
+        panelLeadKey: "auth.invitation_panel_lead",
+      }
+    : {
+        titleKey: "auth.reset_password_title",
+        subtitleKey: "auth.reset_password_hint",
+        labelKey: "auth.reset_password_submit",
+        doneTitleKey: "auth.reset_password_done_title",
+        doneBodyKey: "auth.reset_password_done_body",
+        invalidKey: "auth.reset_password_invalid_link",
+        panelTitle1Key: "auth.reset_panel_title_1",
+        panelTitle2Key: "auth.reset_panel_title_2",
+        panelLeadKey: "auth.reset_panel_lead",
+      };
+
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly done = signal(false);
@@ -84,7 +115,7 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get("token") ?? "";
-    if (!this.token) this.error.set(this.translate.instant("auth.reset_password_invalid_link"));
+    if (!this.token) this.error.set(this.translate.instant(this.copy.invalidKey));
   }
 
   submit(): void {
@@ -96,14 +127,19 @@ export class ResetPasswordComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.recovery.resetPassword(this.token, this.form.getRawValue().password).subscribe({
+    const password = this.form.getRawValue().password;
+    const request = this.invitation
+      ? this.recovery.acceptInvitation(this.token, password)
+      : this.recovery.resetPassword(this.token, password);
+
+    request.subscribe({
       next: () => {
         this.loading.set(false);
         this.done.set(true);
         setTimeout(() => this.router.navigateByUrl("/connexion"), 2500);
       },
       error: (err) => {
-        const fallback = this.translate.instant("auth.reset_password_invalid_link");
+        const fallback = this.translate.instant(this.copy.invalidKey);
         // "invalid_or_expired_token" is a machine code, never the message
         // to show — anything else (e.g. a password validation failure) is
         // real, useful backend text worth showing as-is.

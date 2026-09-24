@@ -87,21 +87,7 @@
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1.125rem;
-}
-
-.rail-group {
-  display: flex;
-  flex-direction: column;
   gap: 2px;
-}
-
-.rail-group-label {
-  padding: 0 0.5rem 0.375rem;
-  font-size: 0.65625rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--color-text-secondary);
 }
 
 .rail-item {

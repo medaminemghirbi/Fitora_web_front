@@ -109,18 +109,24 @@ export class ClientsService {
   }
 
   /**
-   * Switches the member's own app on, or resets the password for it. The
-   * member is emailed a confirmation link; nothing else about them changes.
+   * Switches the member's own app on by emailing them an invitation: they
+   * choose their own password from the link. The gym never sets, sees or
+   * resets it — a member who forgets it uses "forgot password".
    */
-  setLogin(id: string, password: string): Observable<{ client: Client }> {
-    return this.http.patch<{ client: Client }>(`${API_BASE_URL}/clients/${id}`, { client: { password } });
+  invite(id: string): Observable<{ client: ClientDetail }> {
+    return this.http.post<{ client: ClientDetail }>(`${API_BASE_URL}/clients/${id}/invite`, {});
+  }
+
+  /**
+   * Takes the member off this gym: their upcoming bookings here are
+   * cancelled and what the gym wrote about them goes. Refused while a
+   * subscription is still running. Payments stay in the books.
+   */
+  remove(id: string): Observable<void> {
+    return this.http.delete<void>(`${API_BASE_URL}/clients/${id}`);
   }
 
   update(id: string, payload: ClientPayload): Observable<{ client: Client }> {
     return this.http.patch<{ client: Client }>(`${API_BASE_URL}/clients/${id}`, { client: payload });
   }
-
-  // Enables (or resets) the client's own mobile-app login — a separate,
-  // narrower call than update() since it's a distinct, sensitive action
-  // (see Client#login_enabled? on the backend).
 }

@@ -5,11 +5,11 @@ import { API_BASE_URL } from "../models/api-config";
 import { MemberProfile } from "../models/member.model";
 import { MemberService } from "./member.service";
 
-const ACTIVE_GYM_KEY = "fitora_member_gym";
+const ACTIVE_GYM_KEY = "gymly_member_gym";
 
 function profile(gyms: { id: string; name: string }[]): MemberProfile {
   return {
-    client: { id: "c1", full_name: "Ahmed", email: null, phone: null },
+    client: { id: "c1", full_name: "Ahmed", first_name: "Ahmed", last_name: "", email: null, phone: null },
     gyms,
     subscription: null,
     attendance: { rate: null, recent: [] },
@@ -138,5 +138,30 @@ describe("MemberService", () => {
 
     expect(service.profile()).toBeNull();
     expect(localStorage.getItem(ACTIVE_GYM_KEY)).toBeNull();
+  });
+
+  describe("the member's own account", () => {
+    it("saves their name and phone, and shows them straight away", () => {
+      setUp();
+      service.profile.set(profile(two));
+
+      service.updateDetails({ first_name: "Salma", last_name: "B", phone: "+216 20 000 000" }).subscribe();
+      const req = http.expectOne(`${API_BASE_URL}/me/profile`);
+      expect(req.request.method).toBe("PATCH");
+      req.flush({});
+
+      expect(service.profile()?.client.full_name).toBe("Salma B");
+      expect(service.profile()?.client.phone).toBe("+216 20 000 000");
+    });
+
+    it("deletes the account with the password as confirmation", () => {
+      setUp();
+
+      service.deleteAccount("my-password-1").subscribe();
+      const req = http.expectOne(`${API_BASE_URL}/me/account`);
+      expect(req.request.method).toBe("DELETE");
+      expect(req.request.body).toEqual({ password: "my-password-1" });
+      req.flush(null);
+    });
   });
 });

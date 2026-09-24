@@ -18,7 +18,7 @@ function today(): string {
  * Check-in, as the desk actually does it: pick the session people are
  * arriving for, then tick them off.
  *
- * The session list is today's only. A receptionist checking someone into
+ * The session list is today's only. A moderator checking someone into
  * next Tuesday's class is not a workflow, it is a mistake, and the way to
  * avoid it is to not offer it.
  *

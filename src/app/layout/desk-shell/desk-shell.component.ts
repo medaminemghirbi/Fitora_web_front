@@ -51,10 +51,10 @@ export class DeskShellComponent implements AfterViewInit {
   readonly navItems: DeskNavItem[] = [
     { path: "/desk/dashboard", icon: "bi-house", labelKey: "desk.nav.today" },
     { path: "/desk/checkin", icon: "bi-check2-square", labelKey: "desk.nav.checkin" },
-    { path: "/owner/clients", icon: "bi-people", labelKey: "desk.nav.members" },
-    { path: "/owner/calendar", icon: "bi-calendar3", labelKey: "desk.nav.schedule" },
-    { path: "/owner/contracts", icon: "bi-award", labelKey: "desk.nav.subscriptions" },
-    { path: "/owner/payments", icon: "bi-cash-coin", labelKey: "desk.nav.payments" },
+    { path: "/admin/clients", icon: "bi-people", labelKey: "desk.nav.members" },
+    { path: "/admin/calendar", icon: "bi-calendar3", labelKey: "desk.nav.schedule" },
+    { path: "/admin/contracts", icon: "bi-award", labelKey: "desk.nav.subscriptions" },
+    { path: "/admin/payments", icon: "bi-cash-coin", labelKey: "desk.nav.payments" },
   ];
 
   private readonly typed = new Subject<string>();
@@ -115,7 +115,7 @@ export class DeskShellComponent implements AfterViewInit {
 
   open(client: Client): void {
     this.clear();
-    this.router.navigate(["/owner/clients", client.id]);
+    this.router.navigate(["/admin/clients", client.id]);
   }
 
   clear(): void {

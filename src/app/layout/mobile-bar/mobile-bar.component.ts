@@ -38,9 +38,9 @@ export class MobileBarComponent {
 
   readonly items = computed(() =>
     [
-      { path: "/owner/dashboard", query: {}, icon: "bi-sun", labelKey: "nav.today", permission: "reports" },
-      { path: "/owner/clients", query: {}, icon: "bi-people", labelKey: "nav.clients", permission: "clients" },
-      { path: "/owner/payments", query: { action: "new" }, icon: "bi-cash-coin", labelKey: "payments.collect", permission: "payments" },
+      { path: "/admin/dashboard", query: {}, icon: "bi-sun", labelKey: "nav.today", permission: "reports" },
+      { path: "/admin/clients", query: {}, icon: "bi-people", labelKey: "nav.clients", permission: "clients" },
+      { path: "/admin/payments", query: { action: "new" }, icon: "bi-cash-coin", labelKey: "payments.collect", permission: "payments" },
     ].filter((item) => this.auth.hasPermission(item.permission))
   );
 }

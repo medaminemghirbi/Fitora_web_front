@@ -11,7 +11,7 @@ describe("email.guard", () => {
   beforeEach(() => {
     authStub = {
       emailConfirmationPending: jasmine.createSpy(),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
     };
     tree = {} as UrlTree;
     router = jasmine.createSpyObj<Router>("Router", ["createUrlTree"]);
@@ -28,7 +28,7 @@ describe("email.guard", () => {
   describe("emailConfirmedGuard", () => {
     const run = () => TestBed.runInInjectionContext(() => emailConfirmedGuard({} as never, {} as never));
 
-    it("sends an owner with an unconfirmed address to the waiting screen", () => {
+    it("sends an admin with an unconfirmed address to the waiting screen", () => {
       authStub.emailConfirmationPending.and.returnValue(true);
       expect(run()).toBe(tree);
       expect(router.createUrlTree).toHaveBeenCalledWith(["/confirmation-email"]);
@@ -51,7 +51,7 @@ describe("email.guard", () => {
     it("sends someone already confirmed home instead", () => {
       authStub.emailConfirmationPending.and.returnValue(false);
       expect(run()).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
     });
   });
 });

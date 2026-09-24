@@ -1,10 +1,10 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable, computed, inject, signal } from "@angular/core";
-import { Observable, catchError, tap, throwError } from "rxjs";
+import { Observable, catchError, map, tap, throwError } from "rxjs";
 import { API_BASE_URL } from "../models/api-config";
 import { MemberProfile } from "../models/member.model";
 
-const ACTIVE_GYM_KEY = "fitora_member_gym";
+const ACTIVE_GYM_KEY = "gymly_member_gym";
 
 /**
  * The member's own file — who they are, which gym they are looking at, what
@@ -85,6 +85,34 @@ export class MemberService {
   clear(): void {
     this.profile.set(null);
     this.forget();
+  }
+
+  /**
+   * The person's own name and phone. Once they sign in, their gyms can no
+   * longer change these for them — keeping them right is theirs. The email
+   * is the login and stays put.
+   */
+  updateDetails(details: { first_name: string; last_name: string; phone: string }): Observable<void> {
+    return this.http.patch<unknown>(`${API_BASE_URL}/me/profile`, { client: details }).pipe(
+      tap(() => {
+        const profile = this.profile();
+        if (profile) {
+          this.profile.set({
+            ...profile,
+            client: { ...profile.client, ...details, full_name: `${details.first_name} ${details.last_name}` },
+          });
+        }
+      }),
+      map(() => undefined)
+    );
+  }
+
+  /**
+   * Leaving Gymly. Their gyms keep their books, but nothing on them names
+   * this person any more, and every session ends. Confirmed by password.
+   */
+  deleteAccount(password: string): Observable<void> {
+    return this.http.delete<void>(`${API_BASE_URL}/me/account`, { body: { password } });
   }
 
   private fetch(gymId: string | null): Observable<MemberProfile> {

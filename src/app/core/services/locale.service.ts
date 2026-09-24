@@ -3,7 +3,7 @@ import { TranslateService } from "@ngx-translate/core";
 
 export type Locale = "fr" | "en" | "ar";
 
-// Shared by every language picker (landing header, admin shell) so the list
+// Shared by every language picker (landing header, superadmin shell) so the list
 // and its native labels live in one place.
 export const LOCALES: { code: Locale; label: string }[] = [
   { code: "fr", label: "Français" },
@@ -11,7 +11,7 @@ export const LOCALES: { code: Locale; label: string }[] = [
   { code: "ar", label: "العربية" },
 ];
 
-const LOCALE_KEY = "fitora_locale";
+const LOCALE_KEY = "gymly_locale";
 const RTL_LOCALES: Locale[] = ["ar"];
 const SUPPORTED_LOCALES: Locale[] = ["fr", "en", "ar"];
 const DEFAULT_LOCALE: Locale = "fr";
@@ -42,7 +42,7 @@ export class LocaleService {
   }
 
   // Inside a company's app the language is a tenant-wide setting delivered in
-  // the bootstrap payload (a Fitora admin controls it) — there is no per-user
+  // the bootstrap payload (a Gymly superadmin controls it) — there is no per-user
   // switch. Called by ConfigurationService whenever /bootstrap lands.
   applyCompanyLocale(locale: string | null | undefined): void {
     if (locale && SUPPORTED_LOCALES.includes(locale as Locale) && locale !== this.locale()) {

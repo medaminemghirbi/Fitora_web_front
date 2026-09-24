@@ -22,7 +22,7 @@ export interface SupportTicket {
   attachments: SupportTicketAttachment[];
 }
 
-export interface AdminSupportTicket extends SupportTicket {
+export interface SuperadminSupportTicket extends SupportTicket {
   company: { id: string; name: string };
   created_by: { id: string; full_name: string; email: string };
 }

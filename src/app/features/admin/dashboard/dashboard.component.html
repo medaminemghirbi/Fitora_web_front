@@ -1,0 +1,281 @@
+<div class="fx-page dash">
+  <!-- No greeting. It occupied the most valuable strip on the page to tell
+       the admin something they already knew. -->
+  <header class="dash-head">
+    <div class="dash-head-title">
+      <h1>{{ "dashboard.today" | translate }}</h1>
+      <p>
+        @if (data(); as d) {
+          {{ d.company.name }} ·
+        }
+        {{ now | date: "EEEE d MMMM" }}
+      </p>
+    </div>
+    <a routerLink="/admin/payments" [queryParams]="{ action: 'new' }" class="btn btn-outline-secondary d-none d-sm-inline-flex">
+      <i class="bi bi-cash-coin"></i> {{ "payments.record" | translate }}
+    </a>
+    <a routerLink="/admin/clients" [queryParams]="{ action: 'new' }" class="btn btn-primary">
+      <i class="bi bi-person-plus"></i> {{ "clients.new" | translate }}
+    </a>
+  </header>
+
+  @if (showSetupCard) {
+    <div class="app-card">
+      <div class="app-card-header">
+        <h2>{{ "onboarding.card_title" | translate }}</h2>
+        <a routerLink="/admin/onboarding" class="btn btn-sm btn-outline-secondary">
+          {{ "onboarding.open_flow" | translate }}
+        </a>
+      </div>
+      <div class="app-card-body">
+        <app-onboarding-steps [state]="onboardingState" [compact]="true" />
+        <button type="button" class="btn btn-link ob-card-leave" (click)="dismissSetup()">
+          {{ "onboarding.leave" | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- `data()` leads: `as` binds only on a primary @if, and the loading and
+       error arms are the fallbacks anyway. -->
+  @if (data(); as d) {
+
+    <!-- What needs you, in the best slot on the page. A day with nothing
+         outstanding still fills it — with one line saying so, not with a
+         blank. -->
+    <section class="dash-attn" [class.is-clear]="allClear()" aria-labelledby="dash-attention-h">
+      <div class="dash-attn-head">
+        <span class="dash-attn-mark" aria-hidden="true">
+          <i class="bi" [class.bi-check2]="allClear()" [class.bi-exclamation-triangle]="!allClear()"></i>
+        </span>
+        <h2 id="dash-attention-h">
+          {{ (allClear() ? "dashboard.nothing_pending" : "dashboard.needs_attention") | translate }}
+        </h2>
+        @if (!allClear()) {
+          <span class="dash-attn-count">{{ attention().length }}</span>
+        }
+      </div>
+
+      @if (!allClear()) {
+        <ul class="dash-attn-list">
+          @for (row of attention(); track row.key) {
+            <li>
+              <a [routerLink]="row.route" [queryParams]="row.query" [attr.data-tone]="row.tone">
+                <span class="dash-attn-n">{{ row.count }}</span>
+                <span class="dash-attn-text">
+                  <span class="dash-attn-label">
+                    {{ ("dashboard.attention_" + row.key) | translate: { count: row.count } }}
+                  </span>
+                  @if (row.detail; as detail) {
+                    <span class="dash-attn-detail">
+                      {{ ("dashboard.attention_detail_" + detail.kind) | translate: { count: detail.count } }}
+                    </span>
+                  }
+                </span>
+                @if (row.amount !== null) {
+                  <strong class="dash-attn-amount">{{ row.amount | money: d.company.currency }}</strong>
+                }
+                <span class="dash-attn-cta">
+                  {{ ("dashboard.attention_cta_" + row.key) | translate }}
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <!-- The figures. They situate; they decide nothing — which is why they
+         come after what does, not before it. -->
+    <div class="dash-kpis" [attr.aria-label]="'dashboard.figures' | translate">
+      @for (kpi of kpis(); track kpi.key) {
+        <div class="dash-kpi">
+          <span class="dash-kpi-icon" [attr.data-tone]="kpi.tone"><i class="bi" [class]="kpi.icon"></i></span>
+          <span class="dash-kpi-value">{{ kpi.value }}</span>
+          <span class="dash-kpi-label">{{ ("dashboard." + kpi.key) | translate }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="dash-cols">
+    <!-- The day itself: the body of the page, not a card among cards. -->
+    <section class="dash-section dash-cols-main" aria-labelledby="dash-day-h">
+      <div class="dash-section-head">
+        <h2 id="dash-day-h">{{ "dashboard.todays_schedule" | translate }}</h2>
+        <a routerLink="/admin/calendar" class="dash-section-link">
+          {{ "dashboard.view_schedule" | translate }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+      </div>
+
+      @if (d.stats.todays_schedule.length === 0) {
+        <app-empty-state [title]="'dashboard.no_sessions_today' | translate" body="" icon="bi-calendar3" />
+      } @else {
+        <ul class="dash-day">
+          @for (item of d.stats.todays_schedule; track item.id) {
+            <li [class.is-now]="currentSession()?.id === item.id" [class.is-done]="hasEnded(item)">
+              <span class="dash-day-dot" aria-hidden="true"></span>
+              <span class="dash-day-time">{{ item.starts_at | date: "HH:mm" }}</span>
+
+              <span class="dash-day-name">
+                <span class="fx-strong">
+                  {{ item.activity_emoji ? item.activity_emoji + " " : "" }}{{ item.activity_name }}
+                </span>
+                @if (item.coach_name) {
+                  <span class="fx-muted"> · {{ item.coach_name }}</span>
+                } @else {
+                  <span class="dash-day-nocoach"> · {{ "dashboard.no_coach" | translate }}</span>
+                }
+                @if (currentSession()?.id === item.id) {
+                  <span class="dash-day-live">{{ "checkin.now" | translate }}</span>
+                }
+              </span>
+
+              @if (hasEnded(item)) {
+                <span class="fx-muted dash-day-done">
+                  {{ "dashboard.session_done" | translate: { count: item.confirmed_count } }}
+                </span>
+              } @else {
+                <span class="dash-day-bar d-none d-sm-inline-block" [attr.aria-label]="item.confirmed_count + '/' + item.capacity">
+                  <span [class.is-full]="fillPct(item) >= 100" [style.width.%]="fillPct(item)"></span>
+                </span>
+                <span class="fx-muted dash-day-count d-none d-sm-inline" dir="ltr">
+                  {{ item.confirmed_count }}/{{ item.capacity }}
+                </span>
+                <button type="button" class="btn btn-sm" [class.btn-primary]="currentSession()?.id === item.id"
+                        [class.btn-outline-secondary]="currentSession()?.id !== item.id" (click)="openCheckin(item.id)">
+                  <i class="bi bi-check2-square"></i>
+                  <span class="d-none d-sm-inline">{{ "checkin.open" | translate }}</span>
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <div class="dash-cols-side">
+      @if (d.stats.revenue_by_month.length > 0) {
+        <section class="app-card dash-chart" aria-labelledby="dash-rev-h">
+          <div class="dash-chart-head">
+            <span class="dash-chart-title">
+              <h2 id="dash-rev-h">{{ "dashboard.revenue" | translate }}</h2>
+              <strong>{{ revenueThisMonth() | money: d.company.currency }}</strong>
+            </span>
+            <span class="dash-chart-chip">{{ "dashboard.last_12_months" | translate }}</span>
+          </div>
+          <app-line-chart
+            [points]="revenuePoints()"
+            [marker]="revenueMarker()"
+            [tickLabel]="shortAmount"
+            [ariaLabel]="'dashboard.revenue_chart_label' | translate"
+          />
+        </section>
+      }
+
+      @if (d.stats.recent_payments.length > 0) {
+        <section class="app-card dash-side-card" aria-labelledby="dash-pay-h">
+          <div class="dash-side-head">
+            <h2 id="dash-pay-h">{{ "dashboard.recent_payments" | translate }}</h2>
+            <a routerLink="/admin/payments">{{ "common.view_all" | translate }}</a>
+          </div>
+          <ul class="dash-side-list">
+            @for (payment of d.stats.recent_payments; track payment.id) {
+              <li>
+                <span class="dash-side-main">
+                  <span class="fx-strong">{{ payment.client_name }}</span>
+                  <span class="fx-muted">{{ payment.paid_at | date: "d MMM" }}</span>
+                </span>
+                <strong>{{ payment.amount | money: payment.currency }}</strong>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+    </div>
+
+    <!-- Occasional tasks, collapsed. -->
+    <div class="dashboard-utility-bar">
+      @if (auth.currentUser()?.role === "admin") {
+        <button type="button" class="dashboard-utility-toggle" (click)="exportOpen.set(!exportOpen())" [attr.aria-expanded]="exportOpen()">
+          <i class="bi bi-download"></i> {{ "dashboard.export_title" | translate }}
+          <i class="bi" [class.bi-chevron-down]="!exportOpen()" [class.bi-chevron-up]="exportOpen()"></i>
+        </button>
+      }
+      <button type="button" class="dashboard-utility-toggle" (click)="activityOpen.set(!activityOpen())" [attr.aria-expanded]="activityOpen()">
+        <i class="bi bi-clock-history"></i> {{ "dashboard.recent_activity" | translate }}
+        <i class="bi" [class.bi-chevron-down]="!activityOpen()" [class.bi-chevron-up]="activityOpen()"></i>
+      </button>
+    </div>
+
+    @if (exportOpen()) {
+      <div class="app-card">
+        <div class="app-card-body">
+          <div class="d-flex gap-2 align-items-end flex-wrap">
+            <div>
+              <label for="export-period-type">{{ "dashboard.export_period_type" | translate }}</label>
+              <select id="export-period-type" class="form-select form-select-sm" [ngModel]="exportPeriodType()" (ngModelChange)="exportPeriodType.set($event)">
+                <option value="month">{{ "dashboard.export_monthly" | translate }}</option>
+                <option value="year">{{ "dashboard.export_yearly" | translate }}</option>
+              </select>
+            </div>
+            @if (exportPeriodType() === "month") {
+              <div>
+                <label for="export-month">{{ "dashboard.export_month" | translate }}</label>
+                <input id="export-month" type="month" class="form-control form-control-sm" [ngModel]="exportMonth()" (ngModelChange)="exportMonth.set($event)" />
+              </div>
+            } @else {
+              <div>
+                <label for="export-year">{{ "dashboard.export_year" | translate }}</label>
+                <input id="export-year" type="number" class="form-control form-control-sm" style="width: 110px" [ngModel]="exportYear()" (ngModelChange)="exportYear.set($event)" />
+              </div>
+            }
+            <button type="button" class="btn btn-sm btn-primary" [disabled]="exporting()" (click)="exportReport()">
+              @if (exporting()) { <app-spinner [size]="14" /> } @else { <i class="bi bi-download"></i> {{ "dashboard.export_button" | translate }} }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activityOpen()) {
+      <div class="app-card">
+        <div class="app-card-body">
+          @if (auditLogsLoading()) {
+            <app-skeleton variant="line" width="100%" />
+            <app-skeleton variant="line" width="80%" />
+            <app-skeleton variant="line" width="60%" />
+          } @else if (auditLogs().length === 0) {
+            <app-empty-state [title]="'dashboard.no_recent_activity' | translate" body="" icon="bi-clock-history" />
+          } @else {
+            <ul class="fx-list">
+              @for (log of auditLogs(); track log.id) {
+                <li>
+                  <span class="fx-list-main">
+                    <span class="fx-strong">{{ auditLabel(log.action) }}</span>
+                    <span class="fx-muted">· {{ log.user?.full_name || "—" }}</span>
+                  </span>
+                  <span class="fx-muted">{{ log.created_at | date: "short" }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    }
+  } @else if (loading()) {
+    <app-skeleton variant="cards" [count]="3" />
+    <app-skeleton variant="table" [rows]="4" [cols]="3" />
+  } @else if (error()) {
+    <app-error-state (retry)="load()" />
+  }
+</div>
+
+<!-- Opened from today's schedule: the session is already chosen, so the only
+     thing left to find is the person. -->
+<app-modal [open]="checkinSessionId() !== null" [title]="'checkin.title' | translate" (closed)="closeCheckin()">
+  @if (checkinSessionId(); as id) {
+    <app-checkin-panel [sessionId]="id" />
+  }
+</app-modal>

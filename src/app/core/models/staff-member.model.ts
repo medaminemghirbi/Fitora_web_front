@@ -2,7 +2,7 @@ import { StaffRole } from "./user.model";
 
 export interface StaffMember {
   id: string;
-  /** The kind of login (receptionist | coach). */
+  /** The kind of login (moderator | coach). */
   role: StaffRole;
   /** Key of the assigned role — a built-in key or a custom-role slug. */
   role_key: string;

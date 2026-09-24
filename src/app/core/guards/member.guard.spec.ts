@@ -12,7 +12,7 @@ describe("memberGuard", () => {
     authStub = {
       isAuthenticated: jasmine.createSpy(),
       isClient: jasmine.createSpy(),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
     };
     tree = {} as UrlTree;
     router = jasmine.createSpyObj<Router>("Router", ["createUrlTree"]);
@@ -42,10 +42,10 @@ describe("memberGuard", () => {
     expect(router.createUrlTree).toHaveBeenCalledWith(["/connexion"]);
   });
 
-  it("redirects a non-client session (e.g. owner) to their own home route", () => {
+  it("redirects a non-client session (e.g. admin) to their own home route", () => {
     authStub.isAuthenticated.and.returnValue(true);
     authStub.isClient.and.returnValue(false);
     expect(run()).toBe(tree);
-    expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+    expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
   });
 });

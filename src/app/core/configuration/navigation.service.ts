@@ -17,14 +17,14 @@ export interface NavGroup {
   items: NavLeaf[];
 }
 
-// Builds the owner-area sidebar from the shipped blueprint and the current
+// Builds the admin-area sidebar from the shipped blueprint and the current
 // login's permissions. Everything reactive — the sidebar re-renders when
 // /bootstrap lands.
 @Injectable({ providedIn: "root" })
 export class NavigationService {
   private readonly auth = inject(AuthService);
 
-  private readonly isOwner = computed(() => this.auth.currentUser()?.role === "owner");
+  private readonly isAdmin = computed(() => this.auth.currentUser()?.role === "admin");
 
   readonly dashboardItem = computed<NavLeaf | null>(() =>
     this.visible(DASHBOARD_NAV) ? DASHBOARD_NAV : null
@@ -51,16 +51,16 @@ export class NavigationService {
     const dash = this.dashboardItem();
     if (dash) return dash.path;
     const firstGroupItem = this.groups()[0]?.items.find((i) => !i.comingSoon);
-    // istanbul ignore next -- NAV_BLUEPRINT's "planning" group always has the permission-free /owner/calendar item, so groups() is never empty here
-    return firstGroupItem?.path ?? "/owner/settings";
+    // istanbul ignore next -- NAV_BLUEPRINT's "planning" group always has the permission-free /admin/calendar item, so groups() is never empty here
+    return firstGroupItem?.path ?? "/admin/settings";
   });
 
   private groupVisible(group: NavGroupBlueprint): boolean {
-    return !(group.ownerOnly && !this.isOwner());
+    return !(group.adminOnly && !this.isAdmin());
   }
 
   private visible(item: NavLeafBlueprint): boolean {
-    if (item.ownerOnly && !this.isOwner()) return false;
+    if (item.adminOnly && !this.isAdmin()) return false;
     if (item.feature && !this.featureOn(item.feature)) return false;
     if (!item.permission) return true;
     return this.auth.hasPermission(item.permission);

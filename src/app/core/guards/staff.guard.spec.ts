@@ -4,7 +4,7 @@ import { firstValueFrom, isObservable, of, throwError } from "rxjs";
 import { AuthService } from "../auth/auth.service";
 import { ConfigurationService } from "../configuration/configuration.service";
 import { User } from "../models/user.model";
-import { capabilityGuard, deskAreaGuard, featureGuard, ownerAreaGuard, settingsAccessGuard, staffManagerGuard, staffRoleGuard } from "./staff.guard";
+import { capabilityGuard, deskAreaGuard, featureGuard, adminAreaGuard, settingsAccessGuard, staffManagerGuard, staffRoleGuard } from "./staff.guard";
 
 describe("staff.guard", () => {
   let authStub: {
@@ -22,7 +22,7 @@ describe("staff.guard", () => {
     authStub = {
       currentUser: jasmine.createSpy(),
       isAuthenticated: jasmine.createSpy().and.returnValue(false),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
       coachShellApplies: jasmine.createSpy().and.returnValue(false),
       hasPermission: jasmine.createSpy().and.returnValue(false),
     };
@@ -57,18 +57,18 @@ describe("staff.guard", () => {
     }
 
     it("sends someone home when the gym has not turned the feature on", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       expect(await resolve(run())).toBe(tree);
     });
 
     it("lets them through once it is on", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       configStub.features.and.returnValue({ spaces: true });
       expect(await resolve(run())).toBe(true);
     });
 
     it("lets them through before the configuration has landed", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       configStub.ready.and.returnValue(false);
       expect(await resolve(run())).toBe(true);
     });
@@ -79,9 +79,9 @@ describe("staff.guard", () => {
     });
   });
 
-  describe("ownerAreaGuard", () => {
+  describe("adminAreaGuard", () => {
     function run() {
-      return TestBed.runInInjectionContext(() => ownerAreaGuard({} as never, {} as never));
+      return TestBed.runInInjectionContext(() => adminAreaGuard({} as never, {} as never));
     }
 
     it("redirects to login with no user", async () => {
@@ -90,14 +90,14 @@ describe("staff.guard", () => {
       expect(router.createUrlTree).toHaveBeenCalledWith(["/connexion"]);
     });
 
-    it("redirects a platform admin to /admin/companies", async () => {
-      authStub.currentUser.and.returnValue({ role: "admin" } as User);
+    it("redirects a platform superadmin to /superadmin/companies", async () => {
+      authStub.currentUser.and.returnValue({ role: "superadmin" } as User);
       expect(await resolve(run())).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/overview"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/superadmin/overview"]);
     });
 
-    it("lets an owner/staff login through when the coach shell doesn't apply", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+    it("lets an admin/staff login through when the coach shell doesn't apply", async () => {
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       authStub.coachShellApplies.and.returnValue(false);
       expect(await resolve(run())).toBe(true);
     });
@@ -110,7 +110,7 @@ describe("staff.guard", () => {
     });
 
     it("fails open (allows through) when the bootstrap load errors", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       configStub.ensureLoaded.and.returnValue(throwError(() => new Error("network")));
       expect(await resolve(run())).toBe(true);
     });
@@ -142,7 +142,7 @@ describe("staff.guard", () => {
       authStub.currentUser.and.returnValue({ role: "staff" } as User);
       authStub.hasPermission.and.returnValue(false);
       expect(await resolve(run("clients"))).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
     });
 
     it("fails open (allows through) when the bootstrap load errors", async () => {
@@ -162,8 +162,8 @@ describe("staff.guard", () => {
       expect(await resolve(run())).toBe(tree);
     });
 
-    it("allows the owner through regardless of permissions", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+    it("allows the admin through regardless of permissions", async () => {
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       expect(await resolve(run())).toBe(true);
     });
 
@@ -179,7 +179,7 @@ describe("staff.guard", () => {
       expect(await resolve(run())).toBe(true);
     });
 
-    it("bounces a plain receptionist home", async () => {
+    it("bounces a plain moderator home", async () => {
       authStub.currentUser.and.returnValue({ role: "staff" } as User);
       authStub.hasPermission.and.returnValue(false);
       expect(await resolve(run())).toBe(tree);
@@ -198,12 +198,12 @@ describe("staff.guard", () => {
       expect(TestBed.runInInjectionContext(() => staffManagerGuard({} as never, {} as never))).toBe(tree);
     });
 
-    it("allows the owner", () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+    it("allows the admin", () => {
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       expect(TestBed.runInInjectionContext(() => staffManagerGuard({} as never, {} as never))).toBe(true);
     });
 
-    it("bounces any non-owner home", () => {
+    it("bounces any non-admin home", () => {
       authStub.currentUser.and.returnValue({ role: "staff" } as User);
       expect(TestBed.runInInjectionContext(() => staffManagerGuard({} as never, {} as never))).toBe(tree);
     });
@@ -220,13 +220,13 @@ describe("staff.guard", () => {
     });
 
     it("bounces home a staff login of the wrong kind", async () => {
-      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "receptionist", is_coach: false } as User);
+      authStub.currentUser.and.returnValue({ role: "staff", staff_role: "moderator", is_coach: false } as User);
       expect(await resolve(run())).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
     });
 
     it("bounces home a non-staff user even with a matching staff_role field", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner", staff_role: "coach", is_coach: true } as User);
+      authStub.currentUser.and.returnValue({ role: "admin", staff_role: "coach", is_coach: true } as User);
       expect(await resolve(run())).toBe(tree);
     });
 
@@ -236,11 +236,11 @@ describe("staff.guard", () => {
       expect(await resolve(run())).toBe(true);
     });
 
-    it("sends a coach-kind login without the coach module to the owner dashboard", async () => {
+    it("sends a coach-kind login without the coach module to the admin dashboard", async () => {
       authStub.currentUser.and.returnValue({ role: "staff", staff_role: "coach", is_coach: true } as User);
       authStub.coachShellApplies.and.returnValue(false);
       expect(await resolve(run())).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
     });
 
     it("fails open (allows through) when the bootstrap load errors", async () => {
@@ -258,7 +258,7 @@ describe("staff.guard", () => {
       authStub.isAuthenticated.and.returnValue(true);
       authStub.homeRouteForCurrentUser.and.returnValue("/member/home");
 
-      TestBed.runInInjectionContext(() => ownerAreaGuard({} as never, {} as never));
+      TestBed.runInInjectionContext(() => adminAreaGuard({} as never, {} as never));
 
       expect(router.createUrlTree).toHaveBeenCalledWith(["/member/home"]);
     });
@@ -267,11 +267,11 @@ describe("staff.guard", () => {
   // A locked gym gets one page and no navigation — caught here rather than
   // waiting for a request to come back 402 and empty a loaded screen.
   describe("a gym whose access is closed", () => {
-    it("never reaches the owner area", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+    it("never reaches the admin area", async () => {
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       configStub.subscription.and.returnValue({ locked: true });
 
-      const result = TestBed.runInInjectionContext(() => ownerAreaGuard({} as never, {} as never));
+      const result = TestBed.runInInjectionContext(() => adminAreaGuard({} as never, {} as never));
       const resolved = isObservable(result) ? await firstValueFrom(result) : result;
 
       expect(resolved).toBe(tree);
@@ -279,10 +279,10 @@ describe("staff.guard", () => {
     });
 
     it("lets an unlocked gym straight through", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner" } as User);
+      authStub.currentUser.and.returnValue({ role: "admin" } as User);
       configStub.subscription.and.returnValue({ locked: false });
 
-      const result = TestBed.runInInjectionContext(() => ownerAreaGuard({} as never, {} as never));
+      const result = TestBed.runInInjectionContext(() => adminAreaGuard({} as never, {} as never));
       const resolved = isObservable(result) ? await firstValueFrom(result) : result;
 
       expect(resolved).toBe(true);
@@ -317,7 +317,7 @@ describe("staff.guard", () => {
       authStub.hasPermission.and.callFake((p: string) => p === "checkin");
 
       expect(await resolve(run())).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
     });
 
     it("turns away a coach even when their role grants both", async () => {
@@ -327,15 +327,15 @@ describe("staff.guard", () => {
       expect(await resolve(run())).toBe(tree);
     });
 
-    it("turns away an owner — their own shell is a superset of the desk", async () => {
-      authStub.currentUser.and.returnValue({ role: "owner", is_coach: false } as User);
+    it("turns away an admin — their own shell is a superset of the desk", async () => {
+      authStub.currentUser.and.returnValue({ role: "admin", is_coach: false } as User);
       authStub.hasPermission.and.returnValue(true);
 
       expect(await resolve(run())).toBe(tree);
     });
 
-    it("turns away a platform admin", async () => {
-      authStub.currentUser.and.returnValue({ role: "admin", is_coach: false } as User);
+    it("turns away a platform superadmin", async () => {
+      authStub.currentUser.and.returnValue({ role: "superadmin", is_coach: false } as User);
       authStub.hasPermission.and.returnValue(true);
 
       expect(await resolve(run())).toBe(tree);

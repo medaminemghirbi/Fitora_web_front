@@ -3,7 +3,7 @@ import { CanActivateFn, Router } from "@angular/router";
 import { AuthService } from "../auth/auth.service";
 
 /**
- * Nothing past sign-up opens until the owner has clicked the emailed link.
+ * Nothing past sign-up opens until the admin has clicked the emailed link.
  * The backend refuses it anyway (`email_unverified`); this sends them to the
  * screen that waits for the click instead of a page full of failed requests.
  */

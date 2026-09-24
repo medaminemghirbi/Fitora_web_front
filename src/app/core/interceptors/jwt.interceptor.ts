@@ -28,7 +28,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate(["/account-locked"]);
       }
 
-      // An owner whose address is not confirmed yet reaches nothing past
+      // An admin whose address is not confirmed yet reaches nothing past
       // sign-up (BaseController#require_confirmed_email!). The guards
       // normally keep them on the waiting screen; this catches a stale tab.
       if (error.status === 403 && error.error?.error === "email_unverified" && !router.url.startsWith("/confirmation-email")) {

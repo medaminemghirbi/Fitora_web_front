@@ -25,7 +25,7 @@ describe("NotificationBellComponent", () => {
     id: "n1",
     kind: "system_update" as const,
     data: {},
-    url: "/admin/updates",
+    url: "/superadmin/updates",
     subject: null,
     read: false,
     created_at: new Date().toISOString(),
@@ -110,13 +110,13 @@ describe("NotificationBellComponent", () => {
     component.select(notification);
     expect(notifications.markRead).toHaveBeenCalledWith("n1");
     expect(component.open()).toBe(false);
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/notifications", "n1"]);
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/notifications", "n1"]);
   });
 
   it("select() navigates straight to the notification's url when there is no detailRoute", () => {
     component.detailRoute = null;
     component.select(notification);
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/admin/updates");
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/superadmin/updates");
   });
 
   it("markAllRead delegates to the service", () => {
@@ -128,7 +128,7 @@ describe("NotificationBellComponent", () => {
     component.open.set(true);
     component.seeAll();
     expect(component.open()).toBe(false);
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/notifications"]);
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/notifications"]);
   });
 
   it("seeAll does not navigate when there is no detailRoute", () => {

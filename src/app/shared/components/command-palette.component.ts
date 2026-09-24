@@ -48,7 +48,7 @@ export class CommandPaletteComponent {
     payments: [],
   });
   private searchDebounce?: ReturnType<typeof setTimeout>;
-  private readonly isOwner = computed(() => this.auth.currentUser()?.role === "owner");
+  private readonly isAdmin = computed(() => this.auth.currentUser()?.role === "admin");
 
   private close(run: () => void): void {
     this.palette.close();
@@ -70,13 +70,13 @@ export class CommandPaletteComponent {
   );
 
   private readonly actionCmds = computed<Cmd[]>(() => {
-    if (!this.isOwner()) return [];
+    if (!this.isAdmin()) return [];
     const nav = (path: string) => this.close(() => this.router.navigate([path], { queryParams: { action: "new" } }));
     return [
-      { id: "act:client", labelKey: "palette.action_new_client", icon: "bi-person-plus", run: () => nav("/owner/clients") },
-      { id: "act:payment", labelKey: "palette.action_new_payment", icon: "bi-cash-coin", run: () => nav("/owner/payments") },
-      { id: "act:activity", labelKey: "palette.action_new_activity", icon: "bi-lightning-charge", run: () => nav("/owner/activities") },
-      { id: "act:team", labelKey: "team.new", icon: "bi-person-vcard", run: () => nav("/owner/team") },
+      { id: "act:client", labelKey: "palette.action_new_client", icon: "bi-person-plus", run: () => nav("/admin/clients") },
+      { id: "act:payment", labelKey: "palette.action_new_payment", icon: "bi-cash-coin", run: () => nav("/admin/payments") },
+      { id: "act:activity", labelKey: "palette.action_new_activity", icon: "bi-lightning-charge", run: () => nav("/admin/activities") },
+      { id: "act:team", labelKey: "team.new", icon: "bi-person-vcard", run: () => nav("/admin/team") },
     ];
   });
 
@@ -141,7 +141,7 @@ export class CommandPaletteComponent {
   }
 
   private runRemote(term: string): void {
-    if (!this.isOwner()) return;
+    if (!this.isAdmin()) return;
     this.clients.list({ search: term }).subscribe((res) =>
       this.remote.update((r) => ({
         ...r,
@@ -150,7 +150,7 @@ export class CommandPaletteComponent {
           label: c.full_name,
           sub: c.phone ?? c.email ?? undefined,
           icon: "bi-person",
-          run: () => this.close(() => this.router.navigate(["/owner/clients", c.id])),
+          run: () => this.close(() => this.router.navigate(["/admin/clients", c.id])),
         })),
       }))
     );
@@ -162,7 +162,7 @@ export class CommandPaletteComponent {
           label: m.client.full_name,
           sub: m.plan.name,
           icon: "bi-file-earmark-text",
-          run: () => this.close(() => this.router.navigate(["/owner/clients", m.client.id])),
+          run: () => this.close(() => this.router.navigate(["/admin/clients", m.client.id])),
         })),
       }))
     );
@@ -174,7 +174,7 @@ export class CommandPaletteComponent {
           label: p.client.full_name,
           sub: `${p.amount} ${p.currency}`,
           icon: "bi-credit-card",
-          run: () => this.close(() => this.router.navigate(["/owner/payments"], { queryParams: { q: term } })),
+          run: () => this.close(() => this.router.navigate(["/admin/payments"], { queryParams: { q: term } })),
         })),
       }))
     );

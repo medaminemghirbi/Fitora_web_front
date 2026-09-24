@@ -11,7 +11,7 @@ describe("guestGuard", () => {
   beforeEach(() => {
     authStub = {
       isAuthenticated: jasmine.createSpy(),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
     };
     tree = {} as UrlTree;
     router = jasmine.createSpyObj<Router>("Router", ["createUrlTree"]);
@@ -37,6 +37,6 @@ describe("guestGuard", () => {
   it("redirects an already-logged-in user to their home route", () => {
     authStub.isAuthenticated.and.returnValue(true);
     expect(run()).toBe(tree);
-    expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+    expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
   });
 });

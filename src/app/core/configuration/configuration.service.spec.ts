@@ -17,10 +17,10 @@ describe("ConfigurationService", () => {
     user: { id: "u1" } as never,
     company: { id: "c1" } as never,
     branding: { name: "Acme", primary_color: null, logo_url: null, locale: "fr", currency: "EUR", currency_symbol: "€" },
-    role: { key: "owner", name: "Owner" },
+    role: { key: "admin", name: "Admin" },
     permissions: ["clients", "payments"],
     modules: ["clients"],
-    roles: [{ id: "r1", key: "owner", name: "Owner", permissions: ["clients"], builtin: true }],
+    roles: [{ id: "r1", key: "admin", name: "Admin", permissions: ["clients"], builtin: true }],
     permission_catalog: { clients: "Membres" },
     subscription: null,
     onboarding: null,
@@ -52,12 +52,12 @@ describe("ConfigurationService", () => {
   }
 
   afterEach(() => {
-    localStorage.removeItem("fitora_bootstrap");
+    localStorage.removeItem("gymly_bootstrap");
     httpMock?.verify();
   });
 
   it("starts with no cached state when localStorage is empty", () => {
-    localStorage.removeItem("fitora_bootstrap");
+    localStorage.removeItem("gymly_bootstrap");
     const config = buildService();
     expect(config.ready()).toBe(false);
     expect(config.company()).toBeNull();
@@ -65,20 +65,20 @@ describe("ConfigurationService", () => {
   });
 
   it("hydrates from a valid cache written by a previous session", () => {
-    localStorage.setItem("fitora_bootstrap", JSON.stringify(bootstrap));
+    localStorage.setItem("gymly_bootstrap", JSON.stringify(bootstrap));
     const config = buildService();
     expect(config.ready()).toBe(true);
     expect(config.permissions()).toEqual(["clients", "payments"]);
   });
 
   it("rejects a stale cache missing permissions/modules arrays", () => {
-    localStorage.setItem("fitora_bootstrap", JSON.stringify({ user: {}, company: {} }));
+    localStorage.setItem("gymly_bootstrap", JSON.stringify({ user: {}, company: {} }));
     const config = buildService();
     expect(config.ready()).toBe(false);
   });
 
   it("rejects corrupt JSON in the cache", () => {
-    localStorage.setItem("fitora_bootstrap", "{not json");
+    localStorage.setItem("gymly_bootstrap", "{not json");
     const config = buildService();
     expect(config.ready()).toBe(false);
   });
@@ -94,12 +94,12 @@ describe("ConfigurationService", () => {
     expect(result).toEqual(bootstrap);
     expect(config.ready()).toBe(true);
     expect(config.company()).toEqual(bootstrap.company);
-    expect(config.role()).toEqual({ key: "owner", name: "Owner" });
+    expect(config.role()).toEqual({ key: "admin", name: "Admin" });
     expect(config.permissions()).toEqual(["clients", "payments"]);
     expect(config.modules()).toEqual(["clients"]);
     expect(config.roles()).toEqual(bootstrap.roles);
     expect(config.permissionCatalog()).toEqual({ clients: "Membres" });
-    expect(JSON.parse(localStorage.getItem("fitora_bootstrap")!)).toEqual(bootstrap);
+    expect(JSON.parse(localStorage.getItem("gymly_bootstrap")!)).toEqual(bootstrap);
   });
 
   it("load() applies branding and the company locale when branding is present", () => {
@@ -160,13 +160,13 @@ describe("ConfigurationService", () => {
     config.clear();
 
     expect(config.ready()).toBe(false);
-    expect(localStorage.getItem("fitora_bootstrap")).toBeNull();
+    expect(localStorage.getItem("gymly_bootstrap")).toBeNull();
     expect(notificationsStub.disconnect).toHaveBeenCalled();
   });
 
-  it("connectAdminNotifications connects and refreshes the feed", () => {
+  it("connectSuperadminNotifications connects and refreshes the feed", () => {
     const config = buildService();
-    config.connectAdminNotifications();
+    config.connectSuperadminNotifications();
     expect(notificationsStub.connect).toHaveBeenCalled();
     expect(notificationsStub.refresh).toHaveBeenCalled();
   });
@@ -185,7 +185,7 @@ describe("ConfigurationService", () => {
     config.load().subscribe();
     httpMock.expectOne(`${API_BASE_URL}/bootstrap`).flush(bootstrap);
 
-    expect(config.roleName("owner")).toBe("Owner");
+    expect(config.roleName("admin")).toBe("Admin");
   });
 
   it("roleName falls back to a humanised key when no role matches", () => {

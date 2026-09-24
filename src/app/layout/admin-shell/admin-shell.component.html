@@ -1,66 +1,73 @@
 <div class="admin-shell">
-  <header class="admin-bar">
-    <a routerLink="/admin/companies" class="admin-bar-brand">
-      <span class="admin-bar-mark"><i class="bi bi-lightning-charge-fill"></i></span>
-      Fitora
-      <span class="admin-bar-chip">Admin</span>
-      @if (version.current(); as v) {
-        <span class="admin-bar-version">v{{ v }}</span>
-      }
+  @if (auth.isImpersonating()) {
+    <div class="impersonation-banner">
+      <i class="bi bi-incognito"></i>
+      <span>{{ "superadmin.impersonating_banner" | translate: { company: auth.impersonatedCompanyName() } }}</span>
+      <button type="button" class="impersonation-exit-btn" (click)="auth.exitImpersonation()">
+        <i class="bi bi-box-arrow-left"></i> {{ "superadmin.exit_impersonation" | translate }}
+      </button>
+    </div>
+  } @else if (trialDaysLeft() !== null) {
+    <a routerLink="/admin/subscription" class="trial-shell-banner" [class.is-due]="trialDaysLeft()! <= 3">
+      <i class="bi bi-gift"></i>
+      <span>
+        @if (trialDaysLeft()! > 0) {
+          {{ "subscription.trial_banner_body" | translate: { days: trialDaysLeft() } }}
+        } @else {
+          {{ "subscription.trial_banner_over" | translate }}
+        }
+      </span>
+      <span class="trial-shell-banner-link">{{ "subscription.trial_banner_cta" | translate }}</span>
     </a>
-
-    <nav class="admin-bar-nav">
-      @for (item of navItems; track item.path) {
-        <a [routerLink]="item.path" routerLinkActive="is-active" class="admin-bar-tab">
-          {{ item.labelKey | translate }}
-        </a>
+  } @else if (daysToSettle() !== null) {
+    <a routerLink="/admin/subscription" class="trial-shell-banner is-due">
+      <i class="bi bi-cash-coin"></i>
+      <span>{{ "subscription.due_banner_body" | translate: { days: daysToSettle() } }}</span>
+      <span class="trial-shell-banner-link">{{ "subscription.due_banner_cta" | translate }}</span>
+    </a>
+  } @else if (emailUnverified() && !emailBannerDismissed()) {
+    <div class="verify-email-banner">
+      <i class="bi bi-envelope-exclamation"></i>
+      @if (verificationResent()) {
+        <span>{{ "auth.verify_email_banner_resent" | translate }}</span>
+      } @else {
+        <span>{{ "auth.verify_email_banner_body" | translate }}</span>
+        <button type="button" class="verify-email-banner-link" [disabled]="resendingVerification()" (click)="resendVerificationEmail()">
+          {{ "auth.verify_email_banner_cta" | translate }}
+        </button>
       }
-    </nav>
-
-    <span class="admin-bar-spacer"></span>
-
-    <app-notification-bell [detailRoute]="null" />
-
-    <button type="button" class="admin-bar-ic" (click)="theme.toggle()" [attr.aria-label]="'common.toggle_theme' | translate">
-      <i class="bi" [class.bi-moon-stars]="theme.theme() === 'light'" [class.bi-sun]="theme.theme() === 'dark'"></i>
-    </button>
-
-    <div class="dropdown-wrap">
-      <button type="button" class="admin-bar-ic" (click)="langMenuOpen.set(!langMenuOpen())" [attr.aria-label]="'common.change_language' | translate">
-        <i class="bi bi-translate"></i>
+      <button type="button" class="verify-email-banner-dismiss" (click)="emailBannerDismissed.set(true)" [attr.aria-label]="'common.cancel' | translate">
+        <i class="bi bi-x-lg"></i>
       </button>
-      @if (langMenuOpen()) {
-        <div class="dropdown-menu-custom dropdown-menu-end">
-          @for (l of locales; track l.code) {
-            <button type="button" class="dropdown-item-custom" [class.active]="locale.locale() === l.code" (click)="setLocale(l.code)">
-              {{ l.label }}
-            </button>
-          }
-        </div>
-      }
     </div>
+  }
 
-    <div class="dropdown-wrap">
-      <button type="button" class="user-menu-trigger" (click)="userMenuOpen.set(!userMenuOpen())" [attr.aria-label]="auth.currentUser()?.full_name || ''">
-        <app-avatar [name]="auth.currentUser()?.full_name || ''" [size]="30" />
-      </button>
-      @if (userMenuOpen()) {
-        <div class="dropdown-menu-custom dropdown-menu-end">
-          <div class="dropdown-user-info">
-            <strong>{{ auth.currentUser()?.full_name }}</strong>
-            <span>{{ auth.currentUser()?.email }}</span>
-          </div>
-          <button type="button" class="dropdown-item-custom" (click)="logout()">
-            <i class="bi bi-box-arrow-right"></i> {{ "auth.logout" | translate }}
-          </button>
-        </div>
-      }
+  <div class="admin-shell-body">
+    <!-- Desktop navigation. The top bar keeps everything that is not
+         navigation and hides its own nav, so the blueprint is read in one
+         place (NavigationService) and rendered in one place per breakpoint. -->
+    <app-rail />
+
+    <div class="admin-shell-main">
+      <app-navbar
+        [dashboardItem]="dashboardNavItem()"
+        [groups]="navGroups()"
+        [secondaryItems]="showAdminOnlySections() ? secondaryNavItems() : []"
+        [brandName]="'Gymly'"
+        [brandLogoUrl]="branding.logoUrl()"
+        [brandHome]="nav.homePath()"
+        [brandSuffix]="versionSuffix()"
+        [showBrand]="false"
+        [showDesktopNav]="false"
+        [showNotifications]="true"
+        [showSupport]="showAdminOnlySections()"
+      />
+
+      <main class="app-content">
+        <router-outlet></router-outlet>
+      </main>
+
+      <app-mobile-bar />
     </div>
-  </header>
-
-  <div class="admin-strip">{{ "admin.strip" | translate }}</div>
-
-  <main class="admin-content">
-    <router-outlet></router-outlet>
-  </main>
+  </div>
 </div>

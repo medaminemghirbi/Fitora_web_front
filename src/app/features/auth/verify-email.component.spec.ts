@@ -20,16 +20,16 @@ describe("VerifyEmailComponent", () => {
     refreshCurrentUser: jasmine.Spy;
   };
 
-  const confirmedOwner = { role: "owner", email_verified: true, company_id: null };
+  const confirmedAdmin = { role: "admin", email_verified: true, company_id: null };
 
   function build(token: string | null, signedIn = false): void {
     TestBed.resetTestingModule();
     recovery = jasmine.createSpyObj<AccountRecoveryService>("AccountRecoveryService", ["verifyEmail"]);
     authStub = {
       isAuthenticated: jasmine.createSpy().and.returnValue(signedIn),
-      currentUser: jasmine.createSpy().and.returnValue(signedIn ? confirmedOwner : null),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
-      refreshCurrentUser: jasmine.createSpy().and.returnValue(of(confirmedOwner)),
+      currentUser: jasmine.createSpy().and.returnValue(signedIn ? confirmedAdmin : null),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
+      refreshCurrentUser: jasmine.createSpy().and.returnValue(of(confirmedAdmin)),
     };
 
     TestBed.configureTestingModule({
@@ -71,7 +71,7 @@ describe("VerifyEmailComponent", () => {
 
   it("tells the waiting screen in another tab at once", () => {
     const posted: unknown[] = [];
-    const listener = new BroadcastChannel("fitora-auth");
+    const listener = new BroadcastChannel("gymly-auth");
     spyOn(BroadcastChannel.prototype, "postMessage").and.callFake((m: unknown) => posted.push(m));
 
     build("tok123");
@@ -93,15 +93,15 @@ describe("VerifyEmailComponent", () => {
     expect(component.continuing()).toBe(true);
 
     tick(CONTINUE_DELAY_MS);
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/setup-company");
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/admin/setup-company");
   }));
 
-  it("sends a signed-in owner who already has a gym home", () => {
+  it("sends a signed-in admin who already has a gym home", () => {
     build("tok123", true);
-    authStub.currentUser.and.returnValue({ ...confirmedOwner, company_id: "c1" });
+    authStub.currentUser.and.returnValue({ ...confirmedAdmin, company_id: "c1" });
     recovery.verifyEmail.and.returnValue(of(undefined));
     fixture.detectChanges();
-    expect(component.continueUrl()).toBe("/owner/dashboard");
+    expect(component.continueUrl()).toBe("/admin/dashboard");
     fixture.destroy();
   });
 
@@ -133,9 +133,9 @@ describe("VerifyEmailComponent", () => {
     expect(router.navigateByUrl).toHaveBeenCalled();
   }));
 
-  it("still fails a stale link for an owner whose address is not confirmed", () => {
+  it("still fails a stale link for an admin whose address is not confirmed", () => {
     build("tok123", true);
-    authStub.refreshCurrentUser.and.returnValue(of({ ...confirmedOwner, email_verified: false }));
+    authStub.refreshCurrentUser.and.returnValue(of({ ...confirmedAdmin, email_verified: false }));
     recovery.verifyEmail.and.returnValue(throwError(() => new HttpErrorResponse({ status: 422 })));
     fixture.detectChanges();
     expect(component.status()).toBe("error");

@@ -17,7 +17,7 @@ interface NavItem {
   standalone: true,
   imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslateModule, AvatarComponent],
   templateUrl: "./coach-shell.component.html",
-  styleUrl: "../owner-shell/owner-shell.component.scss",
+  styleUrl: "../admin-shell/admin-shell.component.scss",
 })
 export class CoachShellComponent {
   readonly sidebarOpen = signal(false);

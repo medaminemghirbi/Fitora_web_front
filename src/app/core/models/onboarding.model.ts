@@ -25,7 +25,7 @@ export interface OnboardingStep {
 export interface OnboardingState {
   step: OnboardingStepKey | "done";
   complete: boolean;
-  /** The owner left the flow. The steps that remain still remain. */
+  /** The admin left the flow. The steps that remain still remain. */
   dismissed: boolean;
   done_count: number;
   total: number;

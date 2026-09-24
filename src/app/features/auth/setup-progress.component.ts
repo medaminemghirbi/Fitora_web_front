@@ -6,7 +6,7 @@ const STEPS = ["auth.setup_step_email", "auth.setup_step_account", "auth.setup_s
 
 /**
  * "Nous préparons votre salle" — shown once the address is confirmed, while
- * the screen waits to hand over to /owner/setup-company.
+ * the screen waits to hand over to /admin/setup-company.
  *
  * The first line is already true when it appears; the other two tick over
  * across `duration`, the last one just before the page moves on. It is the

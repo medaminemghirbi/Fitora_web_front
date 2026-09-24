@@ -19,7 +19,7 @@ describe("ProLoginComponent", () => {
     TestBed.resetTestingModule();
     authStub = {
       login: jasmine.createSpy("login").and.returnValue(of({ token: "t", user: {} })),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
     };
 
     TestBed.configureTestingModule({
@@ -50,7 +50,7 @@ describe("ProLoginComponent", () => {
     component.submit();
 
     expect(authStub.login).toHaveBeenCalledWith("owner@example.com", "password123");
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/dashboard");
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/admin/dashboard");
   });
 
   it("shows the backend's message when the credentials are wrong", () => {

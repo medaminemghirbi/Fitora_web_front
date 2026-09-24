@@ -31,7 +31,7 @@ describe("ConfirmEmailComponent", () => {
 
   const pending: User = {
     id: "u1", first_name: "A", last_name: "M", full_name: "A M", email: "amine@gmail.com", phone: null,
-    role: "owner", locale: "fr", email_verified: false, email_verification_resend_in: 0,
+    role: "admin", locale: "fr", email_verified: false, email_verification_resend_in: 0,
     company_id: null, staff_role: null, is_coach: false,
   };
 
@@ -44,7 +44,7 @@ describe("ConfirmEmailComponent", () => {
       currentUser: () => user(),
       fetchCurrentUser: jasmine.createSpy().and.callFake(() => of(user()!)),
       loadConfiguration: jasmine.createSpy(),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
       logout: jasmine.createSpy(),
     };
 
@@ -98,7 +98,7 @@ describe("ConfirmEmailComponent", () => {
     expect(authStub.loadConfiguration).toHaveBeenCalled();
 
     tick(CONTINUE_DELAY_MS);
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/setup-company");
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/admin/setup-company");
 
     // Stops asking once there is nothing left to wait for.
     const calls = authStub.fetchCurrentUser.calls.count();
@@ -113,14 +113,14 @@ describe("ConfirmEmailComponent", () => {
     discardPeriodicTasks();
   }));
 
-  it("lets the owner skip the wait once confirmed", fakeAsync(() => {
+  it("lets the admin skip the wait once confirmed", fakeAsync(() => {
     build();
     user.set({ ...pending, email_verified: true });
     component.check();
     fixture.detectChanges();
 
     (fixture.nativeElement.querySelector("button.btn-primary") as HTMLButtonElement).click();
-    expect(router.navigateByUrl).toHaveBeenCalledWith("/owner/setup-company");
+    expect(router.navigateByUrl).toHaveBeenCalledWith("/admin/setup-company");
 
     // …and does not navigate a second time when the delay runs out.
     tick(CONTINUE_DELAY_MS);

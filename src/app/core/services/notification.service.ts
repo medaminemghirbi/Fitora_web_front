@@ -20,10 +20,16 @@ interface ChannelEvent {
 }
 
 /**
- * The signed-in user's notification feed — the owner's own, or a Fitora
- * admin's (system_update). Live pushes come over an ActionCable
- * subscription (NotificationChannel); history + read-state go over REST.
- * Connected/disconnected by ConfigurationService.load / AuthService.logout.
+ * The signed-in account's notification feed — an admin's, a Gymly superadmin's
+ * (system_update), or a member's on their own app. Live pushes come over an
+ * ActionCable subscription (NotificationChannel); history + read-state go
+ * over REST. Connected/disconnected by ConfigurationService.load /
+ * AuthService.logout, and by the member shell for a member.
+ *
+ * The socket opens with a cable ticket, not the login token: whatever
+ * authenticates /cable rides in its URL, where proxy logs keep it, so it is
+ * a pass that lasts 30 seconds and opens one connection. A fresh one is
+ * fetched before each reconnect.
  */
 @Injectable({ providedIn: "root" })
 export class NotificationService {
@@ -40,6 +46,12 @@ export class NotificationService {
 
   private consumer: Consumer | null = null;
   private subscription: Subscription | null = null;
+  private ticket = "";
+
+  /** A member reads theirs under /me; everyone else at the top level. */
+  private get base(): string {
+    return this.auth.isClient() ? `${API_BASE_URL}/me/notifications` : `${API_BASE_URL}/notifications`;
+  }
 
   /** Seed the badge from the bootstrap payload before the socket / first fetch. */
   seedUnreadCount(count: number): void {
@@ -48,14 +60,34 @@ export class NotificationService {
 
   connect(): void {
     const role = this.auth.currentUser()?.role;
-    if (this.subscription || (role !== "owner" && role !== "admin")) return;
-    const token = this.auth.getToken();
-    if (!token) return;
+    const member = this.auth.isClient();
+    if (this.consumer || (!member && role !== "admin" && role !== "superadmin")) return;
+    if (!this.auth.getToken()) return;
 
     const wsBase = API_ORIGIN.replace(/^http/, "ws");
-    this.consumer = createConsumer(`${wsBase}/cable?token=${encodeURIComponent(token)}`);
-    this.subscription = this.consumer.subscriptions.create("NotificationChannel", {
-      received: (raw: unknown) => this.onEvent(raw as ChannelEvent),
+    // A function, so every reconnect reads whichever ticket is current.
+    this.consumer = createConsumer(() => `${wsBase}/cable?ticket=${encodeURIComponent(this.ticket)}`);
+    this.refreshTicket(() => {
+      if (!this.consumer) return;
+      this.subscription = this.consumer.subscriptions.create("NotificationChannel", {
+        received: (raw: unknown) => this.onEvent(raw as ChannelEvent),
+        // The ticket that opened this connection is spent; have the next one
+        // ready before ActionCable's monitor tries again — unless this was
+        // disconnect() closing it on purpose.
+        disconnected: () => {
+          if (this.consumer) this.refreshTicket();
+        },
+      });
+    });
+  }
+
+  private refreshTicket(then?: () => void): void {
+    this.http.post<{ ticket: string }>(`${API_BASE_URL}/cable_ticket`, {}).subscribe({
+      next: (res) => {
+        this.ticket = res.ticket;
+        then?.();
+      },
+      error: () => {},
     });
   }
 
@@ -64,6 +96,7 @@ export class NotificationService {
     this.consumer?.disconnect();
     this.subscription = null;
     this.consumer = null;
+    this.ticket = "";
     this.items.set([]);
     this.unreadCount.set(0);
     this.page.set(1);
@@ -81,13 +114,13 @@ export class NotificationService {
   }
 
   get(id: string) {
-    return this.http.get<{ notification: AppNotification }>(`${API_BASE_URL}/notifications/${id}`);
+    return this.http.get<{ notification: AppNotification }>(`${this.base}/${id}`);
   }
 
   markRead(id: string): void {
     const target = this.items().find((n) => n.id === id);
     if (target && target.read) return;
-    this.http.patch<{ notification: AppNotification }>(`${API_BASE_URL}/notifications/${id}/read`, {}).subscribe({
+    this.http.patch<{ notification: AppNotification }>(`${this.base}/${id}/read`, {}).subscribe({
       next: () => {
         this.items.update((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));
         this.unreadCount.update((c) => Math.max(0, c - 1));
@@ -97,7 +130,7 @@ export class NotificationService {
   }
 
   markAllRead(): void {
-    this.http.post(`${API_BASE_URL}/notifications/read_all`, {}).subscribe({
+    this.http.post(`${this.base}/read_all`, {}).subscribe({
       next: () => {
         this.items.update((list) => list.map((n) => ({ ...n, read: true })));
         this.unreadCount.set(0);
@@ -108,7 +141,7 @@ export class NotificationService {
 
   refresh(): void {
     this.loadFirstPage();
-    this.http.get<{ count: number }>(`${API_BASE_URL}/notifications/unread_count`).subscribe({
+    this.http.get<{ count: number }>(`${this.base}/unread_count`).subscribe({
       next: (r) => this.unreadCount.set(r.count),
       error: () => {},
     });
@@ -116,7 +149,7 @@ export class NotificationService {
 
   private fetch(page: number, replace: boolean): void {
     this.loading.set(true);
-    this.http.get<NotificationPage>(`${API_BASE_URL}/notifications`, { params: { page: String(page) } }).subscribe({
+    this.http.get<NotificationPage>(this.base, { params: { page: String(page) } }).subscribe({
       next: (res) => {
         this.page.set(res.meta.page);
         this.totalPages.set(res.meta.total_pages);

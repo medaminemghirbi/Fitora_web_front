@@ -9,13 +9,14 @@ import { NotificationService } from "./notification.service";
 describe("NotificationService", () => {
   let service: NotificationService;
   let httpMock: HttpTestingController;
-  let authStub: { currentUser: jasmine.Spy; getToken: jasmine.Spy };
+  let authStub: { currentUser: jasmine.Spy; getToken: jasmine.Spy; isClient: jasmine.Spy };
   let appVersionStub: jasmine.SpyObj<AppVersionService>;
 
   beforeEach(() => {
     authStub = {
-      currentUser: jasmine.createSpy().and.returnValue({ role: "owner" }),
+      currentUser: jasmine.createSpy().and.returnValue({ role: "admin" }),
       getToken: jasmine.createSpy().and.returnValue(null),
+      isClient: jasmine.createSpy().and.returnValue(false),
     };
     appVersionStub = jasmine.createSpyObj<AppVersionService>("AppVersionService", ["refresh"]);
 
@@ -50,7 +51,7 @@ describe("NotificationService", () => {
     expect(() => service.disconnect()).not.toThrow();
   });
 
-  it("connect() does nothing for a role that isn't owner/admin", () => {
+  it("connect() does nothing for a role that isn't admin/superadmin", () => {
     authStub.currentUser.and.returnValue({ role: "staff" });
     authStub.getToken.and.returnValue("tok");
     service.connect();
@@ -202,13 +203,15 @@ describe("NotificationService", () => {
     expect(() => httpMock.expectOne(`${API_BASE_URL}/notifications/read_all`).error(new ProgressEvent("error"))).not.toThrow();
   });
 
-  it("connect() opens a real subscription for an owner with a token, and disconnect() tears it down", () => {
-    authStub.currentUser.and.returnValue({ role: "owner" });
+  it("connect() opens a real subscription for an admin with a token, and disconnect() tears it down", () => {
+    authStub.currentUser.and.returnValue({ role: "admin" });
     authStub.getToken.and.returnValue("tok123");
 
     service.connect();
     // A second connect() while already connected is a no-op (early return).
     service.connect();
+    // One ticket, for the one connection.
+    httpMock.expectOne(`${API_BASE_URL}/cable_ticket`).flush({ ticket: "t1" });
 
     expect(() => service.disconnect()).not.toThrow();
     expect(service.items()).toEqual([]);
@@ -216,14 +219,69 @@ describe("NotificationService", () => {
   });
 
   it("connect()'s subscription forwards received pushes to onEvent", () => {
-    authStub.currentUser.and.returnValue({ role: "owner" });
+    authStub.currentUser.and.returnValue({ role: "admin" });
     authStub.getToken.and.returnValue("tok123");
 
     service.connect();
+    httpMock.expectOne(`${API_BASE_URL}/cable_ticket`).flush({ ticket: "t1" });
     const subscription = (service as unknown as { subscription: { received: (raw: unknown) => void } }).subscription;
     subscription.received({ type: "unread_count", count: 7 });
 
     expect(service.unreadCount()).toBe(7);
+    service.disconnect();
+  });
+
+  it("connect() opens the socket with a cable ticket, never the login token", () => {
+    authStub.getToken.and.returnValue("login-token");
+
+    service.connect();
+    const req = httpMock.expectOne(`${API_BASE_URL}/cable_ticket`);
+    expect(req.request.method).toBe("POST");
+    req.flush({ ticket: "one-time" });
+
+    const url = (service as unknown as { consumer: { url: string } }).consumer.url;
+    expect(url).toContain("ticket=one-time");
+    expect(url).not.toContain("login-token");
+    service.disconnect();
+  });
+
+  it("connect() fetches a fresh ticket when the connection drops", () => {
+    authStub.getToken.and.returnValue("tok");
+    service.connect();
+    httpMock.expectOne(`${API_BASE_URL}/cable_ticket`).flush({ ticket: "first" });
+
+    const subscription = (service as unknown as { subscription: { disconnected: () => void } }).subscription;
+    subscription.disconnected();
+    httpMock.expectOne(`${API_BASE_URL}/cable_ticket`).flush({ ticket: "second" });
+
+    expect((service as unknown as { consumer: { url: string } }).consumer.url).toContain("ticket=second");
+    service.disconnect();
+  });
+
+  describe("for a member", () => {
+    beforeEach(() => {
+      authStub.isClient.and.returnValue(true);
+      authStub.currentUser.and.returnValue(null);
+    });
+
+    it("reads their own feed under /me", () => {
+      service.loadFirstPage();
+      httpMock
+        .expectOne((r) => r.url === `${API_BASE_URL}/me/notifications`)
+        .flush({ notifications: [], meta: { page: 1, per_page: 10, total: 0, total_pages: 0 }, unread_count: 0 });
+
+      service.markAllRead();
+      httpMock.expectOne(`${API_BASE_URL}/me/notifications/read_all`).flush(null);
+    });
+
+    it("connects too", () => {
+      authStub.getToken.and.returnValue("tok");
+      service.connect();
+
+      httpMock.expectOne(`${API_BASE_URL}/cable_ticket`).flush({ ticket: "t" });
+      expect((service as unknown as { subscription: unknown }).subscription).toBeTruthy();
+      service.disconnect();
+    });
   });
 
   describe("onEvent (live ActionCable pushes)", () => {

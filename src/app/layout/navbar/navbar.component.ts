@@ -12,7 +12,7 @@ import { NotificationBellComponent } from "../notifications/notification-bell.co
 
 /**
  * Top navigation bar — replaces the dark sidebar for every shell.
- * Owner: grouped dropdown menus (from NavigationService). Coach / admin:
+ * Admin: grouped dropdown menus (from NavigationService). Coach / superadmin:
  * a flat list of links via [flatItems].
  */
 @Component({
@@ -27,9 +27,9 @@ export class NavbarComponent {
   @Input() groups: NavGroup[] = [];
   @Input() flatItems: NavLeaf[] = [];
   @Input() secondaryItems: NavLeaf[] = [];
-  @Input() brandName = "Fitora";
+  @Input() brandName = "Gymly";
   @Input() brandLogoUrl: string | null = null;
-  @Input() brandHome = "/owner/dashboard";
+  @Input() brandHome = "/admin/dashboard";
   @Input() brandSuffix: string | null = null;
   @Input() showActions = true;
   @Input() showNotifications = false;
@@ -38,7 +38,7 @@ export class NavbarComponent {
   // [dashboardItem]/[groups]/[flatItems] either way.
   @Input() showBrand = true;
   @Input() showDesktopNav = true;
-  // Owner-only shortcut to the modules marketplace — pre-order a module,
+  // Admin-only shortcut to the modules marketplace — pre-order a module,
   // see the current debt, ask for help. Rendered as a visible button rather
   // than buried in the user dropdown since it's meant to be found fast.
   @Input() showSupport = false;
@@ -71,8 +71,8 @@ export class NavbarComponent {
   readonly companySwitcherOpen = signal(false);
   readonly switching = signal(false);
 
-  // Only an owner running more than one company sees this at all — a
-  // single-company owner's navbar looks exactly as it always has.
+  // Only an admin running more than one company sees this at all — a
+  // single-company admin's navbar looks exactly as it always has.
   /**
    * Scroll arrives far faster than a frame; the reaction is coalesced into
    * one rAF so a fling does not queue hundreds of signal writes.
@@ -187,7 +187,7 @@ export class NavbarComponent {
   // Its own method purely so tests have a seam to spy on — real browsers
   // (and Karma's) don't reliably allow stubbing window.location itself.
   protected reloadToDashboard(): void {
-    window.location.assign("/owner/dashboard");
+    window.location.assign("/admin/dashboard");
   }
 
   private closeAll(): void {

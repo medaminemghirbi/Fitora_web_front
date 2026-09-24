@@ -1,0 +1,188 @@
+<div class="fx-listpage">
+  <div class="fx-listpage-main">
+    <header class="lst-head">
+      <h1>{{ "nav.subscriptions" | translate }}</h1>
+      <span class="lst-head-count">{{ counts()["all"] ?? 0 }}</span>
+      <div class="lst-head-search fx-input-icon">
+        <i class="bi bi-search"></i>
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+          [placeholder]="'contracts.search_placeholder' | translate"
+          [attr.aria-label]="'contracts.search_placeholder' | translate"
+        />
+      </div>
+    </header>
+
+    <!-- One tab per plan, with how many contracts it holds for the current search. -->
+    <nav class="fx-cat-tabs" [attr.aria-label]="'contract_types.plan' | translate">
+      <button type="button" class="fx-cat-tab" [class.is-active]="contractTypeFilter() === ''"
+              [style.--fx-tab-color]="'var(--color-primary)'" (click)="applyContractTypeFilter('')">
+        {{ "clients.filter_all" | translate }} ({{ counts()["all"] ?? 0 }})
+      </button>
+      @for (plan of plans(); track plan.id) {
+        <button type="button" class="fx-cat-tab" [class.is-active]="contractTypeFilter() === plan.id"
+                [style.--fx-tab-color]="plan.color" (click)="applyContractTypeFilter(plan.id)">
+          {{ plan.name }} ({{ planCount(plan.id) }})
+        </button>
+      }
+    </nav>
+
+    <div class="fx-stats-bar">
+      <dl class="fx-stats">
+        <div>
+          <dt>{{ "contracts.portfolio_value" | translate }}</dt>
+          <dd>{{ totals().portfolio_value | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "contracts.average_basket" | translate }}</dt>
+          <dd>{{ totals().average_basket | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "contracts.unpaid_value" | translate }}</dt>
+          <dd>{{ totals().unpaid_value | money: currency() }}</dd>
+        </div>
+        <div>
+          <dt>{{ "contracts.expiring_soon" | translate }}</dt>
+          <dd class="text-warning-token">{{ totals().expiring_soon }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="lst-filters">
+      <app-status-filter
+        name="contract-status"
+        [legend]="'clients.filter_status' | translate"
+        [value]="contractStatusFilter()"
+        [options]="railOptions()"
+        (valueChange)="applyContractFilter($any($event))"
+      />
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+        </button>
+      }
+    </div>
+
+    <div class="app-card">
+      @if (filterChips().length > 0) {
+        <div class="fx-active-filters p-3 pb-0">
+          @for (chip of filterChips(); track chip.label) {
+            <span class="fx-active-chip">
+              {{ chip.label }}
+              <button type="button" (click)="chip.clear()" [attr.aria-label]="'common.reset' | translate">
+                <i class="bi bi-x"></i>
+              </button>
+            </span>
+          }
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="app-card-body"><app-skeleton variant="table" [rows]="8" [cols]="7" /></div>
+      } @else if (error()) {
+        <div class="app-card-body"><app-error-state (retry)="loadContracts()" /></div>
+      } @else if (contracts().length === 0) {
+        <div class="app-card-body">
+          <app-empty-state [title]="'contracts.empty_title' | translate" [body]="'contracts.empty_body' | translate" icon="bi-file-earmark-text" />
+        </div>
+      } @else {
+        <div class="fx-table-scroll">
+          <table class="table table-hover fx-grid">
+            <thead>
+              <tr>
+                <th>{{ "bookings.client" | translate }}</th>
+                <th>{{ "contract_types.plan" | translate }}</th>
+                <th class="text-end">{{ "clients.abo_total" | translate }}</th>
+                <th>{{ "contracts.period" | translate }}</th>
+                <th>{{ "common.status" | translate }}</th>
+                <th>{{ "payments.status_paid" | translate }}</th>
+                <th class="text-end">{{ "common.actions" | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of contracts(); track m.id) {
+                <tr [style.--fx-row-color]="rowColor(m)">
+                  <td>
+                    <div class="fx-cell-lead">
+                      <app-avatar [name]="m.client.full_name" [size]="34" />
+                      <div class="fx-cell-lead-text">
+                        <div class="fx-cell-lead-title" [innerHTML]="m.client.full_name | highlight: search()"></div>
+                        @if (m.client.phone) { <div class="fx-cell-lead-sub" dir="ltr">{{ m.client.phone }}</div> }
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="fx-plan-tag">
+                      <span class="fx-dot" [style.background]="m.plan.color"></span>
+                      <span [innerHTML]="m.plan.name | highlight: search()"></span>
+                    </span>
+                    <div class="fx-muted" style="font-size: var(--font-size-xs)">
+                      {{ m.activity?.emoji ? m.activity!.emoji + " " : "" }}{{ m.activity_label }}
+                    </div>
+                  </td>
+                  <!-- What they pay, and only when it differs from the
+                       catalogue price, what it was before the discount.
+                       Three money columns for one number pushed the row's
+                       own buttons off the end of the table. -->
+                  <td class="text-end fx-num fw-semibold">
+                    {{ m.final_price | money: m.plan.currency }}
+                    @if (m.discount) {
+                      <div class="fx-cell-sub text-warning-token">
+                        {{ m.base_price | money: m.plan.currency }} − {{ m.discount | money: m.plan.currency }}
+                      </div>
+                    }
+                  </td>
+                  <!-- The term in force, and under it whatever has already
+                       been renewed behind it. Renewing early never rewrites
+                       the running term, so the row has to show both or it
+                       looks like the renewal did nothing. -->
+                  <td class="fx-num fx-cell-period">
+                    {{ (m.starts_at | date: "dd/MM/yy") || "—" }}
+                    <span class="fx-muted">→</span>
+                    {{ (m.expires_at | date: "dd/MM/yy") || "—" }}
+                    @if (m.upcoming_periods.length) {
+                      <div class="fx-cell-sub fx-renewal-queued">
+                        <i class="bi bi-arrow-repeat"></i>
+                        {{ "contracts.renewed_until" | translate: { date: (renewedThrough(m) | date: "dd/MM/yy") } }}
+                      </div>
+                    }
+                  </td>
+                  <td><app-status-badge [status]="m.status">{{ ("contract.status_" + m.status) | translate }}</app-status-badge></td>
+                  <td><app-status-badge [status]="m.payment_status">{{ ("payments.status_" + m.payment_status) | translate }}</app-status-badge></td>
+                  <td class="text-end">
+                    <!-- The two things the dashboard sends people here to do,
+                         on the row rather than inside the member's file. -->
+                    <div class="fx-row-actions">
+                      <!-- Owed money, wherever it sits: an early renewal is
+                           sold unpaid while the term in force is settled. -->
+                      @if (+m.amount_due > 0 && m.status !== "cancelled") {
+                        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="rowBusy() !== null" (click)="collect(m)">
+                          {{ "payments.collect" | translate }}
+                        </button>
+                      }
+                      @if (m.status === "active" || m.status === "expired") {
+                        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="rowBusy() !== null" (click)="renew(m)">
+                          {{ "contracts.renew" | translate }}
+                        </button>
+                      }
+                      <app-action-menu>
+                        <a class="fx-menu-item" [routerLink]="['/admin/clients', m.client.id]">
+                          <i class="bi bi-person"></i> {{ "contracts.view_client" | translate }}
+                        </a>
+                      </app-action-menu>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <app-pagination [meta]="meta()" (pageChange)="onPageChange($event)" />
+      }
+    </div>
+  </div>
+</div>

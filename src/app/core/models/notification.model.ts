@@ -7,7 +7,11 @@ export type NotificationKind =
   | "contract_expiring"
   | "employee_birthday"
   | "system_update"
-  | "invoice_issued";
+  | "invoice_issued"
+  // A member's own, on their app.
+  | "session_cancelled"
+  | "waitlist_promoted"
+  | "subscription_expiring";
 
 export interface AppNotification {
   id: string;

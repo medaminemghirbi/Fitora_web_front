@@ -43,7 +43,7 @@ export interface Company {
   timezone: string;
   currency: string;
   // Short symbol for `currency` (e.g. "DT", "€") and the tenant-wide app
-  // language — both Fitora-admin managed, shown read-only to the owner.
+  // language — both Gymly-superadmin managed, shown read-only to the admin.
   currency_symbol: string;
   locale: string;
   // Days the company operates, as JS getDay() / Ruby wday integers
@@ -57,7 +57,7 @@ export interface Company {
   // Opening hours — on the company since the site was merged into it.
   business_hours_start: string;
   business_hours_end: string;
-  // Set once the owner publishes the gym in the public directory.
+  // Set once the admin publishes the gym in the public directory.
   listed_at: string | null;
   // Every feature is included — the key list the subscription page renders
   // as "what's included".
@@ -66,6 +66,6 @@ export interface Company {
   monthly_subscription_cents: number;
   annual_subscription_cents: number;
   annual_discount_percent: number;
-  // What the company currently owes Fitora, in cents — set by hand by an
-  // admin, shown read-only on the owner's subscription page.
+  // What the company currently owes Gymly, in cents — set by hand by an
+  // superadmin, shown read-only on the admin's subscription page.
 }

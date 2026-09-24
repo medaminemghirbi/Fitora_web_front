@@ -11,7 +11,7 @@ import { SpinnerComponent } from "../../../shared/components/spinner.component";
 /**
  * A gym opening its own account: three fields, then the address is confirmed
  * (/confirmation-email), then the gym itself is named on
- * /owner/setup-company, where the 14 days start.
+ * /admin/setup-company, where the 14 days start.
  *
  * Split that way on purpose — five fields in front of someone who has not
  * seen the product yet is four too many.
@@ -34,7 +34,7 @@ export class RegisterComponent {
   readonly error = signal<string | null>(null);
   readonly showPassword = signal(false);
 
-  /** Four things Fitora does, for the panel beside the form. */
+  /** Four things Gymly does, for the panel beside the form. */
   readonly pitchPoints = [
     "auth.pitch_point_booking",
     "auth.pitch_point_one_place",

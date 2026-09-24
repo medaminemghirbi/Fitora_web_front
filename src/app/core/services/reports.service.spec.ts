@@ -18,7 +18,7 @@ describe("ReportsService", () => {
 
   it("exportCompany GETs a blob with period_type/period params", () => {
     service.exportCompany("month", "2026-01").subscribe();
-    const req = httpMock.expectOne((r) => r.url === `${API_BASE_URL}/owner/reports/export`);
+    const req = httpMock.expectOne((r) => r.url === `${API_BASE_URL}/admin/reports/export`);
     expect(req.request.params.get("period_type")).toBe("month");
     expect(req.request.params.get("period")).toBe("2026-01");
     expect(req.request.responseType).toBe("blob");

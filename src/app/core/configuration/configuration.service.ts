@@ -46,12 +46,12 @@ export interface Bootstrap {
   /** key → human label, for the roles editor's checkbox list. */
   permission_catalog: Record<string, string>;
   subscription: BootstrapSubscription | null;
-  /** Owner-only; see OnboardingService, which supersedes this once loaded. */
+  /** Admin-only; see OnboardingService, which supersedes this once loaded. */
   onboarding: OnboardingState | null;
   notifications: { unread_count: number } | null;
 }
 
-const CACHE_KEY = "fitora_bootstrap";
+const CACHE_KEY = "gymly_bootstrap";
 
 // One place the app reads "what is this tenant and what may this user do".
 // Hydrated from GET /api/v1/bootstrap on login and hard reload — replaces
@@ -109,11 +109,11 @@ export class ConfigurationService {
           }
           if (res.branding) {
             this.branding.apply(res.branding);
-            // The tenant's language is admin-set and travels in the bootstrap
+            // The tenant's language is superadmin-set and travels in the bootstrap
             // payload — apply it on every load (login + hard reload).
             this.injector.get(LocaleService).applyCompanyLocale(res.branding.locale);
           }
-          // Owner notification feed: seed the badge, open the live socket.
+          // Admin notification feed: seed the badge, open the live socket.
           const notifications = this.injector.get(NotificationService);
           notifications.seedUnreadCount(res.notifications?.unread_count ?? 0);
           notifications.connect();
@@ -146,19 +146,19 @@ export class ConfigurationService {
     this.injector.get(NotificationService).disconnect();
   }
 
-  // A Fitora admin skips the tenant bootstrap entirely (see
+  // A Gymly superadmin skips the tenant bootstrap entirely (see
   // AuthService.loadConfiguration) but still gets the real-time
   // system_update feed — same channel, same service, just no company state.
   // refresh() also seeds the unread badge immediately (no bootstrap payload
-  // to seed it from, unlike the owner path).
-  connectAdminNotifications(): void {
+  // to seed it from, unlike the admin path).
+  connectSuperadminNotifications(): void {
     const notifications = this.injector.get(NotificationService);
     notifications.connect();
     notifications.refresh();
   }
 
   hasPermission(key: string): boolean {
-    // The server already expands "owner" to every permission there is, so a
+    // The server already expands "admin" to every permission there is, so a
     // plain membership check is enough here.
     return this.permissions().includes(key);
   }

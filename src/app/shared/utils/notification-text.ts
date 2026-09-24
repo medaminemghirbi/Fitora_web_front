@@ -6,6 +6,13 @@ function formatDate(t: TranslateService, iso?: string | null): string {
   return new Date(iso).toLocaleDateString(t.currentLang || "fr", { day: "2-digit", month: "long", year: "numeric" });
 }
 
+function formatDateTime(t: TranslateService, iso?: string | null): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString(t.currentLang || "fr", {
+    weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
+  });
+}
+
 type Composer = (t: TranslateService, data: AppNotification["data"]) => { title: string; body: string };
 
 /**
@@ -41,6 +48,30 @@ const COMPOSERS: Record<NotificationKind, Composer> = {
       currency: d["currency"] ?? "",
     }),
   }),
+  session_cancelled: (t, d) => ({
+    title: t.instant("notifications.session_cancelled.title"),
+    body: t.instant("notifications.session_cancelled.body", {
+      activity: d["activity_name"] ?? "—",
+      date: formatDateTime(t, d["starts_at"]),
+      gym: d["gym_name"] ?? "",
+    }),
+  }),
+  waitlist_promoted: (t, d) => ({
+    title: t.instant("notifications.waitlist_promoted.title"),
+    body: t.instant("notifications.waitlist_promoted.body", {
+      activity: d["activity_name"] ?? "—",
+      date: formatDateTime(t, d["starts_at"]),
+      gym: d["gym_name"] ?? "",
+    }),
+  }),
+  subscription_expiring: (t, d) => ({
+    title: t.instant("notifications.subscription_expiring.title"),
+    body: t.instant("notifications.subscription_expiring.body", {
+      plan: d["plan_name"] ?? "—",
+      date: formatDate(t, d["expires_at"]),
+      gym: d["gym_name"] ?? "",
+    }),
+  }),
 };
 
 const CTA_KEYS: Record<NotificationKind, string> = {
@@ -48,6 +79,9 @@ const CTA_KEYS: Record<NotificationKind, string> = {
   employee_birthday: "notifications.open_employee",
   system_update: "notifications.open_system_update",
   invoice_issued: "notifications.open_invoice",
+  session_cancelled: "notifications.open_bookings",
+  waitlist_promoted: "notifications.open_bookings",
+  subscription_expiring: "notifications.open_profile",
 };
 
 /** The localized title + body for a notification, composed from `kind` + `data`. */

@@ -8,7 +8,7 @@ import { ConfigurationService } from "../../core/configuration/configuration.ser
  * The only page a locked gym sees. No shell, no navigation, no way back
  * into the app — the point is that the door is shut.
  *
- * There is nothing to ask for: a gym settles with Fitora directly. What it
+ * There is nothing to ask for: a gym settles with Gymly directly. What it
  * can still do is read what it owes and download the invoices it has, which
  * is why those two are the only links here.
  */
@@ -23,7 +23,7 @@ export class AccountLockedComponent {
   readonly auth = inject(AuthService);
   private readonly config = inject(ConfigurationService);
 
-  readonly isOwner = computed(() => this.auth.currentUser()?.role === "owner");
+  readonly isAdmin = computed(() => this.auth.currentUser()?.role === "admin");
 
   /** Why the door is shut. Two reasons, never four. */
   readonly reason = computed(() => this.config.subscription()?.lock_reason ?? "suspended");
