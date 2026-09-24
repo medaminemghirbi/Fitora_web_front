@@ -1,0 +1,100 @@
+<div class="fx-page">
+  <header class="lst-head">
+    <h1>{{ "nav.support" | translate }}</h1>
+  </header>
+  <p class="fx-muted mb-4">{{ "modules_page.contact.form_hint" | translate }}</p>
+
+  <div class="contact-layout">
+    <div class="app-card">
+      <div class="app-card-header">
+        <h2>{{ "modules_page.contact.form_title" | translate }}</h2>
+      </div>
+      <div class="app-card-body">
+        <div class="mb-3">
+          <label class="form-label" for="ticket-subject">{{ "modules_page.contact.subject_label" | translate }}</label>
+          <input id="ticket-subject" type="text" class="form-control" [ngModel]="subject()" (ngModelChange)="subject.set($event)"
+                 [placeholder]="'modules_page.contact.subject_placeholder' | translate" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="ticket-message">{{ "modules_page.contact.message_label" | translate }}</label>
+          <textarea id="ticket-message" class="form-control" rows="5" [ngModel]="message()" (ngModelChange)="message.set($event)"
+                    [placeholder]="'modules_page.contact.message_placeholder' | translate"></textarea>
+        </div>
+        <div class="mb-3">
+          <div class="form-label">{{ "modules_page.contact.attachments_label" | translate }}</div>
+          <label class="contact-file-drop" for="ticket-files">
+            <i class="bi bi-cloud-arrow-up"></i>
+            <span>{{ "modules_page.contact.attachments_hint" | translate }}</span>
+          </label>
+          <input id="ticket-files" type="file" class="visually-hidden" multiple
+                 accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4,video/quicktime,video/webm"
+                 (change)="onFilesSelected($event)" />
+
+          @if (fileError()) {
+            <p class="contact-file-error">{{ fileError() }}</p>
+          }
+
+          @if (files().length) {
+            <ul class="contact-file-list">
+              @for (file of files(); track file.name; let i = $index) {
+                <li>
+                  <i class="bi" [class.bi-file-earmark-image]="file.type.startsWith('image/')"
+                     [class.bi-file-earmark-play]="file.type.startsWith('video/')"
+                     [class.bi-file-earmark-pdf]="file.type === 'application/pdf'"></i>
+                  <span class="contact-file-name">{{ file.name }}</span>
+                  <button type="button" class="icon-btn" (click)="removeFile(i)" [attr.aria-label]="'common.cancel' | translate">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <button type="button" class="btn btn-primary" [disabled]="submitting() || !subject().trim() || !message().trim()"
+                (click)="submit()">
+          @if (submitting()) { <app-spinner [size]="16" /> } @else { <i class="bi bi-send-check"></i> }
+          {{ "modules_page.contact.send" | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="contact-history-title">{{ "modules_page.contact.history_title" | translate }}</h2>
+
+      @if (loadingTickets()) {
+        <div class="d-flex justify-content-center py-4"><app-spinner [size]="28" /></div>
+      } @else if (!tickets().length) {
+        <p class="fx-muted">{{ "modules_page.contact.no_tickets" | translate }}</p>
+      } @else {
+        <div class="ticket-list">
+          @for (ticket of tickets(); track ticket.id) {
+            <div class="ticket-item">
+              <div class="ticket-item-head">
+                <strong>{{ ticket.subject }}</strong>
+                <span class="ticket-status" [class.is-resolved]="ticket.status === 'resolved'">
+                  <i class="bi" [class.bi-check-circle-fill]="ticket.status === 'resolved'" [class.bi-hourglass-split]="ticket.status === 'open'"></i>
+                  {{ ("modules_page.contact.status_" + ticket.status) | translate }}
+                </span>
+              </div>
+              <p class="ticket-item-message">{{ ticket.message }}</p>
+              @if (ticket.attachments.length) {
+                <div class="ticket-attachments">
+                  @for (att of ticket.attachments; track att.id) {
+                    <a [href]="att.url" target="_blank" rel="noopener" class="ticket-attachment">
+                      <i class="bi" [class.bi-file-earmark-image]="att.content_type.startsWith('image/')"
+                         [class.bi-file-earmark-play]="att.content_type.startsWith('video/')"
+                         [class.bi-file-earmark-pdf]="att.content_type === 'application/pdf'"></i>
+                      {{ att.filename }}
+                    </a>
+                  }
+                </div>
+              }
+              <span class="ticket-item-date">{{ ticket.created_at | date: "dd/MM/yyyy HH:mm" }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

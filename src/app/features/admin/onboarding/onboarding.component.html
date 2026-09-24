@@ -1,0 +1,120 @@
+<div class="fx-page ob">
+  <header class="ob-head">
+    <h1>{{ "onboarding.title" | translate: { name: auth.currentUser()?.first_name || "" } }}</h1>
+    <p>{{ "onboarding.lead" | translate }}</p>
+  </header>
+
+  <!-- The state leads: `as` binds only on a primary @if, and the skeleton is
+       the fallback anyway. -->
+  @if (state(); as s) {
+    <div class="app-card">
+      <div class="app-card-body">
+        <app-onboarding-steps [state]="s" (skip)="skip($event)" />
+      </div>
+    </div>
+
+    <!-- One panel, for the step being asked for. The map above says what is
+         left; this says what to do now. -->
+    @if (s.complete) {
+      <section class="app-card ob-done">
+        <div class="app-card-body">
+          <h2>{{ "onboarding.complete_title" | translate }}</h2>
+          <p>{{ "onboarding.complete_body" | translate }}</p>
+          <a routerLink="/admin/dashboard" class="btn btn-primary">{{ "onboarding.go_dashboard" | translate }}</a>
+        </div>
+      </section>
+    } @else if (current() === "company") {
+      <section class="app-card">
+        <div class="app-card-header"><h2>{{ "onboarding.step_company" | translate }}</h2></div>
+        <div class="app-card-body">
+          <p class="text-muted-token">{{ "onboarding.company_body" | translate }}</p>
+
+          @if (company(); as c) {
+            <dl class="ob-facts">
+              <div><dt>{{ "settings.company_name" | translate }}</dt><dd>{{ c.name }}</dd></div>
+              <div><dt>{{ "settings.currency" | translate }}</dt><dd>{{ c.currency }}</dd></div>
+              <div><dt>{{ "settings.timezone" | translate }}</dt><dd>{{ c.timezone }}</dd></div>
+              <div>
+                <dt>{{ "settings.calendar" | translate }}</dt>
+                <dd dir="ltr">{{ c.business_hours_start }} – {{ c.business_hours_end }}</dd>
+              </div>
+            </dl>
+          }
+
+          <div class="ob-actions">
+            <a routerLink="/admin/settings/company" class="btn btn-outline-secondary">
+              {{ "onboarding.edit_company" | translate }}
+            </a>
+            <a routerLink="/admin/settings/planning" class="btn btn-outline-secondary">
+              {{ "onboarding.edit_hours" | translate }}
+            </a>
+            <button type="button" class="btn btn-primary ms-auto" [disabled]="working()" (click)="confirmCompany()">
+              {{ "onboarding.confirm_company" | translate }}
+            </button>
+          </div>
+        </div>
+      </section>
+    } @else if (current() === "activities") {
+      <section class="app-card">
+        <div class="app-card-header">
+          <h2>{{ "onboarding.step_activities" | translate }}</h2>
+          <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="working()" (click)="refresh()">
+            {{ "onboarding.recheck" | translate }}
+          </button>
+        </div>
+        <div class="app-card-body">
+          <p class="text-muted-token">{{ "onboarding.step_activities_desc" | translate }}</p>
+          <app-activities [embedded]="true" />
+        </div>
+      </section>
+    } @else if (current() === "spaces") {
+      <section class="app-card">
+        <div class="app-card-header">
+          <h2>{{ "onboarding.step_spaces" | translate }}</h2>
+          <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="working()" (click)="refresh()">
+            {{ "onboarding.recheck" | translate }}
+          </button>
+        </div>
+        <div class="app-card-body">
+          <p class="text-muted-token">{{ "onboarding.step_spaces_desc" | translate }}</p>
+          <app-spaces [embedded]="true" />
+        </div>
+      </section>
+    } @else if (current() === "plans") {
+      <section class="app-card">
+        <div class="app-card-header">
+          <h2>{{ "onboarding.step_plans" | translate }}</h2>
+          <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="working()" (click)="refresh()">
+            {{ "onboarding.recheck" | translate }}
+          </button>
+        </div>
+        <div class="app-card-body">
+          <p class="text-muted-token">{{ "onboarding.step_plans_desc" | translate }}</p>
+          <app-plans [embedded]="true" />
+        </div>
+      </section>
+    } @else if (current() === "staff") {
+      <section class="app-card">
+        <div class="app-card-header"><h2>{{ "onboarding.step_staff" | translate }}</h2></div>
+        <div class="app-card-body">
+          <p class="text-muted-token">{{ "onboarding.staff_body" | translate }}</p>
+          <div class="ob-actions">
+            <a routerLink="/admin/team" class="btn btn-primary">{{ "onboarding.add_staff" | translate }}</a>
+            <button type="button" class="btn btn-outline-secondary" [disabled]="working()" (click)="skip('staff')">
+              {{ "onboarding.alone_for_now" | translate }}
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+
+    @if (!s.complete) {
+      <p class="ob-leave">
+        <button type="button" class="btn btn-link" (click)="leave()">{{ "onboarding.leave" | translate }}</button>
+        <span class="text-muted-token">{{ "onboarding.leave_hint" | translate }}</span>
+      </p>
+    }
+  } @else if (loading()) {
+    <div class="app-card"><div class="app-card-body"><app-skeleton variant="cards" [rows]="5" /></div></div>
+  }
+</div>

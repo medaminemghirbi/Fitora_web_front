@@ -25,15 +25,15 @@ describe("MobileBarComponent", () => {
   it("offers the three things a desk does on a phone", () => {
     build(["reports", "clients", "payments"]);
     expect(component.items().map((i) => i.path)).toEqual([
-      "/owner/dashboard",
-      "/owner/clients",
-      "/owner/payments",
+      "/admin/dashboard",
+      "/admin/clients",
+      "/admin/payments",
     ]);
   });
 
   it("drops a destination the login may not reach", () => {
     build(["clients"]);
-    expect(component.items().map((i) => i.path)).toEqual(["/owner/clients"]);
+    expect(component.items().map((i) => i.path)).toEqual(["/admin/clients"]);
   });
 
   it("renders nothing at all rather than an empty bar", () => {

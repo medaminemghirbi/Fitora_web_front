@@ -80,7 +80,7 @@
     }
   </section>
 
-  <!-- The thing a receptionist can actually fix while the person is in front
+  <!-- The thing a moderator can actually fix while the person is in front
        of them, which is why it is on this screen and not in a report. -->
   @if (expiring().length > 0) {
     <section class="desk-section">
@@ -115,7 +115,7 @@
       <ul class="desk-list">
         @for (client of recentClients(); track client.id) {
           <li class="desk-list-row">
-            <a class="desk-list-body desk-list-link" [routerLink]="['/owner/clients', client.id]">
+            <a class="desk-list-body desk-list-link" [routerLink]="['/admin/clients', client.id]">
               <strong>{{ client.full_name }}</strong>
               <small>{{ client.joined_at | date: "d MMM" }}</small>
             </a>

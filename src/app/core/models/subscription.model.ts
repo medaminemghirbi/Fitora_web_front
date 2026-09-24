@@ -4,7 +4,7 @@ export type BillingPeriod = "monthly" | "yearly";
 export type LockReason = "suspended" | "unpaid" | null;
 
 /**
- * A gym's access to Fitora.
+ * A gym's access to Gymly.
  *
  * `active` IS the access — nothing computes a date to read it. Everything
  * else here is what the invoices say, for the screens that show a countdown.

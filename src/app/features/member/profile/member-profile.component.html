@@ -67,6 +67,72 @@
           </ul>
         }
       </section>
+
+      <!-- Their account. Once a person signs in, their name and phone are
+           theirs to keep right: their gyms can no longer change them. -->
+      <section class="mb-card">
+        <h2 class="mb-card-head">{{ "account.your_details" | translate }}</h2>
+        @if (editingDetails()) {
+          <form [formGroup]="detailsForm" (ngSubmit)="saveDetails()" novalidate>
+            <div class="mb-3">
+              <label for="me-first-name">{{ "account.first_name" | translate }}</label>
+              <input id="me-first-name" class="form-control" formControlName="first_name" autocomplete="given-name" />
+            </div>
+            <div class="mb-3">
+              <label for="me-last-name">{{ "account.last_name" | translate }}</label>
+              <input id="me-last-name" class="form-control" formControlName="last_name" autocomplete="family-name" />
+            </div>
+            <div class="mb-3">
+              <label for="me-phone">{{ "auth.phone" | translate }}</label>
+              <input id="me-phone" class="form-control" formControlName="phone" autocomplete="tel" dir="ltr" />
+            </div>
+            <div class="mb-actions">
+              <button type="button" class="btn btn-outline-secondary" (click)="editingDetails.set(false)">
+                {{ "common.cancel" | translate }}
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="savingDetails()">
+                {{ (savingDetails() ? "common.saving" : "common.save") | translate }}
+              </button>
+            </div>
+          </form>
+        } @else {
+          <p class="mb-muted">{{ "account.email_is_login" | translate }}</p>
+          <button type="button" class="btn btn-outline-secondary" (click)="editDetails()">
+            <i class="bi bi-pencil"></i> {{ "account.edit_details" | translate }}
+          </button>
+        }
+      </section>
+
+      <section class="mb-card">
+        <h2 class="mb-card-head">{{ "account.password" | translate }}</h2>
+        <app-change-password />
+      </section>
+
+      <section class="mb-card mb-card--danger">
+        <h2 class="mb-card-head">{{ "account.delete_title" | translate }}</h2>
+        <p class="mb-muted">{{ "account.delete_body" | translate }}</p>
+        <button type="button" class="btn btn-outline-danger" (click)="openDelete()">
+          {{ "account.delete_action" | translate }}
+        </button>
+      </section>
     }
   }
 </div>
+
+<app-modal [open]="deleteOpen()" [title]="'account.delete_title' | translate" (closed)="deleteOpen.set(false)">
+  @if (deleteError()) {
+    <div class="alert alert-danger" role="alert">{{ deleteError() }}</div>
+  }
+  <p>{{ "account.delete_confirm_body" | translate }}</p>
+  <form [formGroup]="deleteForm" (ngSubmit)="deleteAccount()" novalidate>
+    <div class="mb-3">
+      <label for="me-delete-password">{{ "auth.password" | translate }}</label>
+      <input id="me-delete-password" type="password" class="form-control" formControlName="password"
+             autocomplete="current-password" dir="ltr" />
+    </div>
+    <div class="mb-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="deleteOpen.set(false)">{{ "common.cancel" | translate }}</button>
+      <button type="submit" class="btn btn-danger" [disabled]="deleting()">{{ "account.delete_action" | translate }}</button>
+    </div>
+  </form>
+</app-modal>

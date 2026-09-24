@@ -1,0 +1,297 @@
+<div class="fx-listpage">
+  <div class="fx-listpage-main">
+    <div class="fx-cal-toolbar">
+      <div class="fx-cal-nav">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="today()">{{ "schedule.today" | translate }}</button>
+        <button type="button" class="icon-btn" (click)="prev()" [attr.aria-label]="'schedule.prev_period' | translate"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="icon-btn" (click)="next()" [attr.aria-label]="'schedule.next_period' | translate"><i class="bi bi-chevron-right"></i></button>
+        <h1 class="fx-cal-title">{{ viewTitle() || ("nav.calendar" | translate) }}</h1>
+      </div>
+
+      <div class="fx-segmented" role="group" [attr.aria-label]="'nav.calendar' | translate">
+        <button type="button" [class.is-active]="viewMode() === 'timeGridDay'" (click)="setView('timeGridDay')">{{ "schedule.day" | translate }}</button>
+        <button type="button" [class.is-active]="viewMode() === 'timeGridWeek'" (click)="setView('timeGridWeek')">{{ "schedule.week" | translate }}</button>
+        <button type="button" [class.is-active]="viewMode() === 'dayGridMonth'" (click)="setView('dayGridMonth')">{{ "schedule.month" | translate }}</button>
+      </div>
+
+      <div class="fx-cal-actions">
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="printSchedule()" [disabled]="printingSchedule()">
+          @if (printingSchedule()) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          } @else {
+            <i class="bi bi-printer"></i>
+          }
+          {{ "schedule.print_week" | translate }}
+        </button>
+        @if (canManageSessions()) {
+          <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">
+            <i class="bi bi-plus-lg"></i> {{ "schedule.new_session" | translate }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- The two filters and the colour key left the rail: a grid of five
+         days wants every pixel of width, and two selects and four dots do
+         not need a column of their own. -->
+    <div class="fx-cal-filters">
+      <div class="fx-cal-filter">
+        <label for="cal-coach-filter">{{ "bookings.coach" | translate }}</label>
+        <select id="cal-coach-filter" class="form-select form-select-sm" [(ngModel)]="coachFilter" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">{{ "common.all" | translate }}</option>
+          @for (c of coaches(); track c.id) {
+            <option [ngValue]="c.id">{{ c.full_name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="fx-cal-filter">
+        <label for="cal-activity-filter">{{ "activities.title" | translate }}</label>
+        <select id="cal-activity-filter" class="form-select form-select-sm" [(ngModel)]="activityFilter" (ngModelChange)="applyFilters()">
+          <option [ngValue]="null">{{ "common.all" | translate }}</option>
+          @for (a of activities(); track a.id) {
+            <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }}</option>
+          }
+        </select>
+      </div>
+
+      @if (hasFilters()) {
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
+          <i class="bi bi-arrow-counterclockwise"></i> {{ "common.reset" | translate }}
+        </button>
+      }
+
+      <!-- What each block's colour means on the grid — the same colours the
+           events use, which come from the session's status. -->
+      <ul class="fx-legend" [attr.aria-label]="'calendar.legend' | translate">
+        <li><span class="fx-legend-dot" style="background: var(--color-primary)"></span>{{ "bookings.status_confirmed" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-success)"></span>{{ "bookings.status_completed" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-border-strong)"></span>{{ "bookings.status_cancelled" | translate }}</li>
+        <li><span class="fx-legend-dot" style="background: var(--color-border)"></span>{{ "calendar.legend_past" | translate }}</li>
+      </ul>
+    </div>
+
+    <div class="app-card calendar-card">
+      <div class="app-card-body">
+        <full-calendar [options]="calendarOptions()"></full-calendar>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hover card. Purely an accelerator over the click-through detail modal,
+     so it stays out of the a11y tree and never swallows a click. -->
+@if (hoverPreview(); as preview) {
+  <div class="fx-session-tip" aria-hidden="true" [style.top.px]="preview.top" [style.left.px]="preview.left">
+    <div class="fx-session-tip-head">
+      <span class="fx-session-tip-title">
+        {{ preview.session.activity_emoji ? preview.session.activity_emoji + " " : "" }}{{ preview.session.activity_name }}
+      </span>
+      <app-status-badge [status]="preview.session.status">
+        {{ ("bookings.status_" + preview.session.status) | translate }}
+      </app-status-badge>
+    </div>
+
+    <ul class="fx-session-tip-meta">
+      <li>
+        <i class="bi bi-clock"></i>
+        <span dir="ltr">{{ preview.session.starts_at | date: "HH:mm" }} – {{ preview.session.ends_at | date: "HH:mm" }}</span>
+        <span class="fx-muted">{{ preview.session.starts_at | date: "EEEE d MMM" }}</span>
+      </li>
+      <li><i class="bi bi-person-badge"></i> {{ preview.session.coach_name || ("schedule.no_coach" | translate) }}</li>
+      <li><i class="bi bi-geo-alt"></i> {{ preview.session.company_name }}</li>
+      @if (preview.session.price > 0) {
+        <li><i class="bi bi-cash"></i> {{ preview.session.price }}</li>
+      }
+    </ul>
+
+    <div>
+      <div class="fx-session-tip-fill-head">
+        <span>{{ "schedule.booked_places" | translate }}</span>
+        <strong dir="ltr">{{ preview.session.confirmed_count }}/{{ preview.session.capacity }}</strong>
+      </div>
+      <div class="fx-session-tip-bar">
+        <div [style.width.%]="previewFill(preview.session)"
+             [class.is-full]="preview.session.confirmed_count >= preview.session.capacity"></div>
+      </div>
+    </div>
+
+    <p class="fx-session-tip-hint">{{ "schedule.click_for_detail" | translate }}</p>
+  </div>
+}
+
+<app-modal [open]="detailOpen()" [title]="(selectedSession()?.activity_emoji ? selectedSession()!.activity_emoji + ' ' : '') + (selectedSession()?.activity_name || '')" (closed)="closeDetail()">
+  @if (selectedSession(); as session) {
+    <div class="session-detail-meta mb-3">
+      <div><i class="bi bi-geo-alt"></i> {{ session.company_name }}</div>
+      <div><i class="bi bi-person-badge"></i> {{ session.coach_name || "—" }}</div>
+      <div><i class="bi bi-clock"></i> {{ session.starts_at | date: "medium" }} – {{ session.ends_at | date: "HH:mm" }}</div>
+      <div><i class="bi bi-people"></i> <span dir="ltr">{{ session.confirmed_count }}/{{ session.capacity }}</span></div>
+      <app-status-badge [status]="session.status">{{ ("bookings.status_" + session.status) | translate }}</app-status-badge>
+    </div>
+
+    @if (isSessionEnded(session)) {
+      <div class="session-ended-note">
+        <i class="bi bi-info-circle"></i> {{ "calendar.session_ended" | translate }}
+      </div>
+    }
+
+    @if (canManageSessions()) {
+      <div class="mb-3 position-relative">
+        <label for="cal-add-client-search">{{ "clients.add_booking" | translate }}</label>
+        <input
+          id="cal-add-client-search"
+          class="form-control"
+          [ngModel]="addClientSearch()"
+          (ngModelChange)="searchClientsToAdd($event)"
+          [placeholder]="'clients.search_placeholder' | translate"
+          [disabled]="addingClient()"
+          autocomplete="off"
+        />
+        @if (addClientResults().length > 0) {
+          <div class="search-results-dropdown">
+            @for (c of addClientResults(); track c.id) {
+              <button type="button" class="search-result-item" (click)="addClientToSession(c)">
+                {{ c.full_name }} <span class="text-muted-token small">{{ c.phone }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (detailLoading()) {
+      <div class="d-flex justify-content-center py-4">
+        <app-spinner [size]="28" />
+      </div>
+    } @else if (detailBookings().length === 0) {
+      <p class="text-muted-token small">{{ "coach.no_bookings_title" | translate }}</p>
+    } @else {
+      <ul class="list-unstyled mb-0">
+        @for (booking of detailBookings(); track booking.booking_id) {
+          <li class="d-flex justify-content-between align-items-center py-2 border-bottom flex-wrap gap-2">
+            <span>{{ booking.client.full_name }}</span>
+            <div class="d-flex gap-1 flex-wrap">
+              @for (status of attendanceStatuses; track status) {
+                <button
+                  type="button"
+                  class="btn btn-sm"
+                  [class.btn-primary]="booking.attendance?.status === status"
+                  [class.btn-outline-secondary]="booking.attendance?.status !== status"
+                  [disabled]="markingBookingId() === booking.booking_id"
+                  (click)="markAttendance(booking, status)"
+                >
+                  {{ ("coach.attendance_" + status) | translate }}
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (canManageSessions() && session.status === "scheduled") {
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        @if (session.recurring_schedule_id) {
+          <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="stoppingSeries()" (click)="stopSeries()">
+            <i class="bi bi-arrow-repeat"></i> {{ "calendar.stop_series" | translate }}
+          </button>
+        }
+        <button type="button" class="btn btn-outline-danger btn-sm" (click)="cancelSession()">
+          <i class="bi bi-x-lg"></i> {{ "calendar.cancel_session" | translate }}
+        </button>
+      </div>
+    }
+  }
+</app-modal>
+
+<app-modal [open]="createModalOpen()" [title]="'schedule.new_session' | translate" (closed)="closeCreateModal()">
+  @if (formError()) {
+    <div class="alert alert-danger">{{ formError() }}</div>
+  }
+
+  <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate>
+    <div class="mb-3">
+      <label for="cs-activity">{{ "activities.title" | translate }} *</label>
+      <select id="cs-activity" class="form-select" formControlName="activity_id">
+        <option [ngValue]="null" disabled>—</option>
+        @for (a of activities(); track a.id) {
+          <option [ngValue]="a.id">{{ a.emoji ? a.emoji + " " : "" }}{{ a.name }} ({{ a.duration }} min)</option>
+        }
+      </select>
+    </div>
+    @if (createFormat() === "individual") {
+      <div class="mb-3">
+        <label for="cs-client">{{ "schedule.member" | translate }} *</label>
+        <app-searchable-select
+          id="cs-client"
+          formControlName="client_id"
+          [options]="clientOptions()"
+          [placeholder]="'schedule.member_placeholder' | translate"
+        />
+        <div class="form-text">{{ "schedule.member_hint" | translate }}</div>
+      </div>
+    }
+    <div class="mb-3">
+      <label for="cs-coach">{{ "bookings.coach" | translate }} ({{ "common.optional" | translate }})</label>
+      <select id="cs-coach" class="form-select" formControlName="coach_id">
+        <option [ngValue]="null">—</option>
+        @for (c of coaches(); track c.id) {
+          <option [ngValue]="c.id">{{ c.full_name }}</option>
+        }
+      </select>
+    </div>
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="cs-date">{{ "bookings.date" | translate }} *</label>
+        <input id="cs-date" type="date" class="form-control" formControlName="date" />
+      </div>
+      <div class="col-6 mb-3">
+        <label for="cs-time">{{ "bookings.time" | translate }} *</label>
+        <input id="cs-time" type="time" class="form-control" formControlName="start_time" />
+      </div>
+    </div>
+    @if (createFormat() !== "individual") {
+      <div class="mb-3">
+        <label class="d-flex align-items-center gap-2" for="cs-repeat">
+          <input id="cs-repeat" type="checkbox" formControlName="repeat_weekly" />
+          {{ "calendar.repeat_weekly" | translate: { day: repeatDayName() } }}
+        </label>
+        @if (repeats()) {
+          <div class="mt-2">
+            <label for="cs-repeat-until">{{ "calendar.repeat_until" | translate }} *</label>
+            <input id="cs-repeat-until" type="date" class="form-control" formControlName="repeat_until" />
+            <div class="form-text">{{ "calendar.repeat_hint" | translate }}</div>
+          </div>
+        }
+      </div>
+    }
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label for="cs-capacity">{{ "schedule.capacity" | translate }} ({{ "common.optional" | translate }})</label>
+        <input
+          id="cs-capacity"
+          type="number"
+          class="form-control"
+          formControlName="capacity"
+          [min]="createCapacityBounds().min"
+          [attr.max]="createCapacityBounds().max"
+        />
+        @if (createFormat() && createFormat() !== "individual") {
+          <div class="form-text">{{ ("activities.format_" + createFormat() + "_hint") | translate }}</div>
+        }
+      </div>
+      <div class="col-6 mb-3">
+        <label for="cs-price">{{ "activities.price" | translate }} ({{ "common.optional" | translate }})</label>
+        <input id="cs-price" type="number" min="0" step="0.01" class="form-control" formControlName="price" />
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeCreateModal()">{{ "common.cancel" | translate }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ (saving() ? "common.saving" : "common.save") | translate }}
+      </button>
+    </div>
+  </form>
+</app-modal>

@@ -1,0 +1,126 @@
+<div class="app-card">
+  <div class="app-card-header">
+    <div>
+      <p class="fx-muted mb-0" style="font-size: 0.8125rem">{{ "settings.role_hint" | translate }}</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">
+      <i class="bi bi-plus-lg"></i> {{ "settings.role_new" | translate }}
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="app-card-body"><app-skeleton variant="table" [rows]="4" [cols]="3" /></div>
+  } @else if (roles().length === 0) {
+    <div class="app-card-body">
+      <app-empty-state [title]="'settings.role_empty' | translate" body="" icon="bi-shield-lock" />
+    </div>
+  } @else {
+    <div class="fx-table-scroll">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{{ "settings.role_name" | translate }}</th>
+            <th>{{ "settings.role_accounts" | translate }}</th>
+            <th class="text-end">{{ "common.actions" | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of roles(); track r.id) {
+            <tr>
+              <td class="fx-strong">
+                {{ r.name }}
+                @if (r.builtin) {
+                  <span class="badge text-bg-secondary ms-1">{{ "settings.role_system_badge" | translate }}</span>
+                }
+              </td>
+              <td>{{ r.staff_count }}</td>
+              <td class="text-end">
+                <app-action-menu>
+                  <button type="button" class="fx-menu-item" (click)="openEdit(r)">
+                    <i class="bi bi-pencil"></i>
+                    {{ (r.key === "admin" ? "common.view" : "common.edit") | translate }}
+                  </button>
+                  @if (r.deletable) {
+                    <div class="fx-menu-divider"></div>
+                    <button type="button" class="fx-menu-item is-danger" (click)="remove(r)">
+                      <i class="bi bi-trash"></i> {{ "common.delete" | translate }}
+                    </button>
+                  }
+                </app-action-menu>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-modal
+  [open]="modalOpen()"
+  [title]="(editing() ? 'common.edit' : 'settings.role_new') | translate"
+  (closed)="modalOpen.set(false)"
+>
+  @if (formError()) {
+    <div class="alert alert-danger">{{ formError() }}</div>
+  }
+
+  <div class="mb-3">
+    <label for="role-name">{{ "settings.role_name" | translate }} *</label>
+    <input
+      id="role-name"
+      class="form-control"
+      [ngModel]="draftName()"
+      (ngModelChange)="draftName.set($event)"
+      [disabled]="isAdminRole()"
+    />
+  </div>
+
+  @if (isAdminRole()) {
+    <p class="fx-muted" style="font-size: 0.8125rem">{{ "settings.role_admin_locked" | translate }}</p>
+  } @else {
+    <div class="mb-3">
+      <span class="fx-muted fw-semibold">{{ "settings.role_perm_group_daily" | translate }}</span>
+      @for (key of dailyPermKeys(); track key) {
+        <div class="form-check">
+          <input
+            [id]="'perm-' + key"
+            type="checkbox"
+            class="form-check-input"
+            [checked]="draftPerms().has(key)"
+            (change)="togglePerm(key)"
+          />
+          <label [for]="'perm-' + key" class="form-check-label">{{ permLabel(key) }}</label>
+        </div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <span class="fx-muted fw-semibold">{{ "settings.role_perm_group_config" | translate }}</span>
+      <div class="form-text mb-1">{{ "settings.role_perm_group_config_hint" | translate }}</div>
+      @for (key of configPermKeys(); track key) {
+        <div class="form-check">
+          <input
+            [id]="'perm-' + key"
+            type="checkbox"
+            class="form-check-input"
+            [checked]="draftPerms().has(key)"
+            (change)="togglePerm(key)"
+          />
+          <label [for]="'perm-' + key" class="form-check-label">{{ permLabel(key) }}</label>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="d-flex justify-content-end gap-2 mt-4">
+    <button type="button" class="btn btn-outline-secondary" (click)="modalOpen.set(false)">
+      {{ (isAdminRole() ? "common.close" : "common.cancel") | translate }}
+    </button>
+    @if (!isAdminRole()) {
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="submit()">
+        {{ (saving() ? "common.saving" : "common.save") | translate }}
+      </button>
+    }
+  </div>
+</app-modal>

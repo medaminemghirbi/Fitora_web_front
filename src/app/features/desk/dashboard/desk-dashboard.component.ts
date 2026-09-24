@@ -18,7 +18,7 @@ import { SkeletonComponent } from "../../../shared/ui/skeleton.component";
  *
  * It answers one question — what is happening right now — and it answers it
  * in the order the desk needs: the session on now, then the ones still to
- * come today, then the memberships about to lapse (the thing a receptionist
+ * come today, then the memberships about to lapse (the thing a moderator
  * can actually fix while the person is standing there), then who is new.
  *
  * No totals, no revenue, no charts. Reading what the gym earns is a separate

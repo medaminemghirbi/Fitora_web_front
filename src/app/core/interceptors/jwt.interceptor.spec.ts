@@ -15,7 +15,7 @@ describe("jwtInterceptor", () => {
       isAuthenticated: jasmine.createSpy().and.returnValue(false),
       logout: jasmine.createSpy(),
     };
-    router = { navigate: jasmine.createSpy(), url: "/owner/dashboard" };
+    router = { navigate: jasmine.createSpy(), url: "/admin/dashboard" };
 
     TestBed.configureTestingModule({
       providers: [

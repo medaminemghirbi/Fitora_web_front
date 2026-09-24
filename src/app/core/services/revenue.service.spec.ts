@@ -16,9 +16,9 @@ describe("RevenueService", () => {
 
   afterEach(() => httpMock.verify());
 
-  it("get GETs /owner/revenue", () => {
+  it("get GETs /admin/revenue", () => {
     service.get().subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/owner/revenue`);
+    const req = httpMock.expectOne(`${API_BASE_URL}/admin/revenue`);
     expect(req.request.method).toBe("GET");
     req.flush({ today: 0, this_week: 0, this_month: 0, by_day: [] });
   });

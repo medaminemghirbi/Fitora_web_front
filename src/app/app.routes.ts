@@ -3,12 +3,12 @@ import { authGuard } from "./core/guards/auth.guard";
 import { guestGuard } from "./core/guards/guest.guard";
 import { noCompanyGuard, companyGuard } from "./core/guards/company.guard";
 import { roleGuard } from "./core/guards/role.guard";
-import { capabilityGuard, deskAreaGuard, featureGuard, ownerAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
+import { capabilityGuard, deskAreaGuard, featureGuard, adminAreaGuard, settingsAccessGuard, staffRoleGuard } from "./core/guards/staff.guard";
 import { memberGuard } from "./core/guards/member.guard";
 import { emailConfirmedGuard, emailPendingGuard } from "./core/guards/email.guard";
 
 /**
- * Fitora is sold to gyms. Everything before signing in is written for one:
+ * Gymly is sold to gyms. Everything before signing in is written for one:
  * the landing page, signing up, and a single sign-in.
  *
  * /member is the app a gym gives its own members — the gym's schedule, their
@@ -46,9 +46,16 @@ export const routes: Routes = [
     path: "auth/reset-password",
     loadComponent: () => import("./features/auth/reset-password.component").then((m) => m.ResetPasswordComponent),
   },
+  {
+    // A member choosing their password from their gym's invitation — the
+    // same form as a reset, with its own words (see ResetPasswordComponent).
+    path: "auth/accept-invitation",
+    data: { mode: "invitation" },
+    loadComponent: () => import("./features/auth/reset-password.component").then((m) => m.ResetPasswordComponent),
+  },
 
   {
-    // The only page a locked gym sees. Outside /owner on purpose: it has no
+    // The only page a locked gym sees. Outside /admin on purpose: it has no
     // shell and no navigation, because the point is that the door is shut.
     path: "account-locked",
     canActivate: [authGuard],
@@ -56,55 +63,55 @@ export const routes: Routes = [
   },
   { path: "trial-expired", pathMatch: "full", redirectTo: "/account-locked" },
   {
-    path: "owner/setup-company",
-    canActivate: [authGuard, roleGuard("owner"), emailConfirmedGuard, noCompanyGuard],
+    path: "admin/setup-company",
+    canActivate: [authGuard, roleGuard("admin"), emailConfirmedGuard, noCompanyGuard],
     loadComponent: () =>
-      import("./features/owner/onboarding/company-setup.component").then((m) => m.CompanySetupComponent),
+      import("./features/admin/onboarding/company-setup.component").then((m) => m.CompanySetupComponent),
   },
   {
-    path: "owner",
-    canActivate: [authGuard, emailConfirmedGuard, ownerAreaGuard, companyGuard],
-    loadComponent: () => import("./layout/owner-shell/owner-shell.component").then((m) => m.OwnerShellComponent),
+    path: "admin",
+    canActivate: [authGuard, emailConfirmedGuard, adminAreaGuard, companyGuard],
+    loadComponent: () => import("./layout/admin-shell/admin-shell.component").then((m) => m.AdminShellComponent),
     children: [
-      { path: "dashboard", canActivate: [capabilityGuard("reports")], loadComponent: () => import("./features/owner/dashboard/dashboard.component").then((m) => m.DashboardComponent) },
-      { path: "onboarding", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/onboarding/onboarding.component").then((m) => m.OnboardingComponent) },
+      { path: "dashboard", canActivate: [capabilityGuard("reports")], loadComponent: () => import("./features/admin/dashboard/dashboard.component").then((m) => m.DashboardComponent) },
+      { path: "onboarding", canActivate: [roleGuard("admin")], loadComponent: () => import("./features/admin/onboarding/onboarding.component").then((m) => m.OnboardingComponent) },
       { path: "getting-started", pathMatch: "full", redirectTo: "onboarding" },
-      { path: "clients", canActivate: [capabilityGuard("clients")], loadComponent: () => import("./features/owner/clients/clients-list.component").then((m) => m.ClientsListComponent) },
-      { path: "clients/:id", canActivate: [capabilityGuard("clients")], loadComponent: () => import("./features/owner/clients/client-profile.component").then((m) => m.ClientProfileComponent) },
-      { path: "calendar", loadComponent: () => import("./features/owner/calendar/calendar.component").then((m) => m.CalendarComponent) },
+      { path: "clients", canActivate: [capabilityGuard("clients")], loadComponent: () => import("./features/admin/clients/clients-list.component").then((m) => m.ClientsListComponent) },
+      { path: "clients/:id", canActivate: [capabilityGuard("clients")], loadComponent: () => import("./features/admin/clients/client-profile.component").then((m) => m.ClientProfileComponent) },
+      { path: "calendar", loadComponent: () => import("./features/admin/calendar/calendar.component").then((m) => m.CalendarComponent) },
       // Rooms exist only for a gym that turned them on; both guards apply,
       // because "the product offers this" and "you may use it" are separate
       // questions and the backend asks both too.
-      { path: "spaces", canActivate: [featureGuard("spaces"), capabilityGuard("spaces")], loadComponent: () => import("./features/owner/spaces/spaces.component").then((m) => m.SpacesComponent) },
-      { path: "bookings", canActivate: [capabilityGuard("bookings")], loadComponent: () => import("./features/owner/bookings/bookings.component").then((m) => m.OwnerBookingsComponent) },
-      { path: "contracts", canActivate: [capabilityGuard("contracts")], loadComponent: () => import("./features/owner/contracts/contracts.component").then((m) => m.ContractsComponent) },
+      { path: "spaces", canActivate: [featureGuard("spaces"), capabilityGuard("spaces")], loadComponent: () => import("./features/admin/spaces/spaces.component").then((m) => m.SpacesComponent) },
+      { path: "bookings", canActivate: [capabilityGuard("bookings")], loadComponent: () => import("./features/admin/bookings/bookings.component").then((m) => m.AdminBookingsComponent) },
+      { path: "contracts", canActivate: [capabilityGuard("contracts")], loadComponent: () => import("./features/admin/contracts/contracts.component").then((m) => m.ContractsComponent) },
       // The catalogue left Settings: a plan and an activity are seasonal
       // business objects, not one-off configuration.
       // Plans and activities are one page: a price only exists where the two
       // cross. The old routes still resolve, so a bookmark or an old link
       // lands somewhere sensible rather than on a 404.
-      { path: "catalogue", canActivate: [capabilityGuard("contract_types")], loadComponent: () => import("./features/owner/catalogue/catalogue.component").then((m) => m.CatalogueComponent) },
+      { path: "catalogue", canActivate: [capabilityGuard("contract_types")], loadComponent: () => import("./features/admin/catalogue/catalogue.component").then((m) => m.CatalogueComponent) },
       { path: "contracts/plans", pathMatch: "full", redirectTo: "catalogue" },
       { path: "contracts/activities", pathMatch: "full", redirectTo: "catalogue" },
-      { path: "payments", canActivate: [capabilityGuard("payments")], loadComponent: () => import("./features/owner/payments/payments.component").then((m) => m.OwnerPaymentsComponent) },
+      { path: "payments", canActivate: [capabilityGuard("payments")], loadComponent: () => import("./features/admin/payments/payments.component").then((m) => m.AdminPaymentsComponent) },
       // Import/export moved under Settings; the old link keeps working.
       { path: "data-exchange", redirectTo: "settings/data-exchange", pathMatch: "full" },
-      { path: "team", canActivate: [capabilityGuard("coaches")], loadComponent: () => import("./features/owner/team/team.component").then((m) => m.TeamComponent) },
+      { path: "team", canActivate: [capabilityGuard("coaches")], loadComponent: () => import("./features/admin/team/team.component").then((m) => m.TeamComponent) },
       // Coaches + Staff were merged into one Team page — keep the old paths working.
       { path: "coaches", pathMatch: "full", redirectTo: "team" },
       { path: "staff", pathMatch: "full", redirectTo: "team" },
-      { path: "subscription", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/subscription/subscription.component").then((m) => m.SubscriptionComponent) },
-      { path: "support", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/support/support.component").then((m) => m.OwnerSupportComponent) },
-      { path: "notifications", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/notifications/notifications-inbox.component").then((m) => m.NotificationsInboxComponent) },
-      { path: "notifications/:id", canActivate: [roleGuard("owner")], loadComponent: () => import("./features/owner/notifications/notification-detail.component").then((m) => m.NotificationDetailComponent) },
-      { path: "settings", canActivate: [settingsAccessGuard], loadComponent: () => import("./features/owner/settings/settings-shell.component").then((m) => m.SettingsShellComponent) },
-      { path: "settings/:section", canActivate: [settingsAccessGuard], loadComponent: () => import("./features/owner/settings/settings-shell.component").then((m) => m.SettingsShellComponent) },
+      { path: "subscription", canActivate: [roleGuard("admin")], loadComponent: () => import("./features/admin/subscription/subscription.component").then((m) => m.SubscriptionComponent) },
+      { path: "support", canActivate: [roleGuard("admin")], loadComponent: () => import("./features/admin/support/support.component").then((m) => m.AdminSupportComponent) },
+      { path: "notifications", canActivate: [roleGuard("admin")], loadComponent: () => import("./features/admin/notifications/notifications-inbox.component").then((m) => m.NotificationsInboxComponent) },
+      { path: "notifications/:id", canActivate: [roleGuard("admin")], loadComponent: () => import("./features/admin/notifications/notification-detail.component").then((m) => m.NotificationDetailComponent) },
+      { path: "settings", canActivate: [settingsAccessGuard], loadComponent: () => import("./features/admin/settings/settings-shell.component").then((m) => m.SettingsShellComponent) },
+      { path: "settings/:section", canActivate: [settingsAccessGuard], loadComponent: () => import("./features/admin/settings/settings-shell.component").then((m) => m.SettingsShellComponent) },
       // The marketplace is gone — every feature is included in the subscription.
       { path: "modules", pathMatch: "full", redirectTo: "subscription" },
       { path: "", pathMatch: "full", redirectTo: "dashboard" },
     ],
   },
-  // The front desk. Its own shell rather than a filtered owner shell: the
+  // The front desk. Its own shell rather than a filtered admin shell: the
   // desk's job is a different shape from running the gym, and hiding menu
   // items from a layout built for someone else is not the same as building
   // the one this job needs.
@@ -129,17 +136,17 @@ export const routes: Routes = [
     ],
   },
   {
-    path: "admin",
-    canActivate: [authGuard, roleGuard("admin")],
-    loadComponent: () => import("./layout/admin-shell/admin-shell.component").then((m) => m.AdminShellComponent),
+    path: "superadmin",
+    canActivate: [authGuard, roleGuard("superadmin")],
+    loadComponent: () => import("./layout/superadmin-shell/superadmin-shell.component").then((m) => m.SuperadminShellComponent),
     children: [
-      { path: "overview", loadComponent: () => import("./features/admin/overview/admin-overview.component").then((m) => m.AdminOverviewComponent) },
-      { path: "companies", loadComponent: () => import("./features/admin/companies/companies.component").then((m) => m.AdminCompaniesComponent) },
-      { path: "companies/:id", loadComponent: () => import("./features/admin/company-detail/company-detail.component").then((m) => m.AdminCompanyDetailComponent) },
-      { path: "pricing", loadComponent: () => import("./features/admin/pricing/pricing.component").then((m) => m.AdminPricingComponent) },
+      { path: "overview", loadComponent: () => import("./features/superadmin/overview/superadmin-overview.component").then((m) => m.SuperadminOverviewComponent) },
+      { path: "companies", loadComponent: () => import("./features/superadmin/companies/companies.component").then((m) => m.SuperadminCompaniesComponent) },
+      { path: "companies/:id", loadComponent: () => import("./features/superadmin/company-detail/company-detail.component").then((m) => m.SuperadminCompanyDetailComponent) },
+      { path: "pricing", loadComponent: () => import("./features/superadmin/pricing/pricing.component").then((m) => m.SuperadminPricingComponent) },
       { path: "modules", pathMatch: "full", redirectTo: "pricing" },
-      { path: "support", loadComponent: () => import("./features/admin/support/support-tickets.component").then((m) => m.AdminSupportTicketsComponent) },
-      { path: "updates", loadComponent: () => import("./features/admin/updates/updates.component").then((m) => m.AdminUpdatesComponent) },
+      { path: "support", loadComponent: () => import("./features/superadmin/support/support-tickets.component").then((m) => m.SuperadminSupportTicketsComponent) },
+      { path: "updates", loadComponent: () => import("./features/superadmin/updates/updates.component").then((m) => m.SuperadminUpdatesComponent) },
       { path: "", pathMatch: "full", redirectTo: "overview" },
     ],
   },

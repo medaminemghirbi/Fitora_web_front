@@ -11,7 +11,7 @@ export class ReportsService {
 
   // Styled .xlsx export (Reports::CompanyWorkbook on the backend).
   exportCompany(periodType: ReportPeriodType, period: string): Observable<Blob> {
-    return this.http.get(`${API_BASE_URL}/owner/reports/export`, {
+    return this.http.get(`${API_BASE_URL}/admin/reports/export`, {
       params: { period_type: periodType, period },
       responseType: "blob",
     });

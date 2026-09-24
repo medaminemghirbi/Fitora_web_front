@@ -11,7 +11,7 @@ describe("company.guard", () => {
   beforeEach(() => {
     authStub = {
       currentUser: jasmine.createSpy(),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
     };
     tree = {} as UrlTree;
     router = jasmine.createSpyObj<Router>("Router", ["createUrlTree"]);
@@ -30,15 +30,15 @@ describe("company.guard", () => {
       return TestBed.runInInjectionContext(() => companyGuard({} as never, {} as never));
     }
 
-    it("lets an owner with a company through", () => {
+    it("lets an admin with a company through", () => {
       authStub.currentUser.and.returnValue({ company_id: "c1" });
       expect(run()).toBe(true);
     });
 
-    it("sends an owner with no company yet to setup", () => {
+    it("sends an admin with no company yet to setup", () => {
       authStub.currentUser.and.returnValue({ company_id: null });
       expect(run()).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/setup-company"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/setup-company"]);
     });
 
     it("treats no current user the same as no company", () => {
@@ -52,15 +52,15 @@ describe("company.guard", () => {
       return TestBed.runInInjectionContext(() => noCompanyGuard({} as never, {} as never));
     }
 
-    it("lets a company-less owner reach the setup page", () => {
+    it("lets a company-less admin reach the setup page", () => {
       authStub.currentUser.and.returnValue({ company_id: null });
       expect(run()).toBe(true);
     });
 
-    it("redirects an owner who already has a company away from setup", () => {
+    it("redirects an admin who already has a company away from setup", () => {
       authStub.currentUser.and.returnValue({ company_id: "c1" });
       expect(run()).toBe(tree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+      expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
     });
   });
 });

@@ -73,7 +73,7 @@ export class VerifyEmailComponent implements OnInit {
 
         // The backend record is verified; the cached user is not. Refresh
         // it before moving on, or the route guards would still read
-        // "unconfirmed" and send the owner back to the waiting screen.
+        // "unconfirmed" and send the admin back to the waiting screen.
         if (this.isAuthenticated()) {
           this.auth.refreshCurrentUser().subscribe({
             next: () => {
@@ -119,7 +119,7 @@ export class VerifyEmailComponent implements OnInit {
   continueUrl(): string {
     if (!this.isAuthenticated()) return "/connexion";
     const user = this.auth.currentUser();
-    if (user?.role === "owner" && user.company_id == null && user.email_verified) return "/owner/setup-company";
+    if (user?.role === "admin" && user.company_id == null && user.email_verified) return "/admin/setup-company";
     return this.auth.homeRouteForCurrentUser();
   }
 

@@ -29,5 +29,6 @@ declare module "@rails/actioncable" {
     disconnect(): void;
   }
 
-  export function createConsumer(url?: string): Consumer;
+  /** A function is called again on every (re)connect — see NotificationService. */
+  export function createConsumer(url?: string | (() => string)): Consumer;
 }

@@ -53,7 +53,7 @@ describe("CommandPaletteComponent", () => {
     fixture.detectChanges();
   }
 
-  beforeEach(() => build("owner"));
+  beforeEach(() => build("admin"));
 
   it("starts closed", () => {
     expect(palette.isOpen()).toBe(false);
@@ -64,7 +64,7 @@ describe("CommandPaletteComponent", () => {
     palette.open();
     fixture.detectChanges();
     const gotoItems = component.sections().find((s) => s.key === "goto")?.items ?? [];
-    expect(gotoItems.some((i) => i.id === "nav:/owner/dashboard")).toBe(false);
+    expect(gotoItems.some((i) => i.id === "nav:/admin/dashboard")).toBe(false);
   });
 
   it("opening resets the query/active index and shows nav commands", () => {
@@ -101,7 +101,7 @@ describe("CommandPaletteComponent", () => {
     document.body.removeChild(fixture.nativeElement);
   }));
 
-  it("action commands only show for an owner with a non-empty query", () => {
+  it("action commands only show for an admin with a non-empty query", () => {
     palette.open();
     fixture.detectChanges();
     expect(component.sections().some((s) => s.key === "actions")).toBe(false);
@@ -110,7 +110,7 @@ describe("CommandPaletteComponent", () => {
     expect(component.sections().some((s) => s.key === "actions")).toBe(true);
   });
 
-  it("action commands never show for a non-owner", () => {
+  it("action commands never show for a non-admin", () => {
     build("staff");
     palette.open();
     fixture.detectChanges();
@@ -151,7 +151,7 @@ describe("CommandPaletteComponent", () => {
     expect(clientsService.list).toHaveBeenCalledTimes(1);
   }));
 
-  it("does not run a remote search for a non-owner", fakeAsync(() => {
+  it("does not run a remote search for a non-admin", fakeAsync(() => {
     build("staff");
     palette.open();
     fixture.detectChanges();
@@ -187,7 +187,7 @@ describe("CommandPaletteComponent", () => {
     component.sections().find((s) => s.key === "clients")!.items[0].run();
 
     expect(palette.isOpen()).toBe(false);
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/clients", "c1"]);
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/clients", "c1"]);
   }));
 
   it("running a remote contract command navigates to the client's profile", fakeAsync(() => {
@@ -207,7 +207,7 @@ describe("CommandPaletteComponent", () => {
     fixture.detectChanges();
 
     component.sections().find((s) => s.key === "contracts")!.items[0].run();
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/clients", "cl9"]);
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/clients", "cl9"]);
     expect(palette.isOpen()).toBe(false);
   }));
 
@@ -226,7 +226,7 @@ describe("CommandPaletteComponent", () => {
     fixture.detectChanges();
 
     component.sections().find((s) => s.key === "payments")!.items[0].run();
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/payments"], { queryParams: { q: "amy" } });
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/payments"], { queryParams: { q: "amy" } });
     expect(palette.isOpen()).toBe(false);
   }));
 
@@ -245,14 +245,14 @@ describe("CommandPaletteComponent", () => {
     component.onQuery("new");
     const actions = component.sections().find((s) => s.key === "actions")!.items;
     actions[0].run();
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/clients"], { queryParams: { action: "new" } });
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/clients"], { queryParams: { action: "new" } });
 
     actions[1].run();
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/payments"], { queryParams: { action: "new" } });
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/payments"], { queryParams: { action: "new" } });
     actions[2].run();
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/activities"], { queryParams: { action: "new" } });
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/activities"], { queryParams: { action: "new" } });
     actions[3].run();
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/team"], { queryParams: { action: "new" } });
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/team"], { queryParams: { action: "new" } });
   });
 
   it("rows() flattens sections into label rows and indexed command rows", () => {

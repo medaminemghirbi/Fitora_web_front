@@ -1,6 +1,6 @@
 // Mirror of the backend CurrencyCatalog (app/models/currency_catalog.rb).
 // Kept as a static list so the MoneyPipe can resolve a symbol synchronously
-// anywhere, without a round-trip. The admin currency picker uses the list the
+// anywhere, without a round-trip. The superadmin currency picker uses the list the
 // API sends (`currency_options`); this is the display fallback + the pipe map.
 // `name` here is the French label (app default) — translated names live under
 // the `currency.<CODE>` i18n keys.

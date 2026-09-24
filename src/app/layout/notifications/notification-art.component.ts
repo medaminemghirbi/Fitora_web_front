@@ -6,6 +6,9 @@ const EMOJI: Record<NotificationKind, string> = {
   employee_birthday: "🎂",
   system_update: "🚀",
   invoice_issued: "🧾",
+  session_cancelled: "🚫",
+  waitlist_promoted: "🎟️",
+  subscription_expiring: "⏳",
 };
 
 /**
@@ -78,6 +81,9 @@ const EMOJI: Record<NotificationKind, string> = {
       .art[data-kind="employee_birthday"] { background: linear-gradient(150deg, #fef3c7, #fde68a); }
       .art[data-kind="contract_expiring"] { background: linear-gradient(150deg, #e0e7ff, #c7d2fe); }
       .art[data-kind="invoice_issued"] { background: linear-gradient(150deg, #dcfce7, #bbf7d0); }
+      .art[data-kind="session_cancelled"] { background: linear-gradient(150deg, #fee2e2, #fecaca); }
+      .art[data-kind="waitlist_promoted"] { background: linear-gradient(150deg, #dcfce7, #bbf7d0); }
+      .art[data-kind="subscription_expiring"] { background: linear-gradient(150deg, #e0e7ff, #c7d2fe); }
       .art-svg { width: 76%; height: 76%; }
       .art-emoji {
         position: absolute;

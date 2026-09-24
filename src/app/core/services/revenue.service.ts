@@ -15,6 +15,6 @@ export class RevenueService {
   constructor(private readonly http: HttpClient) {}
 
   get(): Observable<RevenueResponse> {
-    return this.http.get<RevenueResponse>(`${API_BASE_URL}/owner/revenue`);
+    return this.http.get<RevenueResponse>(`${API_BASE_URL}/admin/revenue`);
   }
 }

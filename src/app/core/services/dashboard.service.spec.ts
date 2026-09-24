@@ -16,9 +16,9 @@ describe("DashboardService", () => {
 
   afterEach(() => httpMock.verify());
 
-  it("get GETs /owner/dashboard", () => {
+  it("get GETs /admin/dashboard", () => {
     service.get().subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/owner/dashboard`);
+    const req = httpMock.expectOne(`${API_BASE_URL}/admin/dashboard`);
     expect(req.request.method).toBe("GET");
     req.flush({ company: {}, stats: {} });
   });

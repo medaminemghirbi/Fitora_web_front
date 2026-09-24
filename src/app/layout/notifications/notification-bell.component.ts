@@ -19,10 +19,10 @@ export class NotificationBellComponent {
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
 
-  // Owner has a full notifications inbox (/owner/notifications/:id); admin
+  // Admin has a full notifications inbox (/admin/notifications/:id); superadmin
   // doesn't — clicking a system_update just deep-links straight to n.url
-  // (e.g. /admin/updates) instead.
-  @Input() detailRoute: string | null = "/owner/notifications";
+  // (e.g. /superadmin/updates) instead.
+  @Input() detailRoute: string | null = "/admin/notifications";
 
   readonly open = signal(false);
   readonly items = this.notifications.items;

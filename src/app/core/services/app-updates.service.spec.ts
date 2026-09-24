@@ -16,16 +16,16 @@ describe("AppUpdatesService", () => {
 
   afterEach(() => httpMock.verify());
 
-  it("list GETs the owner-facing endpoint", () => {
+  it("list GETs the admin-facing endpoint", () => {
     service.list().subscribe();
     const req = httpMock.expectOne(`${API_BASE_URL}/app_updates`);
     expect(req.request.method).toBe("GET");
     req.flush({ app_updates: [] });
   });
 
-  it("listAdmin GETs the admin endpoint", () => {
-    service.listAdmin().subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/admin/app_updates`);
+  it("listSuperadmin GETs the superadmin endpoint", () => {
+    service.listSuperadmin().subscribe();
+    const req = httpMock.expectOne(`${API_BASE_URL}/superadmin/app_updates`);
     expect(req.request.method).toBe("GET");
     req.flush({ app_updates: [] });
   });
@@ -33,7 +33,7 @@ describe("AppUpdatesService", () => {
   it("create POSTs multipart form data with version/title/description/media", () => {
     const file = new File(["x"], "shot.png", { type: "image/png" });
     service.create("1.2.0", "New release", "Bug fixes", [file]).subscribe();
-    const req = httpMock.expectOne(`${API_BASE_URL}/admin/app_updates`);
+    const req = httpMock.expectOne(`${API_BASE_URL}/superadmin/app_updates`);
     expect(req.request.method).toBe("POST");
     const body = req.request.body as FormData;
     expect(body instanceof FormData).toBe(true);

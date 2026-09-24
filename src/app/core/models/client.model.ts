@@ -29,4 +29,13 @@ export interface ClientDetail extends Client {
   notes: string | null;
   outstanding_balance: string;
   attendance_rate: number | null;
+  /**
+   * Name, email and phone belong to the person once they sign in or train at
+   * another gym too; the API refuses to change them then (it can still fill
+   * a blank). The personal details above are this gym's own copy.
+   */
+  identity_locked: boolean;
+  /** An invitation to the app was sent and has not been accepted yet. */
+  invitation_pending: boolean;
+  invited_at: string | null;
 }

@@ -3,8 +3,8 @@ import { Injectable, inject, signal } from "@angular/core";
 import { API_BASE_URL } from "../models/api-config";
 import { AppVersionInfo } from "../models/app-update.model";
 
-// The running app version shown in the owner/admin shell chrome — a thin
-// read of the latest AppUpdate an admin published. Fetched once per session
+// The running app version shown in the admin/superadmin shell chrome — a thin
+// read of the latest AppUpdate a superadmin published. Fetched once per session
 // and cached in a signal; every shell just reads `current()`.
 @Injectable({ providedIn: "root" })
 export class AppVersionService {

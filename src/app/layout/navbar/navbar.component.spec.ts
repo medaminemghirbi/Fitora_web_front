@@ -19,21 +19,21 @@ describe("NavbarComponent", () => {
   let authStub: { currentUser: jasmine.Spy; logout: jasmine.Spy };
   let companyServiceStub: { switchTo: jasmine.Spy };
 
-  const dashboardItem: NavLeaf = { path: "/owner/dashboard", icon: "bi-house", labelKey: "nav.dashboard" };
+  const dashboardItem: NavLeaf = { path: "/admin/dashboard", icon: "bi-house", labelKey: "nav.dashboard" };
   const groups: NavGroup[] = [
     {
       id: "sales",
       labelKey: "nav.sales",
       icon: "bi-people",
       items: [
-        { path: "/owner/clients", icon: "bi-people", labelKey: "nav.clients" },
-        { path: "/owner/payments", icon: "bi-cash", labelKey: "nav.payments" },
+        { path: "/admin/clients", icon: "bi-people", labelKey: "nav.clients" },
+        { path: "/admin/payments", icon: "bi-cash", labelKey: "nav.payments" },
       ],
     },
   ];
 
   beforeEach(async () => {
-    authStub = { currentUser: jasmine.createSpy().and.returnValue({ role: "owner" }), logout: jasmine.createSpy() };
+    authStub = { currentUser: jasmine.createSpy().and.returnValue({ role: "admin" }), logout: jasmine.createSpy() };
     companyServiceStub = { switchTo: jasmine.createSpy().and.returnValue(of({ company: {} })) };
 
     await TestBed.configureTestingModule({
@@ -103,7 +103,7 @@ describe("NavbarComponent", () => {
   });
 
   it("activeGroupId reflects the group owning the current route", () => {
-    (component as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/owner/payments");
+    (component as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/admin/payments");
     expect(component.activeGroupId()).toBe("sales");
   });
 
@@ -111,13 +111,13 @@ describe("NavbarComponent", () => {
     const fresh = TestBed.createComponent(NavbarComponent);
     fresh.componentInstance.groups = groups;
     fresh.detectChanges();
-    (fresh.componentInstance as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/owner/payments");
+    (fresh.componentInstance as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/admin/payments");
     expect(fresh.componentInstance.activePageLabel()).toBe("nav.payments");
   });
 
   it("activePageLabel finds the longest matching path across every nav source", () => {
-    component.flatItems = [{ path: "/owner", icon: "bi-house", labelKey: "nav.root" }];
-    (component as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/owner/payments");
+    component.flatItems = [{ path: "/admin", icon: "bi-house", labelKey: "nav.root" }];
+    (component as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/admin/payments");
     expect(component.activePageLabel()).toBe("nav.payments");
   });
 
@@ -134,12 +134,12 @@ describe("NavbarComponent", () => {
     fresh.componentInstance.dashboardItem = dashboardItem;
     fresh.componentInstance.groups = groups;
     fresh.componentInstance.flatItems = [
-      { path: "/owner", icon: "bi-house", labelKey: "nav.root" },
-      { path: "/owner/clients/4", icon: "bi-people", labelKey: "nav.clients_section" },
+      { path: "/admin", icon: "bi-house", labelKey: "nav.root" },
+      { path: "/admin/clients/4", icon: "bi-people", labelKey: "nav.clients_section" },
     ];
     fresh.detectChanges();
 
-    (fresh.componentInstance as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/owner/clients/42");
+    (fresh.componentInstance as unknown as { activeUrl: { set: (v: string) => void } })["activeUrl"].set("/admin/clients/42");
     expect(fresh.componentInstance.activePageLabel()).toBe("nav.clients_section");
   });
 
@@ -148,7 +148,7 @@ describe("NavbarComponent", () => {
     component.toggleGroup("sales");
     component.mobileOpen.set(true);
 
-    router.navigateByUrl("/owner/payments");
+    router.navigateByUrl("/admin/payments");
     tick();
     fixture.detectChanges();
 
@@ -177,16 +177,16 @@ describe("NavbarComponent", () => {
       return fresh.componentInstance;
     }
 
-    it("switchableCompanies is null for an owner with just one company", () => {
-      expect(freshWith({ role: "owner", companies: [companies[0]] }).switchableCompanies()).toBeNull();
+    it("switchableCompanies is null for an admin with just one company", () => {
+      expect(freshWith({ role: "admin", companies: [companies[0]] }).switchableCompanies()).toBeNull();
     });
 
-    it("switchableCompanies is null when there's no companies field at all (staff/admin)", () => {
+    it("switchableCompanies is null when there's no companies field at all (staff/superadmin)", () => {
       expect(freshWith({ role: "staff" }).switchableCompanies()).toBeNull();
     });
 
     it("switchableCompanies lists every company once there's more than one, and activeCompany picks the flagged one", () => {
-      const withCompanies = freshWith({ role: "owner", companies });
+      const withCompanies = freshWith({ role: "admin", companies });
       expect(withCompanies.switchableCompanies()).toEqual(companies);
       expect(withCompanies.activeCompany()?.id).toBe("co-1");
     });
@@ -209,41 +209,41 @@ describe("NavbarComponent", () => {
     });
 
     it("switchCompany does nothing but close the menu when picking the already-active company", () => {
-      const owner = freshWith({ role: "owner", companies });
-      owner.companySwitcherOpen.set(true);
+      const admin = freshWith({ role: "admin", companies });
+      admin.companySwitcherOpen.set(true);
 
-      owner.switchCompany("co-1");
+      admin.switchCompany("co-1");
 
       expect(companyServiceStub.switchTo).not.toHaveBeenCalled();
-      expect(owner.companySwitcherOpen()).toBe(false);
+      expect(admin.companySwitcherOpen()).toBe(false);
     });
 
     it("switchCompany calls the service and reloads to the dashboard on success", () => {
-      const owner = freshWith({ role: "owner", companies });
-      const reload = spyOn(owner as unknown as { reloadToDashboard(): void }, "reloadToDashboard");
+      const admin = freshWith({ role: "admin", companies });
+      const reload = spyOn(admin as unknown as { reloadToDashboard(): void }, "reloadToDashboard");
 
-      owner.switchCompany("co-2");
+      admin.switchCompany("co-2");
 
       expect(companyServiceStub.switchTo).toHaveBeenCalledWith("co-2");
       expect(reload).toHaveBeenCalled();
     });
 
     it("switchCompany resets state and stops spinning on failure", () => {
-      const owner = freshWith({ role: "owner", companies });
+      const admin = freshWith({ role: "admin", companies });
       companyServiceStub.switchTo.and.returnValue(throwError(() => new Error("nope")));
-      owner.companySwitcherOpen.set(true);
+      admin.companySwitcherOpen.set(true);
 
-      owner.switchCompany("co-2");
+      admin.switchCompany("co-2");
 
-      expect(owner.switching()).toBe(false);
-      expect(owner.companySwitcherOpen()).toBe(false);
+      expect(admin.switching()).toBe(false);
+      expect(admin.companySwitcherOpen()).toBe(false);
     });
 
     it("switchCompany ignores a second click while already switching", () => {
-      const owner = freshWith({ role: "owner", companies });
-      owner.switching.set(true);
+      const admin = freshWith({ role: "admin", companies });
+      admin.switching.set(true);
 
-      owner.switchCompany("co-2");
+      admin.switchCompany("co-2");
 
       expect(companyServiceStub.switchTo).not.toHaveBeenCalled();
     });
@@ -251,12 +251,12 @@ describe("NavbarComponent", () => {
 
   it("shows a group holding a single entry as a direct link, not a dropdown", () => {
     component.groups = [
-      { id: "team", labelKey: "nav.team", icon: "bi-person-vcard", items: [{ path: "/owner/team", icon: "bi-person-vcard", labelKey: "nav.team" }] },
+      { id: "team", labelKey: "nav.team", icon: "bi-person-vcard", items: [{ path: "/admin/team", icon: "bi-person-vcard", labelKey: "nav.team" }] },
     ];
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('a[href="/owner/team"]')).toBeTruthy();
+    expect(el.querySelector('a[href="/admin/team"]')).toBeTruthy();
     expect(el.querySelector(".app-navbar-group")).toBeNull();
   });
 

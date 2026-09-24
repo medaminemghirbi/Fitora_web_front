@@ -18,12 +18,12 @@ describe("AuthService", () => {
     hasPermission: jasmine.Spy;
     load: jasmine.Spy;
     clear: jasmine.Spy;
-    connectAdminNotifications: jasmine.Spy;
+    connectSuperadminNotifications: jasmine.Spy;
   };
 
-  const owner: User = {
+  const admin: User = {
     id: "u1", first_name: "S", last_name: "O", full_name: "S O", email: "s@x.test", phone: null,
-    role: "owner", locale: "fr", email_verified: true, company_id: "c1", staff_role: null,
+    role: "admin", locale: "fr", email_verified: true, company_id: "c1", staff_role: null,
  is_coach: false,
   };
 
@@ -43,7 +43,7 @@ describe("AuthService", () => {
       hasPermission: jasmine.createSpy().and.returnValue(false),
       load: jasmine.createSpy().and.returnValue({ subscribe: (o: { error?: () => void }) => o }),
       clear: jasmine.createSpy(),
-      connectAdminNotifications: jasmine.createSpy(),
+      connectSuperadminNotifications: jasmine.createSpy(),
     };
 
     TestBed.configureTestingModule({
@@ -72,29 +72,29 @@ describe("AuthService", () => {
     });
 
     it("restores the stored user on construction", () => {
-      localStorage.setItem("fitora_user", JSON.stringify(owner));
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
       const auth = buildService();
       expect(auth.isAuthenticated()).toBe(true);
-      expect(auth.currentUser()).toEqual(owner);
-      expect(auth.isOwner()).toBe(true);
-      expect(auth.isAdmin()).toBe(false);
+      expect(auth.currentUser()).toEqual(admin);
+      expect(auth.isAdmin()).toBe(true);
+      expect(auth.isSuperadmin()).toBe(false);
       expect(auth.isStaff()).toBe(false);
     });
 
     it("tolerates corrupt JSON in storage", () => {
-      localStorage.setItem("fitora_user", "{not json");
+      localStorage.setItem("gymly_user_v2", "{not json");
       const auth = buildService();
       expect(auth.currentUser()).toBeNull();
     });
 
     it("tolerates corrupt JSON in the impersonator stash", () => {
-      localStorage.setItem("fitora_impersonator", "{not json");
+      localStorage.setItem("gymly_impersonator_v2", "{not json");
       const auth = buildService();
       expect(auth.isImpersonating()).toBe(false);
     });
 
     it("restores a stored member session", () => {
-      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
+      localStorage.setItem("gymly_client", JSON.stringify(memberClient));
       const auth = buildService();
 
       expect(auth.isAuthenticated()).toBe(true);
@@ -107,14 +107,14 @@ describe("AuthService", () => {
     // that combination once bounced people between the sign-in page and a
     // page needing a user until the app gave up painting.
     it("sends a member somewhere they can actually reach", () => {
-      localStorage.setItem("fitora_client", JSON.stringify(memberClient));
+      localStorage.setItem("gymly_client", JSON.stringify(memberClient));
       const auth = buildService();
 
       expect(auth.homeRouteForCurrentUser()).toBe("/member/home");
     });
 
     it("tolerates corrupt JSON in the stored member", () => {
-      localStorage.setItem("fitora_client", "{not json");
+      localStorage.setItem("gymly_client", "{not json");
       const auth = buildService();
       expect(auth.currentClient()).toBeNull();
     });
@@ -129,21 +129,21 @@ describe("AuthService", () => {
       const req = httpMock.expectOne(`${API_BASE_URL}/auth/login`);
       expect(req.request.method).toBe("POST");
       expect(req.request.body).toEqual({ email: "s@x.test", password: "secret" });
-      req.flush({ token: "tok123", user: owner });
+      req.flush({ token: "tok123", user: admin });
 
-      expect(result).toEqual({ token: "tok123", user: owner });
+      expect(result).toEqual({ token: "tok123", user: admin });
       expect(auth.getToken()).toBe("tok123");
-      expect(auth.currentUser()).toEqual(owner);
+      expect(auth.currentUser()).toEqual(admin);
       expect(configStub.load).toHaveBeenCalled();
     });
 
-    it("login stores a session for a user with no company_id (e.g. a platform admin)", () => {
+    it("login stores a session for a user with no company_id (e.g. a platform superadmin)", () => {
       const auth = buildService();
-      const admin: User = { ...owner, id: "admin1", role: "admin", company_id: null as unknown as string };
+      const superadmin: User = { ...admin, id: "superadmin1", role: "superadmin", company_id: null as unknown as string };
       auth.login("admin@x.test", "secret").subscribe();
       const req = httpMock.expectOne(`${API_BASE_URL}/auth/login`);
-      req.flush({ token: "admin-tok", user: admin });
-      expect(auth.currentUser()).toEqual(admin);
+      req.flush({ token: "superadmin-tok", user: superadmin });
+      expect(auth.currentUser()).toEqual(superadmin);
     });
 
   });
@@ -154,15 +154,15 @@ describe("AuthService", () => {
       expect(auth.hasPermission("clients")).toBe(false);
     });
 
-    it("is always true for a platform admin", () => {
-      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "admin" }));
+    it("is always true for a platform superadmin", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify({ ...admin, role: "superadmin" }));
       const auth = buildService();
       expect(auth.hasPermission("anything")).toBe(true);
       expect(configStub.hasPermission).not.toHaveBeenCalled();
     });
 
     it("delegates to ConfigurationService for anyone else", () => {
-      localStorage.setItem("fitora_user", JSON.stringify(owner));
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
       const auth = buildService();
       configStub.hasPermission.and.returnValue(true);
       expect(auth.hasPermission("payments")).toBe(true);
@@ -172,51 +172,51 @@ describe("AuthService", () => {
 
   describe("logout", () => {
     it("clears the session and navigates to login", () => {
-      localStorage.setItem("fitora_user", JSON.stringify(owner));
-      localStorage.setItem("fitora_token", "tok");
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
+      localStorage.setItem("gymly_token", "tok");
       const auth = buildService();
 
       auth.logout();
 
       expect(auth.currentUser()).toBeNull();
-      expect(localStorage.getItem("fitora_token")).toBeNull();
+      expect(localStorage.getItem("gymly_token")).toBeNull();
       expect(configStub.clear).toHaveBeenCalled();
       expect(router.navigate).toHaveBeenCalledWith(["/connexion"]);
     });
 
-    it("exits impersonation instead of destroying the admin session", () => {
-      localStorage.setItem("fitora_user", JSON.stringify(owner));
-      localStorage.setItem("fitora_token", "owner-tok");
-      const admin: User = { ...owner, id: "admin1", role: "admin" };
-      localStorage.setItem("fitora_impersonator", JSON.stringify({ token: "admin-tok", user: admin, companyName: "Acme" }));
+    it("exits impersonation instead of destroying the superadmin session", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
+      localStorage.setItem("gymly_token", "admin-tok");
+      const superadmin: User = { ...admin, id: "superadmin1", role: "superadmin" };
+      localStorage.setItem("gymly_impersonator_v2", JSON.stringify({ token: "superadmin-tok", user: superadmin, companyName: "Acme" }));
       const auth = buildService();
 
       expect(auth.isImpersonating()).toBe(true);
 
       auth.logout();
 
-      // exitImpersonation restores the admin session rather than clearing it
-      expect(auth.currentUser()).toEqual(admin);
-      expect(auth.getToken()).toBe("admin-tok");
+      // exitImpersonation restores the superadmin session rather than clearing it
+      expect(auth.currentUser()).toEqual(superadmin);
+      expect(auth.getToken()).toBe("superadmin-tok");
       expect(auth.isImpersonating()).toBe(false);
-      expect(router.navigate).toHaveBeenCalledWith(["/admin/overview"]);
+      expect(router.navigate).toHaveBeenCalledWith(["/superadmin/overview"]);
     });
   });
 
   describe("impersonation", () => {
-    it("startImpersonation stashes the admin session and switches to the owner", () => {
-      const admin: User = { ...owner, id: "admin1", role: "admin" };
-      localStorage.setItem("fitora_user", JSON.stringify(admin));
-      localStorage.setItem("fitora_token", "admin-tok");
+    it("startImpersonation stashes the superadmin session and switches to the admin", () => {
+      const superadmin: User = { ...admin, id: "superadmin1", role: "superadmin" };
+      localStorage.setItem("gymly_user_v2", JSON.stringify(superadmin));
+      localStorage.setItem("gymly_token", "superadmin-tok");
       const auth = buildService();
 
-      auth.startImpersonation({ token: "owner-tok", user: owner }, "Acme Gym");
+      auth.startImpersonation({ token: "admin-tok", user: admin }, "Acme Gym");
 
       expect(auth.isImpersonating()).toBe(true);
       expect(auth.impersonatedCompanyName()).toBe("Acme Gym");
-      expect(auth.currentUser()).toEqual(owner);
-      expect(auth.getToken()).toBe("owner-tok");
-      expect(router.navigate).toHaveBeenCalledWith(["/owner/dashboard"]);
+      expect(auth.currentUser()).toEqual(admin);
+      expect(auth.getToken()).toBe("admin-tok");
+      expect(router.navigate).toHaveBeenCalledWith(["/admin/dashboard"]);
     });
 
     it("impersonatedCompanyName is null when not impersonating", () => {
@@ -232,35 +232,35 @@ describe("AuthService", () => {
   });
 
   describe("homeRouteForCurrentUser", () => {
-    it("sends a platform admin to /admin/companies", () => {
-      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "admin" }));
+    it("sends a platform superadmin to /superadmin/companies", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify({ ...admin, role: "superadmin" }));
       const auth = buildService();
-      expect(auth.homeRouteForCurrentUser()).toBe("/admin/overview");
+      expect(auth.homeRouteForCurrentUser()).toBe("/superadmin/overview");
     });
 
     it("sends a coach-kind staff login to /coach/today", () => {
-      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "coach", is_coach: true }));
+      localStorage.setItem("gymly_user_v2", JSON.stringify({ ...admin, role: "staff", staff_role: "coach", is_coach: true }));
       const auth = buildService();
       expect(auth.homeRouteForCurrentUser()).toBe("/coach/today");
     });
 
-    it("sends a fresh owner with unfinished setup into the onboarding flow", () => {
-      localStorage.setItem("fitora_user", JSON.stringify(owner));
+    it("sends a fresh admin with unfinished setup into the onboarding flow", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
       const auth = buildService();
       configStub.onboarding.and.returnValue({ complete: false, dismissed: false });
-      expect(auth.homeRouteForCurrentUser()).toBe("/owner/onboarding");
+      expect(auth.homeRouteForCurrentUser()).toBe("/admin/onboarding");
     });
 
-    it("sends an owner with dismissed/complete setup to the dashboard", () => {
-      localStorage.setItem("fitora_user", JSON.stringify(owner));
+    it("sends an admin with dismissed/complete setup to the dashboard", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
       const auth = buildService();
       configStub.onboarding.and.returnValue({ complete: false, dismissed: true });
-      expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
+      expect(auth.homeRouteForCurrentUser()).toBe("/admin/dashboard");
     });
 
     // Nothing past sign-up opens until the address is confirmed.
-    it("sends an owner who has not confirmed their address to the waiting screen", () => {
-      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, email_verified: false, company_id: null }));
+    it("sends an admin who has not confirmed their address to the waiting screen", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify({ ...admin, email_verified: false, company_id: null }));
       const auth = buildService();
       expect(auth.emailConfirmationPending()).toBe(true);
       expect(auth.homeRouteForCurrentUser()).toBe("/confirmation-email");
@@ -268,16 +268,16 @@ describe("AuthService", () => {
 
     // Staff addresses were typed in by the gym; confirming stays optional.
     it("never holds staff back on an unconfirmed address", () => {
-      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "receptionist", email_verified: false }));
+      localStorage.setItem("gymly_user_v2", JSON.stringify({ ...admin, role: "staff", staff_role: "moderator", email_verified: false }));
       const auth = buildService();
       expect(auth.emailConfirmationPending()).toBe(false);
-      expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
+      expect(auth.homeRouteForCurrentUser()).toBe("/admin/dashboard");
     });
 
     it("defaults everyone else to the dashboard", () => {
-      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "receptionist" }));
+      localStorage.setItem("gymly_user_v2", JSON.stringify({ ...admin, role: "staff", staff_role: "moderator" }));
       const auth = buildService();
-      expect(auth.homeRouteForCurrentUser()).toBe("/owner/dashboard");
+      expect(auth.homeRouteForCurrentUser()).toBe("/admin/dashboard");
     });
 
     // The guards read isAuthenticated(); homeRouteForCurrentUser is only
@@ -286,7 +286,7 @@ describe("AuthService", () => {
   });
 
   it("coachShellApplies follows is_coach, not the role's name", () => {
-    localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "staff", staff_role: "coach", is_coach: true }));
+    localStorage.setItem("gymly_user_v2", JSON.stringify({ ...admin, role: "staff", staff_role: "coach", is_coach: true }));
     const auth = buildService();
     expect(auth.coachShellApplies()).toBe(true);
   });
@@ -299,28 +299,28 @@ describe("AuthService", () => {
 
       const req = httpMock.expectOne(`${API_BASE_URL}/auth/me`);
       expect(req.request.method).toBe("GET");
-      req.flush({ user: owner });
+      req.flush({ user: admin });
 
-      expect(result).toEqual(owner);
-      expect(auth.currentUser()).toEqual(owner);
-      expect(JSON.parse(localStorage.getItem("fitora_user")!)).toEqual(owner);
+      expect(result).toEqual(admin);
+      expect(auth.currentUser()).toEqual(admin);
+      expect(JSON.parse(localStorage.getItem("gymly_user_v2")!)).toEqual(admin);
     });
   });
 
   describe("loadConfiguration", () => {
-    it("clears config and opens the admin notification feed for an admin login", () => {
-      localStorage.setItem("fitora_user", JSON.stringify({ ...owner, role: "admin" }));
+    it("clears config and opens the superadmin notification feed for a superadmin login", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify({ ...admin, role: "superadmin" }));
       const auth = buildService();
 
       auth.loadConfiguration();
 
       expect(configStub.clear).toHaveBeenCalled();
-      expect(configStub.connectAdminNotifications).toHaveBeenCalled();
+      expect(configStub.connectSuperadminNotifications).toHaveBeenCalled();
       expect(configStub.load).not.toHaveBeenCalled();
     });
 
     it("loads the bootstrap for anyone else", () => {
-      localStorage.setItem("fitora_user", JSON.stringify(owner));
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
       const auth = buildService();
 
       auth.loadConfiguration();
@@ -329,7 +329,7 @@ describe("AuthService", () => {
     });
 
     it("swallows a bootstrap load failure", () => {
-      localStorage.setItem("fitora_user", JSON.stringify(owner));
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
       const auth = buildService();
       configStub.load.and.returnValue({ subscribe: (o: { error?: () => void }) => o.error?.() });
 
@@ -338,8 +338,51 @@ describe("AuthService", () => {
   });
 
   it("getToken reads the stored JWT", () => {
-    localStorage.setItem("fitora_token", "abc");
+    localStorage.setItem("gymly_token", "abc");
     const auth = buildService();
     expect(auth.getToken()).toBe("abc");
+  });
+
+  describe("changing the password", () => {
+    it("keeps this device signed in with the fresh token the API returns", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
+      localStorage.setItem("gymly_token", "old-token");
+      const auth = buildService();
+
+      auth.changePassword("old-password", "new-password-1").subscribe();
+      const req = httpMock.expectOne(`${API_BASE_URL}/auth/password`);
+      expect(req.request.method).toBe("PATCH");
+      expect(req.request.body).toEqual({ current_password: "old-password", password: "new-password-1" });
+      req.flush({ token: "new-token" });
+
+      expect(auth.getToken()).toBe("new-token");
+    });
+
+    it("signs out of every device, this one included", () => {
+      localStorage.setItem("gymly_user_v2", JSON.stringify(admin));
+      localStorage.setItem("gymly_token", "tok");
+      const auth = buildService();
+
+      auth.signOutEverywhere().subscribe();
+      const req = httpMock.expectOne(`${API_BASE_URL}/auth/logout`);
+      expect(req.request.body).toEqual({ all_devices: true });
+      req.flush(null);
+
+      expect(auth.getToken()).toBeNull();
+      expect(router.navigate).toHaveBeenCalledWith(["/connexion"]);
+    });
+  });
+
+  describe("a session cached before the role rename", () => {
+    it("is dropped, token and all, rather than read with the new meaning of its role", () => {
+      localStorage.setItem("gymly_user", JSON.stringify({ ...admin, role: "admin" }));
+      localStorage.setItem("gymly_token", "tok");
+
+      const auth = buildService();
+
+      expect(auth.currentUser()).toBeNull();
+      expect(localStorage.getItem("gymly_user")).toBeNull();
+      expect(auth.getToken()).toBeNull();
+    });
   });
 });

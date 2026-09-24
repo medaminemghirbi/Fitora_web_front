@@ -1,6 +1,6 @@
-// The navigation blueprint: the full set of sidebar entries the owner-area
+// The navigation blueprint: the full set of sidebar entries the admin-area
 // shell can show, before any per-login filtering. NavigationService filters
-// this by permission (and owner-only). Routing details (path, icon) stay
+// this by permission (and admin-only). Routing details (path, icon) stay
 // here on the frontend; the backend only supplies permissions.
 
 export interface NavLeafBlueprint {
@@ -12,8 +12,8 @@ export interface NavLeafBlueprint {
   permission?: string;
   // Real link (points at a placeholder page) that only carries a "soon" badge.
   comingSoon?: boolean;
-  // Hidden from every non-owner staff role.
-  ownerOnly?: boolean;
+  // Hidden from every non-admin staff role.
+  adminOnly?: boolean;
   // A settings.features key. The entry exists only for a company that turned
   // that feature on — a one-room gym has no rooms menu, because it has no
   // rooms and asking it about them would be a question with one answer.
@@ -25,12 +25,12 @@ export interface NavGroupBlueprint {
   labelKey: string;
   // Shown on the top bar next to the group's label.
   icon: string;
-  ownerOnly?: boolean;
+  adminOnly?: boolean;
   items: NavLeafBlueprint[];
 }
 
 export const DASHBOARD_NAV: NavLeafBlueprint = {
-  path: "/owner/dashboard",
+  path: "/admin/dashboard",
   icon: "bi-sun",
   labelKey: "nav.today",
   permission: "reports",
@@ -50,7 +50,7 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
     icon: "bi-people",
     labelKey: "nav.clients",
     items: [
-      { path: "/owner/clients", icon: "bi-people", labelKey: "nav.clients", permission: "clients" },
+      { path: "/admin/clients", icon: "bi-people", labelKey: "nav.clients", permission: "clients" },
     ],
   },
   {
@@ -58,8 +58,8 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
     icon: "bi-calendar3",
     labelKey: "nav.planning",
     items: [
-      { path: "/owner/calendar", icon: "bi-calendar3", labelKey: "nav.planning" },
-      { path: "/owner/spaces", icon: "bi-door-open", labelKey: "nav.spaces", permission: "spaces", feature: "spaces" },
+      { path: "/admin/calendar", icon: "bi-calendar3", labelKey: "nav.planning" },
+      { path: "/admin/spaces", icon: "bi-door-open", labelKey: "nav.spaces", permission: "spaces", feature: "spaces" },
     ],
   },
   {
@@ -67,8 +67,8 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
     icon: "bi-award",
     labelKey: "nav.subscriptions",
     items: [
-      { path: "/owner/contracts", icon: "bi-file-earmark-text", labelKey: "nav.subscriptions_active", permission: "contracts" },
-      { path: "/owner/catalogue", icon: "bi-award", labelKey: "nav.catalogue", permission: "contract_types" },
+      { path: "/admin/contracts", icon: "bi-file-earmark-text", labelKey: "nav.subscriptions_active", permission: "contracts" },
+      { path: "/admin/catalogue", icon: "bi-award", labelKey: "nav.catalogue", permission: "contract_types" },
     ],
   },
   {
@@ -76,16 +76,16 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
     icon: "bi-cash-coin",
     labelKey: "nav.payments",
     items: [
-      { path: "/owner/payments", icon: "bi-cash-coin", labelKey: "nav.payments", permission: "payments" },
+      { path: "/admin/payments", icon: "bi-cash-coin", labelKey: "nav.payments", permission: "payments" },
     ],
   },
   {
     id: "team",
     icon: "bi-person-vcard",
     labelKey: "nav.team",
-    ownerOnly: true,
+    adminOnly: true,
     items: [
-      { path: "/owner/team", icon: "bi-person-vcard", labelKey: "nav.team", subtitleKey: "nav.team_subtitle", permission: "coaches" },
+      { path: "/admin/team", icon: "bi-person-vcard", labelKey: "nav.team", subtitleKey: "nav.team_subtitle", permission: "coaches" },
     ],
   },
 ];
@@ -93,6 +93,6 @@ export const NAV_BLUEPRINT: NavGroupBlueprint[] = [
 // "Nouveautés" left the menu: an announcement is a notification, and the bell
 // already carries them.
 export const SECONDARY_NAV: NavLeafBlueprint[] = [
-  { path: "/owner/subscription", icon: "bi-stars", labelKey: "nav.fitora_subscription", ownerOnly: true },
-  { path: "/owner/settings", icon: "bi-gear", labelKey: "nav.settings", ownerOnly: true },
+  { path: "/admin/subscription", icon: "bi-stars", labelKey: "nav.gymly_subscription", adminOnly: true },
+  { path: "/admin/settings", icon: "bi-gear", labelKey: "nav.settings", adminOnly: true },
 ];

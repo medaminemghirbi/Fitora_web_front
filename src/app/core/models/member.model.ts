@@ -39,7 +39,14 @@ export interface MemberAttendanceEntry {
 }
 
 export interface MemberProfile {
-  client: { id: string; full_name: string; email: string | null; phone: string | null };
+  client: {
+    id: string;
+    full_name: string;
+    first_name: string;
+    last_name: string;
+    email: string | null;
+    phone: string | null;
+  };
   gyms: { id: string; name: string }[];
   subscription: MemberSubscription | null;
   attendance: { rate: number | null; recent: MemberAttendanceEntry[] };

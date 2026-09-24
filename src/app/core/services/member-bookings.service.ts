@@ -8,7 +8,7 @@ export type MemberBookingWhen = "upcoming" | "past";
 
 // The client's own bookings (Api::V1::Me::BookingsController), from their
 // own mobile-style login — the counterpart to BookingsService, which is
-// staff/owner-facing.
+// staff/admin-facing.
 @Injectable({ providedIn: "root" })
 export class MemberBookingsService {
   constructor(private readonly http: HttpClient) {}

@@ -8,13 +8,18 @@ import { API_BASE_URL } from "../models/api-config";
 import { Client } from "../models/client.model";
 import { User } from "../models/user.model";
 
-const TOKEN_KEY = "fitora_token";
-const USER_KEY = "fitora_user";
-const CLIENT_KEY = "fitora_client";
-const IMPERSONATOR_KEY = "fitora_impersonator";
+const TOKEN_KEY = "gymly_token";
+// Versioned: before v2 a cached user carried the previous role names, in
+// which "admin" meant Gymly's superadmin. Read now, it would put Gymly's
+// operator in a gym's shell until the next refresh, so an old cache is
+// dropped and the person signs in again (see dropPreRenameSession).
+const USER_KEY = "gymly_user_v2";
+const CLIENT_KEY = "gymly_client";
+const IMPERSONATOR_KEY = "gymly_impersonator_v2";
+const PRE_RENAME_KEYS = ["gymly_user", "gymly_impersonator"];
 
-// One door, two kinds of account: a platform login (owner, staff, Fitora
-// admin) or a member whose gym enabled their access. account_type says which
+// One door, two kinds of account: a platform login (admin, staff, Gymly
+// superadmin) or a member whose gym enabled their access. account_type says which
 // came back, so nobody is asked who they are before signing in.
 interface AuthResponse {
   token: string;
@@ -41,8 +46,8 @@ interface ImpersonatorStash {
 export class AuthService {
   private readonly currentUserSignal = signal<User | null>(this.readStoredUser());
   readonly currentUser = this.currentUserSignal.asReadonly();
-  readonly isOwner = computed(() => this.currentUserSignal()?.role === "owner");
   readonly isAdmin = computed(() => this.currentUserSignal()?.role === "admin");
+  readonly isSuperadmin = computed(() => this.currentUserSignal()?.role === "superadmin");
   readonly isStaff = computed(() => this.currentUserSignal()?.role === "staff");
 
   // A member signed in on their own app. Mutually exclusive with
@@ -60,14 +65,14 @@ export class AuthService {
   readonly impersonatedCompanyName = computed(() => this.impersonatorStashSignal()?.companyName ?? null);
 
   /**
-   * An owner who signed up and has not clicked the emailed link yet. Nothing
+   * An admin who signed up and has not clicked the emailed link yet. Nothing
    * past sign-up opens for them — the backend refuses it with
    * `email_unverified` — so every route sends them to /confirmation-email.
-   * An admin impersonating them is let through, as the backend does.
+   * A superadmin impersonating them is let through, as the backend does.
    */
   readonly emailConfirmationPending = computed(() => {
     const user = this.currentUserSignal();
-    return user?.role === "owner" && user.email_verified === false && !this.isImpersonating();
+    return user?.role === "admin" && user.email_verified === false && !this.isImpersonating();
   });
 
   // Configuration (company, branding, permissions, modules, subscription) is
@@ -97,7 +102,7 @@ export class AuthService {
   }
 
   /**
-   * A gym opening its own account. Creates the owner's login and nothing
+   * A gym opening its own account. Creates the admin's login and nothing
    * else — the gym itself is named on the next screen, which is also where
    * the 14 days start.
    */
@@ -115,7 +120,7 @@ export class AuthService {
 
   // (Re)hydrate ConfigurationService from /bootstrap. Safe to call
   // repeatedly; failures leave the last known value in place. Skipped for a
-  // platform admin — the /admin surface isn't tenant-scoped — but the admin
+  // platform superadmin — the /superadmin surface isn't tenant-scoped — but the superadmin
   // still gets the real-time system_update notification feed. Skipped for a
   // member too: /bootstrap is built entirely around current_user (role,
   // permissions) and holds nothing their app needs.
@@ -124,9 +129,9 @@ export class AuthService {
       this.config.clear();
       return;
     }
-    if (this.currentUserSignal()?.role === "admin") {
+    if (this.currentUserSignal()?.role === "superadmin") {
       this.config.clear();
-      this.config.connectAdminNotifications();
+      this.config.connectSuperadminNotifications();
       return;
     }
     this.config.load().subscribe({ error: () => {} });
@@ -135,7 +140,7 @@ export class AuthService {
   hasPermission(key: string): boolean {
     const user = this.currentUserSignal();
     if (!user) return false;
-    if (user.role === "admin") return true;
+    if (user.role === "superadmin") return true;
     return this.config.hasPermission(key);
   }
 
@@ -162,8 +167,8 @@ export class AuthService {
   }
 
   logout(): void {
-    // Logging out of an impersonated session should drop back to the admin
-    // account that started it, not destroy that admin's session too — the
+    // Logging out of an impersonated session should drop back to the superadmin
+    // account that started it, not destroy that superadmin's session too — the
     // explicit "exit impersonation" banner action does the same thing, this
     // just makes the ordinary logout button behave sanely in that context.
     if (this.isImpersonating()) {
@@ -175,9 +180,9 @@ export class AuthService {
     this.router.navigate(["/connexion"]);
   }
 
-  // Called by the admin companies page after POST .../impersonate
-  // succeeds — stashes the admin's own session so it can be restored, then
-  // switches to the impersonated owner's session.
+  // Called by the superadmin companies page after POST .../impersonate
+  // succeeds — stashes the superadmin's own session so it can be restored, then
+  // switches to the impersonated admin's session.
   startImpersonation(res: AuthResponse, companyName: string): void {
     const token = this.getToken();
     const user = this.currentUserSignal();
@@ -187,7 +192,7 @@ export class AuthService {
       this.impersonatorStashSignal.set(stash);
     }
     this.setSession(res);
-    this.router.navigate(["/owner/dashboard"]);
+    this.router.navigate(["/admin/dashboard"]);
   }
 
   exitImpersonation(): void {
@@ -197,36 +202,59 @@ export class AuthService {
     localStorage.removeItem(IMPERSONATOR_KEY);
     this.impersonatorStashSignal.set(null);
     this.setSession({ token: stash.token, user: stash.user });
-    this.router.navigate(["/admin/overview"]);
+    this.router.navigate(["/superadmin/overview"]);
   }
 
   getToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  /**
+   * For someone signed in. A new password ends every other session; this
+   * one gets a fresh token back and keeps going. Works for a member too.
+   */
+  changePassword(currentPassword: string, password: string): Observable<void> {
+    return this.http
+      .patch<{ token: string }>(`${API_BASE_URL}/auth/password`, { current_password: currentPassword, password })
+      .pipe(
+        tap((res) => localStorage.setItem(TOKEN_KEY, res.token)),
+        map(() => undefined)
+      );
+  }
+
+  /** Ends every session on every device, this one included. */
+  signOutEverywhere(): Observable<void> {
+    return this.http.post<void>(`${API_BASE_URL}/auth/logout`, { all_devices: true }).pipe(
+      tap(() => {
+        this.clearSession();
+        this.router.navigate(["/connexion"]);
+      })
+    );
+  }
+
   homeRouteForCurrentUser(): string {
     if (this.isClient()) return "/member/home";
     const user = this.currentUserSignal();
-    if (user?.role === "admin") return "/admin/overview";
+    if (user?.role === "superadmin") return "/superadmin/overview";
     // The address first: nothing else opens until it is confirmed.
     if (this.emailConfirmationPending()) return "/confirmation-email";
     // Anyone who coaches uses the dedicated coach shell ("My schedule" /
     // attendance) — whatever their role happens to be called.
     if (user?.is_coach) return "/coach/today";
     // Staff who check people in and book them work the front desk, which has
-    // a shell of its own. The owner is deliberately not sent here: their
+    // a shell of its own. The admin is deliberately not sent here: their
     // shell already does all of this and more.
     if (this.deskShellApplies()) return "/desk/dashboard";
-    // A freshly-signed-up owner lands in the setup flow until it is done (or
+    // A freshly-signed-up admin lands in the setup flow until it is done (or
     // they leave it). Read from the bootstrap payload rather than
     // OnboardingService: this runs before any page has loaded one.
     const onboarding = this.config.onboarding();
-    if (user?.role === "owner" && onboarding && !onboarding.complete && !onboarding.dismissed) {
-      return "/owner/onboarding";
+    if (user?.role === "admin" && onboarding && !onboarding.complete && !onboarding.dismissed) {
+      return "/admin/onboarding";
     }
     // The dashboard needs only the base `reports` permission — the safe
     // universal landing for every other role.
-    return "/owner/dashboard";
+    return "/admin/dashboard";
   }
 
   // Whether this login should use the dedicated coach shell.
@@ -300,6 +328,7 @@ export class AuthService {
   }
 
   private readStoredUser(): User | null {
+    this.dropPreRenameSession();
     const raw = localStorage.getItem(USER_KEY);
     if (!raw) return null;
     try {
@@ -307,6 +336,14 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  /** A session cached before the role rename: signed out, cleanly. */
+  private dropPreRenameSession(): void {
+    if (!PRE_RENAME_KEYS.some((key) => localStorage.getItem(key) !== null)) return;
+
+    PRE_RENAME_KEYS.forEach((key) => localStorage.removeItem(key));
+    if (localStorage.getItem(USER_KEY) === null) localStorage.removeItem(TOKEN_KEY);
   }
 
   private readImpersonatorStash(): ImpersonatorStash | null {

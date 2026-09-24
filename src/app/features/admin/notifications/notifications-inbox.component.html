@@ -1,0 +1,57 @@
+<div class="fx-page">
+  <header class="lst-head">
+    <h1>{{ "notifications.inbox_title" | translate }}</h1>
+    @if (unreadCount() > 0) {
+      <span class="lst-head-count">{{ unreadCount() }}</span>
+    }
+    @if (unreadCount() > 0) {
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="markAllRead()">
+        {{ "notifications.mark_all_read" | translate }}
+      </button>
+    }
+  </header>
+
+  <div class="fx-toolbar">
+    <div class="fx-segmented">
+      <button type="button" [class.is-active]="filter() === 'all'" (click)="filter.set('all')">
+        {{ "notifications.filter_all" | translate }}
+      </button>
+      <button type="button" [class.is-active]="filter() === 'unread'" (click)="filter.set('unread')">
+        {{ "notifications.filter_unread" | translate }} @if (unreadCount() > 0) { ({{ unreadCount() }}) }
+      </button>
+    </div>
+  </div>
+
+  @if (visible().length === 0 && !loading()) {
+    <div class="app-card"><div class="app-card-body">
+      <app-empty-state [title]="'notifications.empty' | translate" body="" icon="bi-bell-slash" />
+    </div></div>
+  } @else {
+    <div class="notif-inbox">
+      @for (n of visible(); track n.id) {
+        <a class="notif-item" [class.is-unread]="!n.read" [routerLink]="['/admin/notifications', n.id]">
+          <app-notification-art [kind]="n.kind" [mini]="true" />
+          <span class="notif-item-body">
+            <span class="notif-item-title">{{ text(n).title }}</span>
+            <span class="notif-item-text">{{ text(n).body }}</span>
+            <span class="notif-item-time">{{ n.created_at | timeAgo }}</span>
+          </span>
+          @if (!n.read) {
+            <button type="button" class="notif-item-read" (click)="markRead(n, $event)"
+                    [attr.aria-label]="'notifications.mark_read' | translate">
+              <i class="bi bi-check2"></i>
+            </button>
+          }
+        </a>
+      }
+    </div>
+
+    @if (hasMore()) {
+      <div class="notif-inbox-more">
+        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="loading()" (click)="loadMore()">
+          {{ (loading() ? "common.loading" : "notifications.load_more") | translate }}
+        </button>
+      </div>
+    }
+  }
+</div>

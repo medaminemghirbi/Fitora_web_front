@@ -2,11 +2,11 @@
   <div class="locked-card">
     <div class="locked-icon">🔒</div>
 
-    @if (isOwner()) {
+    @if (isAdmin()) {
       <h1>{{ ("locked.title_" + copyKey()) | translate }}</h1>
       <p class="locked-body">{{ ("locked.body_" + copyKey()) | translate }}</p>
 
-      <a routerLink="/owner/subscription" class="btn btn-primary">
+      <a routerLink="/admin/subscription" class="btn btn-primary">
         {{ (trialOver() ? "locked.choose_plan" : "locked.see_invoices") | translate }}
       </a>
 

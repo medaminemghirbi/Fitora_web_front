@@ -1,8 +1,8 @@
-# Fitora — Frontend
+# Gymly — Frontend
 
-**Fitora** is a gym-management SaaS: scheduling, memberships, payments, staff and payroll
-for gyms and fitness studios. This repository is the **Fitora frontend**, built with
-**Angular** and talking to the Fitora backend API (a separate repository).
+**Gymly** is a gym-management SaaS: scheduling, memberships, payments, staff and payroll
+for gyms and fitness studios. This repository is the **Gymly frontend**, built with
+**Angular** and talking to the Gymly backend API (a separate repository).
 
 ---
 
@@ -127,7 +127,20 @@ Run them headless with coverage, exactly as CI does:
 npm run spec
 ```
 
-End-to-end testing can be added using the preferred E2E framework.
+End-to-end smoke suite (Playwright, `e2e/`) — the journeys that must work
+for the product to be usable at all: an admin signs in, adds a member; a
+member accepts their invitation, signs in and books; an admin changes their
+password. It needs the backend checked out next to this repo (`../backend`),
+PostgreSQL and Redis running:
+
+```bash
+npx playwright install chromium   # once
+npm run e2e
+```
+
+It starts its own Rails server on port 3100 against a separate database
+(`backend_e2e`, reset and seeded on every run) and `ng serve --configuration
+e2e` on 4300, so it never touches the servers or the data you develop with.
 
 ---
 
@@ -167,8 +180,8 @@ A simplified project structure:
 src/
 ├── app/
 │   ├── core/          # services, guards, interceptors, models, auth
-│   ├── features/       # routed feature areas (owner, coach, admin, auth…)
-│   ├── layout/          # shells (owner/coach/admin) + navbar
+│   ├── features/       # routed feature areas (admin, coach, superadmin, auth…)
+│   ├── layout/          # shells (admin/coach/superadmin) + navbar
 │   ├── shared/           # reusable UI components, pipes, utils
 │   └── app.routes.ts
 │
@@ -184,7 +197,7 @@ The exact structure may evolve as the application grows.
 
 ## 🔐 Authentication
 
-Fitora uses an authenticated API architecture.
+Gymly uses an authenticated API architecture.
 
 Frontend responsibilities include:
 
@@ -201,7 +214,7 @@ Authentication logic is centralized in `core/auth`, `core/guards`, and `core/int
 
 ## 🔌 Backend
 
-The frontend communicates with the **Fitora backend API**, a separate repository
+The frontend communicates with the **Gymly backend API**, a separate repository
 (its own git history, deployed independently).
 
 The backend is responsible for:
@@ -235,7 +248,7 @@ dist/
 
 ### SPA Routing
 
-Because Fitora is an Angular Single Page Application, the web server must redirect unknown
+Because Gymly is an Angular Single Page Application, the web server must redirect unknown
 routes to:
 
 ```text
@@ -246,8 +259,8 @@ For example:
 
 ```text
 /login
-/owner/dashboard
-/owner/clients/...
+/admin/dashboard
+/admin/clients/...
 ```
 
 should all be handled by Angular's router.
@@ -290,4 +303,4 @@ Before opening a pull request:
 
 This project is proprietary software.
 
-© Fitora. All rights reserved.
+© Gymly. All rights reserved.

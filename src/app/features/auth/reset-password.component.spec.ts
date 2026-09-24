@@ -12,8 +12,8 @@ describe("ResetPasswordComponent", () => {
   let recovery: jasmine.SpyObj<AccountRecoveryService>;
   let router: Router;
 
-  function build(token: string | null): void {
-    recovery = jasmine.createSpyObj<AccountRecoveryService>("AccountRecoveryService", ["resetPassword"]);
+  function build(token: string | null, data: Record<string, string> = {}): void {
+    recovery = jasmine.createSpyObj<AccountRecoveryService>("AccountRecoveryService", ["resetPassword", "acceptInvitation"]);
 
     TestBed.configureTestingModule({
       imports: [ResetPasswordComponent, TranslateModule.forRoot()],
@@ -22,7 +22,7 @@ describe("ResetPasswordComponent", () => {
         { provide: AccountRecoveryService, useValue: recovery },
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { queryParamMap: convertToParamMap(token ? { token } : {}) } },
+          useValue: { snapshot: { queryParamMap: convertToParamMap(token ? { token } : {}), data } },
         },
       ],
     });
@@ -120,6 +120,39 @@ describe("ResetPasswordComponent", () => {
     fixture.detectChanges();
     expect(types()).toEqual(["text", "text"]);
   });
+
+  describe("a member's invitation", () => {
+    it("accepts the invitation instead of resetting a password", fakeAsync(() => {
+      build("invite-token", { mode: "invitation" });
+      recovery.acceptInvitation.and.returnValue(of(undefined));
+      component.form.setValue({ password: "chosen-by-me", password_confirmation: "chosen-by-me" });
+
+      component.submit();
+      tick(2500);
+
+      expect(recovery.acceptInvitation).toHaveBeenCalledWith("invite-token", "chosen-by-me");
+      expect(recovery.resetPassword).not.toHaveBeenCalled();
+      expect(component.done()).toBe(true);
+    }));
+
+    it("speaks of an invitation, not a reset", () => {
+      build(null, { mode: "invitation" });
+      expect(component.copy.titleKey).toBe("auth.invitation_title");
+      expect(component.error()).toBe("auth.invitation_invalid_link");
+    });
+
+    it("says the invitation expired when the backend refuses the token", () => {
+      build("old", { mode: "invitation" });
+      recovery.acceptInvitation.and.returnValue(
+        throwError(() => new HttpErrorResponse({ status: 422, error: { error: "invalid_or_expired_token" } }))
+      );
+      component.form.setValue({ password: "chosen-by-me", password_confirmation: "chosen-by-me" });
+
+      component.submit();
+
+      expect(component.error()).toBe("auth.invitation_invalid_link");
+    });
+  });
 });
 
 describe("passwordStrength", () => {
@@ -135,4 +168,5 @@ describe("passwordStrength", () => {
     expect(passwordStrength("Abcdefg1!")).toBe(4);
     expect(passwordStrength("abcdefgh1234")).toBe(3);
   });
+
 });

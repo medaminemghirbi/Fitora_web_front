@@ -31,7 +31,7 @@ describe("CompanyService", () => {
     req.flush({ company: {} });
   });
 
-  it("list GETs every company this owner runs", () => {
+  it("list GETs every company this admin runs", () => {
     service.list().subscribe();
     const req = httpMock.expectOne(`${API_BASE_URL}/companies`);
     expect(req.request.method).toBe("GET");

@@ -12,7 +12,7 @@ describe("roleGuard", () => {
     authStub = {
       isAuthenticated: jasmine.createSpy(),
       currentUser: jasmine.createSpy(),
-      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/owner/dashboard"),
+      homeRouteForCurrentUser: jasmine.createSpy().and.returnValue("/admin/dashboard"),
     };
     tree = {} as UrlTree;
     router = jasmine.createSpyObj<Router>("Router", ["createUrlTree"]);
@@ -26,26 +26,26 @@ describe("roleGuard", () => {
     });
   });
 
-  function run(role: "owner" | "admin") {
+  function run(role: "admin" | "superadmin") {
     return TestBed.runInInjectionContext(() => roleGuard(role)({} as never, {} as never));
   }
 
   it("allows a user whose role matches", () => {
     authStub.isAuthenticated.and.returnValue(true);
-    authStub.currentUser.and.returnValue({ role: "owner" });
-    expect(run("owner")).toBe(true);
+    authStub.currentUser.and.returnValue({ role: "admin" });
+    expect(run("admin")).toBe(true);
   });
 
   it("redirects to login when not authenticated at all", () => {
     authStub.isAuthenticated.and.returnValue(false);
-    expect(run("admin")).toBe(tree);
+    expect(run("superadmin")).toBe(tree);
     expect(router.createUrlTree).toHaveBeenCalledWith(["/connexion"]);
   });
 
   it("redirects an authenticated user with the wrong role to their home route", () => {
     authStub.isAuthenticated.and.returnValue(true);
     authStub.currentUser.and.returnValue({ role: "staff" });
-    expect(run("owner")).toBe(tree);
-    expect(router.createUrlTree).toHaveBeenCalledWith(["/owner/dashboard"]);
+    expect(run("admin")).toBe(tree);
+    expect(router.createUrlTree).toHaveBeenCalledWith(["/admin/dashboard"]);
   });
 });

@@ -12,11 +12,11 @@ interface StepMeta {
 }
 
 const META: Record<OnboardingStepKey, StepMeta> = {
-  company: { labelKey: "onboarding.step_company", descKey: "onboarding.step_company_desc", route: "/owner/settings/company", icon: "bi-building" },
-  activities: { labelKey: "onboarding.step_activities", descKey: "onboarding.step_activities_desc", route: "/owner/catalogue", icon: "bi-lightning-charge" },
-  spaces: { labelKey: "onboarding.step_spaces", descKey: "onboarding.step_spaces_desc", route: "/owner/spaces", icon: "bi-door-open" },
-  plans: { labelKey: "onboarding.step_plans", descKey: "onboarding.step_plans_desc", route: "/owner/catalogue", icon: "bi-card-checklist" },
-  staff: { labelKey: "onboarding.step_staff", descKey: "onboarding.step_staff_desc", route: "/owner/team", icon: "bi-person-badge" },
+  company: { labelKey: "onboarding.step_company", descKey: "onboarding.step_company_desc", route: "/admin/settings/company", icon: "bi-building" },
+  activities: { labelKey: "onboarding.step_activities", descKey: "onboarding.step_activities_desc", route: "/admin/catalogue", icon: "bi-lightning-charge" },
+  spaces: { labelKey: "onboarding.step_spaces", descKey: "onboarding.step_spaces_desc", route: "/admin/spaces", icon: "bi-door-open" },
+  plans: { labelKey: "onboarding.step_plans", descKey: "onboarding.step_plans_desc", route: "/admin/catalogue", icon: "bi-card-checklist" },
+  staff: { labelKey: "onboarding.step_staff", descKey: "onboarding.step_staff_desc", route: "/admin/team", icon: "bi-person-badge" },
 };
 
 /**

@@ -44,7 +44,7 @@ describe("DeskShellComponent", () => {
         { provide: ThemeService, useValue: { theme: () => "light", toggle: () => undefined } },
         {
           provide: AuthService,
-          useValue: { currentUser: () => ({ full_name: "Desk", email: "desk@fitora.test" }), logout: () => undefined },
+          useValue: { currentUser: () => ({ full_name: "Desk", email: "desk@gymly.test" }), logout: () => undefined },
         },
       ],
     }).compileComponents();
@@ -102,7 +102,7 @@ describe("DeskShellComponent", () => {
 
     component.open(client());
 
-    expect(router.navigate).toHaveBeenCalledWith(["/owner/clients", "c1"]);
+    expect(router.navigate).toHaveBeenCalledWith(["/admin/clients", "c1"]);
     expect(component.query()).toBe("");
     expect(component.resultsOpen()).toBe(false);
   });
@@ -120,8 +120,8 @@ describe("DeskShellComponent", () => {
   it("offers no route the desk has no business on", () => {
     const paths = component.navItems.map((i) => i.path);
 
-    expect(paths).not.toContain("/owner/settings");
-    expect(paths).not.toContain("/owner/team");
-    expect(paths).not.toContain("/owner/dashboard");
+    expect(paths).not.toContain("/admin/settings");
+    expect(paths).not.toContain("/admin/team");
+    expect(paths).not.toContain("/admin/dashboard");
   });
 });

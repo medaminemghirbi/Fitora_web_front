@@ -21,7 +21,7 @@ export const POLL_MS = 4000;
  */
 export const CONTINUE_DELAY_MS = 3600;
 /** Tabs of this app tell each other the link was clicked on this channel. */
-export const AUTH_CHANNEL = "fitora-auth";
+export const AUTH_CHANNEL = "gymly-auth";
 
 export interface Mailbox {
   name: string;
@@ -33,7 +33,7 @@ export interface Mailbox {
  * straight to the inbox beats "go and find your mail".
  */
 const MAILBOXES: { match: RegExp; name: string; url: string }[] = [
-  { match: /^(gmail|googlemail)\.com$/, name: "Gmail", url: "https://mail.google.com/mail/u/0/#search/from%3Afitora.io" },
+  { match: /^(gmail|googlemail)\.com$/, name: "Gmail", url: "https://mail.google.com/mail/u/0/#search/from%3Agymly.io" },
   { match: /^(outlook|hotmail|live|msn)\.[a-z.]+$/, name: "Outlook", url: "https://outlook.live.com/mail/0/" },
   { match: /^(yahoo|ymail)\.[a-z.]+$/, name: "Yahoo Mail", url: "https://mail.yahoo.com/" },
   { match: /^(icloud|me|mac)\.com$/, name: "iCloud Mail", url: "https://www.icloud.com/mail" },
@@ -52,7 +52,7 @@ type Phase = "waiting" | "confirmed";
  * Between signing up and clicking the emailed link.
  *
  * Nothing past sign-up opens until the address is confirmed, so this screen
- * does the waiting for the owner: it asks every few seconds (and at once
+ * does the waiting for the admin: it asks every few seconds (and at once
  * when the tab comes back into focus, or when another tab of the app says
  * the link was clicked) and moves on by itself — the link can be opened on
  * a phone and this screen still notices. Resending is rate-limited to match
@@ -158,11 +158,11 @@ export class ConfirmEmailComponent implements OnInit {
     });
   }
 
-  /** Straight on to naming the gym — or home, for an owner who already has one. */
+  /** Straight on to naming the gym — or home, for an admin who already has one. */
   continue(): void {
     this.stop();
     const user = this.auth.currentUser();
-    this.router.navigateByUrl(user?.company_id == null ? "/owner/setup-company" : this.auth.homeRouteForCurrentUser());
+    this.router.navigateByUrl(user?.company_id == null ? "/admin/setup-company" : this.auth.homeRouteForCurrentUser());
   }
 
   /** Mistyped address: start over with the right one. */

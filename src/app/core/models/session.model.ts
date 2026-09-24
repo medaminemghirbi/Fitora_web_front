@@ -11,6 +11,8 @@ export interface Session {
   company_name: string;
   coach_id: string | null;
   coach_name: string | null;
+  /** Set when a weekly class generated this session. */
+  recurring_schedule_id?: string | null;
   starts_at: string;
   ends_at: string;
   capacity: number;

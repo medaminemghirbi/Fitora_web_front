@@ -44,3 +44,6 @@ Thumbs.db
 # graphify knowledge graph (generated)
 /graphify-out
 .claude/
+/test-results
+/playwright-report
+/blob-report

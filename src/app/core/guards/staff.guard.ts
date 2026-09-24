@@ -17,18 +17,18 @@ function elsewhereFor(auth: AuthService, router: Router) {
   return router.createUrlTree([auth.isAuthenticated() ? auth.homeRouteForCurrentUser() : "/connexion"]);
 }
 
-// Entry guard for the /owner shell — the owner, plus staff. A "coach"-role
+// Entry guard for the /admin shell — the admin, plus staff. A "coach"-role
 // staff only gets bounced to the dedicated coach shell when the company runs
 // the fitness module; otherwise (a practitioner in a medical/legal/… company)
 // they use this shell, filtered by their permissions.
-export const ownerAreaGuard: CanActivateFn = () => {
+export const adminAreaGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const config = inject(ConfigurationService);
   const router = inject(Router);
   const user = auth.currentUser();
 
   if (!user) return elsewhereFor(auth, router);
-  if (user.role === "admin") return router.createUrlTree(["/admin/overview"]);
+  if (user.role === "superadmin") return router.createUrlTree(["/superadmin/overview"]);
 
   return config.ensureLoaded().pipe(
     map(() => {
@@ -44,7 +44,7 @@ export const ownerAreaGuard: CanActivateFn = () => {
 };
 
 // Per-page guard mirroring BaseController#require_capability! — resolves the
-// permission from /bootstrap (owners already come back with the full set).
+// permission from /bootstrap (admins already come back with the full set).
 export function capabilityGuard(permission: string): CanActivateFn {
   return () => {
     const auth = inject(AuthService);
@@ -98,8 +98,8 @@ export function featureGuard(feature: string): CanActivateFn {
  *
  * The desk is for the people who work it: staff who can check members in and
  * book them. Not coaches (whose own shell is their day, and who hold only
- * `checkin`), and not the owner, whose shell is a superset of this one —
- * sending an owner here would hide half their product behind a back button.
+ * `checkin`), and not the admin, whose shell is a superset of this one —
+ * sending an admin here would hide half their product behind a back button.
  *
  * `checkin` alone is not enough: a coach has it. The test is checking people
  * in AND booking them, which is the desk's actual job.
@@ -132,8 +132,8 @@ export const deskAreaGuard: CanActivateFn = () => {
   );
 };
 
-// The Settings area is configuration — the owner, or a staff role the owner
-// has explicitly granted a catalogue capability. A plain receptionist has
+// The Settings area is configuration — the admin, or a staff role the admin
+// has explicitly granted a catalogue capability. A plain moderator has
 // nothing to configure and is bounced home.
 export const settingsAccessGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
@@ -146,7 +146,7 @@ export const settingsAccessGuard: CanActivateFn = () => {
   return config.ensureLoaded().pipe(
     map(() =>
       !config.ready() ||
-      user.role === "owner" ||
+      user.role === "admin" ||
       auth.hasPermission("activities") ||
       auth.hasPermission("contract_types")
         ? true
@@ -156,21 +156,21 @@ export const settingsAccessGuard: CanActivateFn = () => {
   );
 };
 
-// Staff management is owner-only.
+// Staff management is admin-only.
 export const staffManagerGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
   const user = auth.currentUser();
 
   if (!user) return elsewhereFor(auth, router);
-  if (user.role === "owner") return true;
+  if (user.role === "admin") return true;
 
   return router.createUrlTree([auth.homeRouteForCurrentUser()]);
 };
 
 // Entry guard for the coach shell — a "coach"-role staff, and only while the
 // company runs the fitness module (otherwise the coach shell has nothing to
-// show; the practitioner belongs in the owner shell).
+// show; the practitioner belongs in the admin shell).
 export function staffRoleGuard(role: StaffRole): CanActivateFn {
   return () => {
     const auth = inject(AuthService);
@@ -186,7 +186,7 @@ export function staffRoleGuard(role: StaffRole): CanActivateFn {
       return router.createUrlTree([auth.homeRouteForCurrentUser()]);
     }
     return config.ensureLoaded().pipe(
-      map(() => (auth.coachShellApplies() ? true : router.createUrlTree(["/owner/dashboard"]))),
+      map(() => (auth.coachShellApplies() ? true : router.createUrlTree(["/admin/dashboard"]))),
       catchError(() => of(true))
     );
   };

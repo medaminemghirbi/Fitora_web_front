@@ -19,6 +19,11 @@ export class AccountRecoveryService {
     return this.http.patch<void>(`${API_BASE_URL}/password_resets/${token}`, { password });
   }
 
+  /** A member choosing their password from the invitation their gym sent. */
+  acceptInvitation(token: string, password: string): Observable<void> {
+    return this.http.patch<void>(`${API_BASE_URL}/invitations/${token}`, { password });
+  }
+
   verifyEmail(token: string): Observable<void> {
     return this.http.patch<void>(`${API_BASE_URL}/email_verifications/${token}`, {});
   }

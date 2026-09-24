@@ -8,7 +8,7 @@ import { AuthProShellComponent } from "../../../shared/ui/auth-pro-shell.compone
 import { SpinnerComponent } from "../../../shared/components/spinner.component";
 
 /**
- * Sign-in for a gym: its owner and its staff. A member's account is refused
+ * Sign-in for a gym: its admin and its staff. A member's account is refused
  * here — not because it is invalid, but because it belongs to the other zone,
  * so the session is dropped again and the page points at /connexion rather
  * than dumping someone into a back office that has nothing for them.

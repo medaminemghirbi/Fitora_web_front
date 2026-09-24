@@ -90,6 +90,6 @@ export class DashboardService {
   constructor(private readonly http: HttpClient) {}
 
   get(): Observable<DashboardResponse> {
-    return this.http.get<DashboardResponse>(`${API_BASE_URL}/owner/dashboard`);
+    return this.http.get<DashboardResponse>(`${API_BASE_URL}/admin/dashboard`);
   }
 }
