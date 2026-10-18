@@ -55,7 +55,8 @@
     "export": "Exporter",
     "notes": "Notes",
     "view": "Voir",
-    "saved": "Enregistré."
+    "saved": "Enregistré.",
+    "copied": "Copié"
   },
   "auth": {
     "login": "Connexion",
@@ -456,7 +457,14 @@
     "how_to_pay": "Comment régler",
     "how_to_pay_body": "Le règlement se fait directement avec Fitora — virement ou espèces. Dès qu'il nous parvient, votre période passe au vert et la facture arrive ici.",
     "invoice_number": "N° de facture",
-    "period": "Période"
+    "period": "Période",
+    "bank_transfer": "Virement bancaire",
+    "account_holder": "Titulaire",
+    "bank": "Banque",
+    "rib": "RIB",
+    "swift": "SWIFT / BIC",
+    "transfer_reference": "Référence",
+    "transfer_reference_hint": "Indiquez cette référence dans le libellé du virement pour que nous puissions l'associer à votre salle."
   },
   "settings": {
     "title": "Paramètres",

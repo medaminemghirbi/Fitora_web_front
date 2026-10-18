@@ -473,3 +473,76 @@
 @media (max-width: 767.98px) {
   .sub-ledger { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+// ---- Bank details ---------------------------------------------------
+// The RIB is transcribed by hand into a banking app, so it is set in a
+// monospaced face, spaced out, and sits behind a copy button.
+.payout {
+  margin-top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  padding: var(--space-4) var(--space-5);
+}
+
+.payout-head {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: var(--space-3);
+}
+
+.payout-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-2) 0;
+
+  & + .payout-row { border-top: 1px solid var(--color-border); }
+}
+
+.payout-label {
+  flex: 0 0 8.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.payout-value {
+  flex: 1 1 12rem;
+  font-weight: 600;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.payout-mono {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+  letter-spacing: 0.04em;
+}
+
+.payout-copy {
+  flex: 0 0 auto;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.7rem;
+  cursor: pointer;
+
+  &:hover { background: var(--color-surface-hover); }
+}
+
+.payout-hint {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  margin-top: var(--space-3);
+}
+
+// A 8.5rem label column next to a RIB does not fit a phone; stack instead.
+@media (max-width: 575.98px) {
+  .payout-label { flex: 1 1 100%; }
+}

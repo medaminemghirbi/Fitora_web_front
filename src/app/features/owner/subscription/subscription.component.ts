@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { Invoice } from "../../../core/models/subscription.model";
-import { SubscriptionInfo, SubscriptionService } from "../../../core/services/subscription.service";
+import { PayoutAccount, SubscriptionInfo, SubscriptionService } from "../../../core/services/subscription.service";
 import { ToastService } from "../../../core/services/toast.service";
 import { downloadBlob } from "../../../core/services/download.util";
 import { extractErrorMessage } from "../../../core/services/error.util";
@@ -61,6 +61,13 @@ export class SubscriptionComponent {
 
   readonly paidCount = computed(() => this.ledger().filter((c) => c.state === "paid").length);
 
+  // null until a RIB is configured on the host; the card then gives way to
+  // the generic "settle with Fitora" line rather than showing empty fields.
+  readonly payout = computed<PayoutAccount | null>(() => this.info()?.payout ?? null);
+
+  /** Which field was just copied, so the button can say so for a moment. */
+  readonly copied = signal<string | null>(null);
+
   constructor() {
     this.load();
   }
@@ -82,6 +89,22 @@ export class SubscriptionComponent {
 
   showYear(year: number): void {
     this.ledgerYear.set(year);
+  }
+
+  /**
+   * A RIB is 20-odd characters that have to be transcribed exactly; retyping
+   * it into a banking app is where a payment goes to the wrong account.
+   */
+  copy(field: string, value: string | null): void {
+    if (!value) return;
+
+    navigator.clipboard?.writeText(value).then(
+      () => {
+        this.copied.set(field);
+        setTimeout(() => this.copied.update((c) => (c === field ? null : c)), 2000);
+      },
+      () => this.toast.error(this.translate.instant("common.error_generic")),
+    );
   }
 
   download(invoice: Invoice | null): void {

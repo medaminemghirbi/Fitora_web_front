@@ -55,7 +55,8 @@
     "export": "Export",
     "notes": "Notes",
     "view": "View",
-    "saved": "Saved."
+    "saved": "Saved.",
+    "copied": "Copied"
   },
   "auth": {
     "login": "Login",
@@ -456,7 +457,14 @@
     "how_to_pay": "How to pay",
     "how_to_pay_body": "Payment is settled directly with Fitora — transfer or cash. As soon as it reaches us your period turns green and the invoice lands here.",
     "invoice_number": "Invoice no.",
-    "period": "Period"
+    "period": "Period",
+    "bank_transfer": "Bank transfer",
+    "account_holder": "Account holder",
+    "bank": "Bank",
+    "rib": "IBAN / RIB",
+    "swift": "SWIFT / BIC",
+    "transfer_reference": "Reference",
+    "transfer_reference_hint": "Put this reference on the transfer so we can match it to your gym."
   },
   "settings": {
     "title": "Settings",

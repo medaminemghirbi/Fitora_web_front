@@ -56,6 +56,7 @@ describe("SubscriptionComponent", () => {
         companies_count: 1,
         company_limit_reached: true,
         company_tiers: [],
+        payout: null,
         ...patch,
       } as SubscriptionInfo)
     );
@@ -85,6 +86,63 @@ describe("SubscriptionComponent", () => {
     service.get.and.returnValue(throwError(() => new Error("nope")));
     component.load();
     expect(component.error()).toBe(true);
+  });
+
+  // The RIB comes from the host's environment, so "not configured" is the
+  // normal state of a fresh install and must not render an empty bank card.
+  describe("where the gym sends its money", () => {
+    const account = {
+      rib: "TN59 1000 6035 0123 4567 8901",
+      bank_name: "BIAT",
+      holder: "Fitora SARL",
+      swift: null,
+      reference: "FIT-GYMELITE",
+    };
+
+    it("shows no bank card until a RIB is configured", () => {
+      build();
+      expect(component.payout()).toBeNull();
+      expect(fixture.nativeElement.querySelector(".payout")).toBeNull();
+    });
+
+    it("prints the account and the reference for the owner to transcribe", () => {
+      build({ payout: account });
+      const card: HTMLElement = fixture.nativeElement.querySelector(".payout");
+      expect(card.textContent).toContain("TN59 1000 6035 0123 4567 8901");
+      expect(card.textContent).toContain("BIAT");
+      expect(card.textContent).toContain("Fitora SARL");
+      expect(card.textContent).toContain("FIT-GYMELITE");
+    });
+
+    it("leaves out the rows the environment did not fill", () => {
+      build({ payout: { ...account, bank_name: null, holder: null } });
+      const card: HTMLElement = fixture.nativeElement.querySelector(".payout");
+      expect(card.textContent).not.toContain("BIAT");
+      expect(card.querySelectorAll(".payout-row").length).toBe(2);
+    });
+
+    it("copies the RIB and says so, then falls silent again", async () => {
+      build({ payout: account });
+      const writeText = jasmine.createSpy("writeText").and.returnValue(Promise.resolve());
+      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+
+      component.copy("rib", account.rib);
+      await Promise.resolve();
+
+      expect(writeText).toHaveBeenCalledWith(account.rib);
+      expect(component.copied()).toBe("rib");
+    });
+
+    it("does not reach for the clipboard with nothing to put in it", () => {
+      build({ payout: account });
+      const writeText = jasmine.createSpy("writeText");
+      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+
+      component.copy("swift", null);
+
+      expect(writeText).not.toHaveBeenCalled();
+      expect(component.copied()).toBeNull();
+    });
   });
 
   describe("the ledger of invoices", () => {

@@ -129,7 +129,52 @@
         <div class="app-card">
           <div class="app-card-body">
             <h2 style="font-size: 1rem; margin-bottom: 0.5rem">{{ "subscription.how_to_pay" | translate }}</h2>
-            <p class="fx-muted mb-0">{{ "subscription.how_to_pay_body" | translate }}</p>
+            <p class="fx-muted">{{ "subscription.how_to_pay_body" | translate }}</p>
+
+            @if (payout(); as account) {
+              <div class="payout">
+                <div class="payout-head">{{ "subscription.bank_transfer" | translate }}</div>
+
+                @if (account.holder) {
+                  <div class="payout-row">
+                    <span class="payout-label">{{ "subscription.account_holder" | translate }}</span>
+                    <span class="payout-value">{{ account.holder }}</span>
+                  </div>
+                }
+                @if (account.bank_name) {
+                  <div class="payout-row">
+                    <span class="payout-label">{{ "subscription.bank" | translate }}</span>
+                    <span class="payout-value">{{ account.bank_name }}</span>
+                  </div>
+                }
+
+                <div class="payout-row">
+                  <span class="payout-label">{{ "subscription.rib" | translate }}</span>
+                  <span class="payout-value payout-mono">{{ account.rib }}</span>
+                  <button type="button" class="payout-copy" (click)="copy('rib', account.rib)">
+                    {{ (copied() === "rib" ? "common.copied" : "common.copy") | translate }}
+                  </button>
+                </div>
+
+                @if (account.swift) {
+                  <div class="payout-row">
+                    <span class="payout-label">{{ "subscription.swift" | translate }}</span>
+                    <span class="payout-value payout-mono">{{ account.swift }}</span>
+                  </div>
+                }
+
+                @if (account.reference) {
+                  <div class="payout-row">
+                    <span class="payout-label">{{ "subscription.transfer_reference" | translate }}</span>
+                    <span class="payout-value payout-mono">{{ account.reference }}</span>
+                    <button type="button" class="payout-copy" (click)="copy('reference', account.reference)">
+                      {{ (copied() === "reference" ? "common.copied" : "common.copy") | translate }}
+                    </button>
+                  </div>
+                  <p class="payout-hint mb-0">{{ "subscription.transfer_reference_hint" | translate }}</p>
+                }
+              </div>
+            }
           </div>
         </div>
 

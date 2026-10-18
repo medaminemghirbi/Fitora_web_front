@@ -11,6 +11,22 @@ export interface CompanyTier {
   annual_cents: number;
 }
 
+/**
+ * Fitora's own bank details — where the gym sends its subscription payment.
+ *
+ * Served from the environment, never stored: it is the same account for every
+ * gym and it belongs in a dump about as much as a password does. null when no
+ * RIB is configured, and the page shows the generic wording instead.
+ */
+export interface PayoutAccount {
+  rib: string;
+  bank_name: string | null;
+  holder: string | null;
+  swift: string | null;
+  /** What the gym writes on the transfer so we can match it back to them. */
+  reference: string | null;
+}
+
 export interface SubscriptionInfo {
   subscription: Subscription | null;
   /** Newest first — the history, and what the gym downloads. */
@@ -29,6 +45,7 @@ export interface SubscriptionInfo {
   companies_count: number;
   company_limit_reached: boolean;
   company_tiers: CompanyTier[];
+  payout: PayoutAccount | null;
 }
 
 /**
